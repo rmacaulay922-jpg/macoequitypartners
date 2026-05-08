@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maco Equity Partners</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --charcoal: #1a1a2e; --slate: #4a4a68; --muted: #8888a0; --light: #f4f4f8; --white: #ffffff; --accent: #6c7a89; --accent-light: #e8eaed; --divider: #e0e0e8; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--charcoal); background: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  nav { position: fixed; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 5vw; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--divider); z-index: 100; }
+  .logo { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1.2rem; letter-spacing: 0.02em; color: var(--charcoal); text-decoration: none; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { text-decoration: none; color: var(--slate); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--charcoal); }
+  .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8rem 5vw 6rem; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=80') center/cover no-repeat; filter: brightness(0.3); z-index: 0; }
+  .hero > * { position: relative; z-index: 1; }
+  .hero-badge { display: inline-block; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.2); padding: 0.4rem 1.2rem; border-radius: 100px; margin-bottom: 2.5rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.4rem, 5vw, 4rem); font-weight: 600; line-height: 1.15; color: var(--white); max-width: 700px; margin-bottom: 1.5rem; }
+  .hero p { font-size: 1.1rem; color: rgba(255,255,255,0.7); max-width: 520px; margin-bottom: 2.5rem; font-weight: 300; }
+  .cta-group { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .btn { display: inline-block; padding: 0.85rem 2.2rem; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; text-decoration: none; border-radius: 4px; transition: all 0.25s ease; cursor: pointer; }
+  .btn-primary { background: var(--white); color: var(--charcoal); border: 2px solid var(--white); }
+  .btn-primary:hover { background: transparent; color: var(--white); }
+  .btn-outline { background: transparent; color: var(--white); border: 2px solid rgba(255,255,255,0.5); }
+  .btn-outline:hover { background: var(--white); color: var(--charcoal); border-color: var(--white); }
+  .btn-dark { background: var(--charcoal); color: var(--white); border: 2px solid var(--charcoal); }
+  .btn-dark:hover { background: var(--slate); border-color: var(--slate); }
+  section { padding: 6rem 5vw; }
+  .section-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  .section-title { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 600; color: var(--charcoal); margin-bottom: 1rem; }
+  .section-subtitle { font-size: 1rem; color: var(--slate); max-width: 560px; font-weight: 300; margin-bottom: 3rem; }
+  .about { background: var(--white); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; max-width: 1100px; margin: 0 auto; }
+  .about-text p { color: var(--slate); font-weight: 300; margin-bottom: 1.25rem; font-size: 1rem; }
+  .about-img { border-radius: 12px; overflow: hidden; aspect-ratio: 4/3; }
+  .about-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .stat-row { display: flex; gap: 3rem; margin-top: 2.5rem; padding-top: 2rem; border-top: 1px solid var(--divider); }
+  .stat h3 { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 600; color: var(--charcoal); }
+  .stat p { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .photo-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; max-width: 100%; }
+  .photo-strip-item { aspect-ratio: 16/9; overflow: hidden; position: relative; }
+  .photo-strip-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; }
+  .photo-strip-item:hover img { transform: scale(1.05); }
+  .photo-strip-item .overlay { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(26,26,46,0.7) 100%); display: flex; align-items: flex-end; padding: 2rem; }
+  .photo-strip-item .overlay span { color: var(--white); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
+  .focus { background: var(--light); }
+  .focus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; max-width: 1100px; margin: 0 auto; }
+  .focus-card { background: var(--white); border: 1px solid var(--divider); border-radius: 8px; overflow: hidden; transition: box-shadow 0.3s, transform 0.3s; }
+  .focus-card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-3px); }
+  .focus-card-img { height: 200px; overflow: hidden; }
+  .focus-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s; }
+  .focus-card:hover .focus-card-img img { transform: scale(1.05); }
+  .focus-card-body { padding: 2rem; }
+  .focus-card h3 { font-size: 1.1rem; font-weight: 600; color: var(--charcoal); margin-bottom: 0.75rem; }
+  .focus-card p { font-size: 0.92rem; color: var(--slate); font-weight: 300; line-height: 1.65; }
+  .approach { position: relative; overflow: hidden; color: var(--white); }
+  .approach::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1507679799987-c73b1538e4e6?w=1600&q=80') center/cover no-repeat; filter: brightness(0.2); z-index: 0; }
+  .approach > * { position: relative; z-index: 1; }
+  .approach .section-label { color: rgba(255,255,255,0.4); }
+  .approach .section-title { color: var(--white); }
+  .approach .section-subtitle { color: rgba(255,255,255,0.6); }
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; max-width: 1100px; margin: 0 auto; }
+  .step-num { font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 600; color: rgba(255,255,255,0.15); margin-bottom: 1rem; }
+  .step h3 { font-size: 1rem; font-weight: 600; color: var(--white); margin-bottom: 0.5rem; }
+  .step p { font-size: 0.88rem; color: rgba(255,255,255,0.55); font-weight: 300; line-height: 1.6; }
+  .image-break { height: 50vh; min-height: 350px; position: relative; overflow: hidden; }
+  .image-break img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .image-break .ib-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(26,26,46,0.1) 0%, rgba(26,26,46,0.5) 100%); display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+  .image-break .ib-overlay blockquote { font-family: 'Playfair Display', serif; font-size: clamp(1.4rem, 2.5vw, 2rem); color: var(--white); font-weight: 500; max-width: 650px; line-height: 1.4; font-style: italic; }
+  .contact { background: var(--white); text-align: center; }
+  .contact-inner { max-width: 560px; margin: 0 auto; }
+  .contact-form { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+  .contact-form input, .contact-form textarea { font-family: 'Inter', sans-serif; padding: 1rem 1.25rem; border: 1px solid var(--divider); border-radius: 6px; font-size: 0.95rem; background: var(--light); color: var(--charcoal); outline: none; transition: border 0.2s; }
+  .contact-form input:focus, .contact-form textarea:focus { border-color: var(--slate); }
+  .contact-form textarea { resize: vertical; min-height: 120px; }
+  .contact-form .btn { align-self: center; border: none; margin-top: 0.5rem; }
+  footer { padding: 3rem 5vw; background: var(--charcoal); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+  .footer-logo { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 1rem; color: var(--white); }
+  .footer-copy { font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { font-size: 0.8rem; color: rgba(255,255,255,0.5); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--white); }
+  @media (max-width: 900px) { .about-grid { grid-template-columns: 1fr; gap: 2rem; } .focus-grid { grid-template-columns: 1fr; } .steps { grid-template-columns: 1fr 1fr; } .photo-strip { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { nav { padding: 1rem 4vw; } .nav-links { gap: 1rem; } .nav-links a { font-size: 0.75rem; } section { padding: 4rem 5vw; } .steps { grid-template-columns: 1fr; } .stat-row { flex-direction: column; gap: 1.5rem; } }
+</style>
+</head>
+<body>
+<nav><a href="#" class="logo">Maco Equity Partners</a><ul class="nav-links"><li><a href="#about">About</a></li><li><a href="#focus">Focus</a></li><li><a href="#approach">Approach</a></li><li><a href="#contact">Contact</a></li></ul></nav>
+<section class="hero"><span class="hero-badge">Private Equity &amp; Asset Management</span><h1>A Decade of Disciplined Value Creation</h1><p>Maco Equity Partners is a private equity firm with over 10 years of asset management experience, partnering with exceptional teams to build lasting, outsized value.</p><div class="cta-group"><a href="#contact" class="btn btn-primary">Get in Touch</a><a href="#about" class="btn btn-outline">Learn More</a></div></section>
+<section class="about" id="about"><div class="about-grid"><div class="about-text"><p class="section-label">Who We Are</p><h2 class="section-title">Over a Decade of Proven Performance</h2><p>Maco Equity Partners is a private equity firm with more than 10 years of experience in asset management and strategic investment. Our team brings deep operational expertise across multiple sectors, working alongside management teams to unlock potential and accelerate growth.</p><p>We deploy capital with conviction and patience — investing not just financial resources, but strategic insight, industry relationships, and hands-on operational support to help portfolio companies scale with confidence.</p><div class="stat-row"><div class="stat"><h3>10+</h3><p>Years in Asset Management</p></div><div class="stat"><h3>Multi-Sector</h3><p>Portfolio Expertise</p></div><div class="stat"><h3>Long-Term</h3><p>Value Creation</p></div></div></div><div class="about-img"><img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=80" alt="Modern office building exterior" loading="lazy" /></div></div></section>
+<div class="photo-strip"><div class="photo-strip-item"><img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=800&q=80" alt="City skyline" loading="lazy" /><div class="overlay"><span>Urban Markets</span></div></div><div class="photo-strip-item"><img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80" alt="Glass skyscraper" loading="lazy" /><div class="overlay"><span>Commercial Assets</span></div></div><div class="photo-strip-item"><img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=80" alt="Construction" loading="lazy" /><div class="overlay"><span>Development</span></div></div></div>
+<section class="focus" id="focus"><div style="max-width:1100px;margin:0 auto;"><p class="section-label">Investment Focus</p><h2 class="section-title">Where We Deploy Capital</h2><p class="section-subtitle">With over a decade of asset management experience, we deploy capital across sectors where operational improvement and strategic repositioning create outsized returns.</p></div><div class="focus-grid"><div class="focus-card"><div class="focus-card-img"><img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=600&q=80" alt="Residential building" loading="lazy" /></div><div class="focus-card-body"><h3>Real Estate</h3><p>Targeted investments in commercial and residential properties with strong fundamentals and value-add potential through repositioning or redevelopment.</p></div></div><div class="focus-card"><div class="focus-card-img"><img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" alt="Business analytics" loading="lazy" /></div><div class="focus-card-body"><h3>Growth Equity</h3><p>Minority and majority stakes in established businesses poised for their next phase of growth, backed by strong unit economics and proven leadership.</p></div></div><div class="focus-card"><div class="focus-card-img"><img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=600&q=80" alt="Modern workspace" loading="lazy" /></div><div class="focus-card-body"><h3>Small Business Acquisitions</h3><p>Acquiring and operating fundamentally sound small businesses where hands-on management and operational improvements drive meaningful value creation.</p></div></div></div></section>
+<div class="image-break"><img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600&q=80" alt="City skyline panorama" loading="lazy" /><div class="ib-overlay"><blockquote>“Capital is patient. Growth is intentional. Returns are earned.”</blockquote></div></div>
+<section class="approach" id="approach"><div style="max-width:1100px;margin:0 auto;"><p class="section-label">Our Process</p><h2 class="section-title">How We Work</h2><p class="section-subtitle">A disciplined, repeatable process from sourcing to exit — grounded in rigorous analysis and active partnership.</p></div><div class="steps"><div class="step"><div class="step-num">01</div><h3>Identify</h3><p>Proprietary deal sourcing through industry networks, direct outreach, and referral relationships.</p></div><div class="step"><div class="step-num">02</div><h3>Evaluate</h3><p>Deep due diligence across financials, operations, market positioning, and management capability.</p></div><div class="step"><div class="step-num">03</div><h3>Partner</h3><p>Hands-on collaboration with management teams to execute value creation plans and operational improvements.</p></div><div class="step"><div class="step-num">04</div><h3>Grow</h3><p>Strategic capital deployment, talent development, and market expansion to drive sustainable returns.</p></div></div></section>
+<section class="contact" id="contact"><div class="contact-inner"><p class="section-label">Connect</p><h2 class="section-title">Start a Conversation</h2><p class="section-subtitle" style="margin:0 auto 1rem;">Whether you're exploring a partnership, have a deal to present, or want to learn more about our firm and track record — we'd like to hear from you.</p><form class="contact-form" onsubmit="event.preventDefault();alert('Thank you for reaching out. Our team will be in touch shortly.');"><input type="text" placeholder="Your Name" required /><input type="email" placeholder="Email Address" required /><input type="text" placeholder="Subject" /><textarea placeholder="Tell us about the opportunity..."></textarea><button type="submit" class="btn btn-dark">Send Message</button></form></div></section>
+<footer><span class="footer-logo">Maco Equity Partners</span><div class="footer-links"><a href="#about">About</a><a href="#focus">Focus</a><a href="#approach">Process</a><a href="#contact">Contact</a></div><span class="footer-copy">© 2026 Maco Equity Partners. All rights reserved.</span></footer>
+</body>
+</html>
