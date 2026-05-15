@@ -888,9 +888,74 @@ main,nav,footer,section,header{position:relative;z-index:2}
   .footer-bottom{flex-direction:column;align-items:flex-start}
 }
 
+/* Watermark — hidden on screen, shown only in print */
+.print-watermark{display:none}
+
 /* ===== Print styles (Save as PDF) ===== */
 @media print{
-  @page{size:letter;margin:.6in .65in .65in}
+  @page{
+    size:letter;
+    margin:.85in .7in .85in;
+    @top-left{
+      content:"Maco · Equity Partners";
+      font-family:'Cormorant Garamond',Georgia,serif;
+      font-size:10pt;font-weight:500;
+      letter-spacing:.08em;text-transform:uppercase;
+      color:#8b6f47;
+    }
+    @top-right{
+      content:"Confidential · macoequitypartners.com";
+      font-family:'Inter',sans-serif;
+      font-size:8pt;font-weight:500;
+      letter-spacing:.18em;text-transform:uppercase;
+      color:#8b6f47;
+    }
+    @bottom-center{
+      content:"Page " counter(page) " of " counter(pages);
+      font-family:'Inter',sans-serif;
+      font-size:8pt;font-weight:500;
+      letter-spacing:.18em;text-transform:uppercase;
+      color:#8b6f47;
+    }
+    @bottom-left{
+      content:"Maco Equity Partners Research";
+      font-family:'Inter',sans-serif;
+      font-size:7pt;font-weight:400;
+      letter-spacing:.15em;text-transform:uppercase;
+      color:#aaa;
+    }
+    @bottom-right{
+      content:"rmac@macoequitypartners.com";
+      font-family:'Inter',sans-serif;
+      font-size:7pt;font-weight:400;
+      letter-spacing:.12em;
+      color:#aaa;
+    }
+  }
+
+  /* Diagonal confidentiality watermark — repeats on every page */
+  .print-watermark{
+    display:block !important;
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    pointer-events:none;
+    z-index:9999;
+  }
+  .print-watermark::before{
+    content:"Maco Equity Partners  ·  Confidential";
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%) rotate(-30deg);
+    transform-origin:center;
+    font-family:'Cormorant Garamond',Georgia,serif;
+    font-size:5.5rem;
+    font-weight:300;
+    color:#8b6f47;
+    opacity:.06;
+    white-space:nowrap;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
 
   /* Force light background + remove decorative effects so the PDF prints cleanly */
   body{background:#fff !important;color:#1a1a2e !important}
