@@ -18,15 +18,24 @@ node_modules/
 dist/
 build/
 
-# Safety: never accidentally commit business files if they get dropped in
+# Safety: never accidentally commit business files if they get dropped in.
+# Patterns are scoped to file extensions used by business docs so they don't
+# block legitimate public blog post HTML files containing similar words.
 *.xlsx
 *.pptx
 *.docx
-*Investor_Memo*
-*Underwriting*
-*Deal_Pipeline*
-*Deal_Tracker*
-*Waterfall*
+*Investor_Memo*.pdf
+*Investor_Memo*.html
+*Deal_Underwriting*.pdf
+*Deal_Underwriting*.html
+UW_*.html
+UW_*.pdf
+*Deal_Pipeline*.html
+*Deal_Pipeline*.pdf
+*Deal_Tracker*.html
+*Deal_Tracker*.pdf
+*Waterfall*.xlsx
+*Waterfall*.pdf
 *OM*.pdf
 /LLC*
 /Archive*

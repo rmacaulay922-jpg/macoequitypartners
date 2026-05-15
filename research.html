@@ -3,445 +3,223 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Research &amp; Market Reports | Maco Equity Partners</title>
-<meta name="description" content="Institutional-grade market research on South Florida industrial real estate. Quarterly reports covering vacancy, rents, cap rates, supply pipeline, and transaction activity.">
+<title>Research & Market Reports — Maco Equity Partners</title>
+<meta name="description" content="Institutional-grade analysis of South Florida industrial real estate. Vacancy, rents, cap rates, supply pipeline, transactions. The research we use to underwrite our own deals.">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://macoequitypartners.com/research.html">
 <meta property="og:site_name" content="Maco Equity Partners">
 <meta property="og:title" content="Research & Market Reports — Maco Equity Partners">
-<meta property="og:description" content="Institutional-grade analysis of South Florida industrial real estate. Vacancy, rents, cap rates, supply pipeline, transactions. Published quarterly.">
+<meta property="og:description" content="Institutional-grade analysis of South Florida industrial real estate. The research we use to underwrite our own deals.">
 <meta property="og:image" content="https://macoequitypartners.com/logo.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Research & Market Reports — Maco Equity Partners">
-<meta name="twitter:description" content="Institutional-grade analysis of South Florida industrial real estate. Vacancy, rents, cap rates, supply pipeline, transactions. Published quarterly.">
+<meta name="twitter:description" content="The research we use to underwrite our own deals.">
 <meta name="twitter:image" content="https://macoequitypartners.com/logo.jpg">
 
 <script defer data-domain="macoequitypartners.com" src="https://plausible.io/js/script.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 <style>
-  /* Research-specific */
-  .research-intro { padding: 5rem 5vw 3rem; background: var(--white); }
-  .research-intro-grid {
-    max-width: 1180px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
-    align-items: center;
-  }
-  .research-intro p {
-    color: var(--slate); font-weight: 300;
-    font-size: 1.02rem; line-height: 1.75;
-    margin-bottom: 1.2rem;
-  }
+  .research-intro{padding:5rem 5vw 4rem;background:var(--bg);border-bottom:1px solid var(--rule)}
+  .research-intro-inner{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:5vw;align-items:center}
+  .research-intro h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.8rem,3.5vw,2.8rem);line-height:1.15;letter-spacing:-.01em;color:var(--ivory)}
+  .research-intro h2 em{font-style:italic;color:var(--bronze-soft);font-weight:300}
+  .research-intro p{color:var(--ivory-soft);font-weight:300;font-size:1.05rem;line-height:1.75;margin-bottom:1.4rem}
+  .research-intro p a{color:var(--bronze);border-bottom:1px solid var(--rule-bronze);transition:border-color .3s}
+  .research-intro p a:hover{border-color:var(--bronze)}
 
-  .kpi-section { padding: 2rem 5vw 4rem; }
-  .kpi-section .kpi-strip { max-width: 1180px; margin: 0 auto; }
-  .kpi-source {
-    max-width: 1180px; margin: 1rem auto 0;
-    font-size: 0.78rem; color: var(--muted); text-align: right;
-    letter-spacing: 0.04em;
-  }
+  .kpi-section{padding:5rem 5vw 6rem;background:var(--bg)}
+  .kpi-band{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .kpi{padding:2.5rem 1.8rem;border-right:1px solid var(--rule);position:relative}
+  .kpi:last-child{border-right:none}
+  .kpi-label{font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;color:var(--bronze);font-weight:500;margin-bottom:1rem}
+  .kpi-value{font-family:'Cormorant Garamond',serif;font-size:clamp(2.4rem,4vw,3.6rem);font-weight:300;color:var(--ivory);letter-spacing:-.015em;line-height:1;margin-bottom:.6rem}
+  .kpi-delta{font-size:.78rem;color:var(--bronze);font-weight:400;letter-spacing:.04em}
+  .kpi-delta.down{color:#c97a6a}
+  .kpi-source{max-width:var(--container);margin:1.2rem auto 0;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-align:right}
 
-  .reports-section { padding: 4rem 5vw 6rem; background: var(--cream); }
-  .reports-header {
-    max-width: 1180px; margin: 0 auto 3.5rem;
-    display: grid; grid-template-columns: 1fr auto;
-    gap: 2rem; align-items: end;
-  }
-  .filter-bar {
-    display: flex; gap: 0.5rem; flex-wrap: wrap;
-  }
-  .filter-chip {
-    padding: 0.5rem 1rem;
-    font-size: 0.78rem; font-weight: 500;
-    letter-spacing: 0.04em;
-    border: 1px solid var(--line);
-    border-radius: 100px;
-    background: var(--white);
-    color: var(--slate);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .filter-chip.active, .filter-chip:hover {
-    background: var(--ink); color: var(--white); border-color: var(--ink);
-  }
+  .reports{padding:8rem 5vw 9rem;background:var(--bg-deep);border-top:1px solid var(--rule)}
+  .reports-head{max-width:var(--container);margin:0 auto 5rem;text-align:center}
+  .reports-head h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2.2rem,4.5vw,4rem);line-height:1.1;letter-spacing:-.01em;color:var(--ivory)}
+  .reports-head h2 em{font-style:italic;color:var(--bronze-soft);font-weight:300}
+  .reports-list{max-width:var(--container-narrow);margin:0 auto;border-top:1px solid var(--rule)}
+  .report-item{display:grid;grid-template-columns:auto 1fr auto;gap:3vw;padding:3rem 0;border-bottom:1px solid var(--rule);transition:padding .4s ease;align-items:center}
+  .report-item:hover{padding-left:1rem;padding-right:1rem}
+  .report-num{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--bronze)}
+  .report-body h3{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:400;color:var(--ivory);margin-bottom:.7rem;line-height:1.15;letter-spacing:-.005em}
+  .report-body p{font-size:.98rem;color:var(--ivory-soft);line-height:1.65;font-weight:300;max-width:620px;margin-bottom:1rem}
+  .report-meta{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
+  .report-cta{font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;color:var(--bronze);transition:color .3s}
+  .report-item:hover .report-cta{color:var(--bronze-soft)}
 
-  .reports-grid {
-    max-width: 1180px; margin: 0 auto;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
-  }
-  .report-card {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex; flex-direction: column;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-decoration: none; color: inherit;
-  }
-  .report-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-  }
-  .report-card-img {
-    height: 180px; overflow: hidden;
-    background: var(--ink);
-    position: relative;
-  }
-  .report-card-img img {
-    width: 100%; height: 100%; object-fit: cover;
-    opacity: 0.85;
-    transition: transform 0.5s ease, opacity 0.3s ease;
-  }
-  .report-card:hover .report-card-img img {
-    transform: scale(1.04); opacity: 1;
-  }
-  .report-card-quarter {
-    position: absolute; top: 1rem; left: 1rem;
-    background: rgba(255,255,255,0.95);
-    color: var(--ink);
-    font-size: 0.68rem; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    padding: 0.35rem 0.75rem;
-    border-radius: 100px;
-  }
-  .report-card-body {
-    padding: 1.8rem;
-    flex: 1; display: flex; flex-direction: column;
-  }
-  .report-card-cat {
-    font-size: 0.68rem; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 0.7rem;
-  }
-  .report-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem; font-weight: 500;
-    color: var(--ink); line-height: 1.3;
-    margin-bottom: 0.8rem;
-    letter-spacing: -0.005em;
-  }
-  .report-card p {
-    font-size: 0.9rem; color: var(--slate);
-    font-weight: 300; line-height: 1.65;
-    margin-bottom: 1.3rem; flex: 1;
-  }
-  .report-card-meta {
-    display: flex; flex-wrap: wrap; gap: 0.4rem;
-    margin-bottom: 1.3rem;
-  }
-  .meta-tag {
-    font-size: 0.68rem; font-weight: 500;
-    letter-spacing: 0.06em;
-    color: var(--slate);
-    background: var(--paper);
-    padding: 0.3rem 0.7rem;
-    border-radius: 4px;
-    border: 1px solid var(--line);
-  }
-  .report-card-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    padding-top: 1.2rem;
-    border-top: 1px solid var(--line);
-  }
-  .report-card-footer .text-link { font-size: 0.78rem; }
-  .report-card-footer .pages {
-    font-size: 0.72rem; color: var(--muted);
-    letter-spacing: 0.06em;
-  }
+  .coverage{padding:8rem 5vw 9rem;background:var(--bg);border-top:1px solid var(--rule)}
+  .coverage-grid{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.5fr;gap:5vw}
+  .coverage-list{display:grid;grid-template-columns:1fr 1fr;gap:0;align-self:start}
+  .coverage-item{padding:1.8rem 1.5rem 1.8rem 0;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .coverage-item:nth-child(even){padding-left:1.5rem;padding-right:0;border-right:none}
+  .coverage-item:nth-last-child(-n+2){border-bottom:none}
+  .coverage-item h4{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:500;color:var(--ivory);margin-bottom:.4rem}
+  .coverage-item p{font-size:.9rem;color:var(--ivory-soft);font-weight:300;line-height:1.6}
+  .coverage-text p{color:var(--ivory-soft);font-weight:300;line-height:1.75;font-size:1.05rem;margin-top:1rem}
 
-  /* Coverage section */
-  .coverage { padding: 6rem 5vw; background: var(--white); }
-  .coverage-grid {
-    max-width: 1180px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 2fr;
-    gap: 4rem;
-  }
-  .coverage-list {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-    align-self: start;
-  }
-  .coverage-item {
-    padding: 1.5rem 1.5rem 1.5rem 0;
-    border-bottom: 1px solid var(--line);
-    border-right: 1px solid var(--line);
-  }
-  .coverage-item:nth-child(even) { padding-left: 1.5rem; padding-right: 0; border-right: none; }
-  .coverage-item:nth-last-child(-n+2) { border-bottom: none; }
-  .coverage-item h4 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem; font-weight: 500;
-    color: var(--ink); margin-bottom: 0.4rem;
-  }
-  .coverage-item p {
-    font-size: 0.88rem; color: var(--slate);
-    font-weight: 300; line-height: 1.6;
-  }
+  .methodology{padding:7rem 5vw 7rem;background:var(--bg-deep);border-top:1px solid var(--rule)}
+  .method-grid{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.5fr;gap:5vw}
+  .methodology p{color:var(--ivory-soft);font-weight:300;line-height:1.8;font-size:1.05rem;margin-bottom:1.5rem}
+  .source-list{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:1.8rem}
+  .source-list span{font-size:.85rem;color:var(--ivory-soft);padding:.7rem 1rem;border:1px solid var(--rule);font-weight:300;letter-spacing:.02em}
 
-  /* Methodology */
-  .methodology {
-    padding: 5rem 5vw;
-    background: var(--ink); color: var(--white);
-    position: relative; overflow: hidden;
-  }
-  .methodology::before {
-    content: ''; position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse at top left, rgba(45,95,74,0.18) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom right, rgba(45,95,74,0.1) 0%, transparent 60%);
-  }
-  .methodology > * { position: relative; }
-  .method-grid {
-    max-width: 1180px; margin: 0 auto;
-    display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem;
-  }
-  .methodology .eyebrow { color: rgba(255,255,255,0.6); }
-  .methodology .eyebrow::before { background: rgba(255,255,255,0.35); }
-  .methodology .section-title { color: var(--white); }
-  .methodology p {
-    color: rgba(255,255,255,0.7);
-    font-weight: 300; line-height: 1.75;
-    font-size: 0.98rem;
-  }
-  .source-list {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
-    margin-top: 1.5rem;
-  }
-  .source-list span {
-    font-size: 0.85rem; color: rgba(255,255,255,0.75);
-    padding: 0.55rem 0.9rem;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 6px;
-  }
+  .subscribe{padding:7rem 5vw;background:var(--bg);border-top:1px solid var(--rule)}
+  .subscribe-card{max-width:680px;margin:0 auto;text-align:center}
+  .subscribe-card h3{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:300;color:var(--ivory);margin-bottom:1rem;letter-spacing:-.005em}
+  .subscribe-card h3 em{font-style:italic;color:var(--bronze-soft)}
+  .subscribe-card p{font-size:1rem;color:var(--ivory-soft);font-weight:300;margin:0 auto 2.5rem;max-width:480px;line-height:1.65}
+  .subscribe-form{display:flex;gap:.6rem;max-width:520px;margin:0 auto;flex-wrap:wrap;border-bottom:1px solid var(--rule-strong);padding-bottom:.5rem}
+  .subscribe-form input{flex:1;min-width:220px;padding:.9rem 0;border:none;background:transparent;font-family:inherit;font-size:1rem;color:var(--ivory);font-weight:300;outline:none}
+  .subscribe-form input::placeholder{color:var(--faint)}
+  .subscribe-form button{background:transparent;border:none;color:var(--bronze);font-family:inherit;cursor:pointer;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;padding:.9rem 1rem;transition:color .3s}
+  .subscribe-form button:hover{color:var(--bronze-soft)}
 
-  /* Subscribe */
-  .subscribe { padding: 5rem 5vw; background: var(--cream); }
-  .subscribe-card {
-    max-width: 720px; margin: 0 auto;
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 3.5rem;
-    text-align: center;
-  }
-  .subscribe-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.8rem; font-weight: 500;
-    color: var(--ink); margin-bottom: 0.8rem;
-    letter-spacing: -0.005em;
-  }
-  .subscribe-card p {
-    font-size: 1rem; color: var(--slate);
-    font-weight: 300; max-width: 480px;
-    margin: 0 auto 2rem;
-  }
-  .subscribe-form {
-    display: flex; gap: 0.6rem; max-width: 480px;
-    margin: 0 auto; flex-wrap: wrap;
-  }
-  .subscribe-form input {
-    flex: 1; min-width: 220px;
-    padding: 0.9rem 1.1rem;
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    font-size: 0.95rem; font-family: inherit;
-    outline: none;
-    transition: border-color 0.2s ease;
-  }
-  .subscribe-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .disclaimer-section{padding:3rem 5vw 4rem;background:var(--bg-deep);border-top:1px solid var(--rule)}
+  .disclaimer-section p{max-width:var(--container);margin:0 auto;font-size:.78rem;color:var(--muted);line-height:1.7;font-weight:300}
+  .disclaimer-section p + p{margin-top:.7rem}
+  .disclaimer-section a{color:var(--bronze)}
 
-  /* Disclaimer */
-  .disclaimer-section {
-    padding: 3rem 5vw;
-    background: var(--white);
-    border-top: 1px solid var(--line);
-  }
-  .disclaimer-section p {
-    max-width: 1180px; margin: 0 auto;
-    font-size: 0.78rem; color: var(--muted);
-    line-height: 1.7;
-  }
-  .disclaimer-section p + p { margin-top: 0.7rem; }
-
-  @media (max-width: 960px) {
-    .research-intro-grid { grid-template-columns: 1fr; gap: 2rem; }
-    .reports-header { grid-template-columns: 1fr; }
-    .reports-grid { grid-template-columns: 1fr; }
-    .coverage-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-    .coverage-list { grid-template-columns: 1fr; }
-    .coverage-item, .coverage-item:nth-child(even) {
-      padding: 1.25rem 0; border-right: none;
-    }
-    .method-grid { grid-template-columns: 1fr; gap: 2rem; }
-    .source-list { grid-template-columns: 1fr; }
-    .subscribe-card { padding: 2.5rem 1.5rem; }
+  @media(max-width:960px){
+    .research-intro-inner{grid-template-columns:1fr;gap:2.5rem}
+    .kpi-band{grid-template-columns:repeat(2,1fr)}
+    .kpi:nth-child(2){border-right:none}
+    .kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+    .report-item{grid-template-columns:auto 1fr;gap:1.5rem}
+    .report-cta{display:none}
+    .coverage-grid{grid-template-columns:1fr;gap:3rem}
+    .coverage-list{grid-template-columns:1fr}
+    .coverage-item,.coverage-item:nth-child(even){padding:1.5rem 0;border-right:none}
+    .method-grid{grid-template-columns:1fr;gap:2.5rem}
+    .source-list{grid-template-columns:1fr}
   }
 </style>
 </head>
 <body>
 
-<nav class="nav">
+<nav class="nav" id="nav">
   <a href="index.html" class="nav-logo">
     <img src="logo.jpg" alt="Maco Equity Partners logo">
-    <span class="text">Maco <span class="accent">Equity</span> Partners</span>
+    <span class="text">Maco <span class="accent">·</span> Equity Partners</span>
   </a>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="this.classList.toggle('open'); this.parentElement.querySelector('.nav-links').classList.toggle('open'); this.setAttribute('aria-expanded', this.classList.contains('open'));">
     <span></span><span></span><span></span>
   </button>
   <ul class="nav-links">
-    <li><a href="index.html#about">About</a></li>
-    <li><a href="index.html#focus">Focus</a></li>
+    <li><a href="index.html#disciplines">Disciplines</a></li>
+    <li><a href="index.html#network">Network</a></li>
     <li><a href="index.html#approach">Approach</a></li>
     <li><a href="research.html" class="active">Research</a></li>
-    <li><a href="blog.html">Blog</a></li>
-    <li><a href="index.html#contact" class="nav-cta">Contact</a></li>
+    <li><a href="blog.html">Journal</a></li>
+    <li><a href="index.html#contact" class="nav-cta">Enquire</a></li>
   </ul>
 </nav>
 
 <section class="page-hero">
-  <span class="eyebrow">Market Intelligence</span>
-  <h1>Research &amp; Market Reports.</h1>
-  <p>Institutional-grade analysis of South Florida industrial real estate — vacancy, rents, cap rates, transaction volume, and the supply pipeline. Published quarterly.</p>
+  <div class="page-hero-inner">
+    <span class="eyebrow">Market Intelligence</span>
+    <h1>Research &amp; <em>Market Reports.</em></h1>
+    <p>Institutional-grade analysis of South Florida industrial real estate. Vacancy, rents, cap rates, supply pipeline, and transaction activity. Published quarterly — and used to underwrite every deal we close.</p>
+  </div>
 </section>
 
 <section class="research-intro">
-  <div class="research-intro-grid">
+  <div class="research-intro-inner">
     <div>
-      <span class="eyebrow">From the desk</span>
-      <h2 class="section-title">Data we use to make our own decisions.</h2>
+      <span class="eyebrow">From the Desk</span>
+      <h2>The research we use to <em>underwrite our own deals.</em></h2>
     </div>
     <div>
-      <p>Every report on this page is produced by the same research function that underwrites Maco Equity Partners' own deals. We publish the analysis we'd want to see ourselves: rigorous, sourced, and free from the marketing varnish that fills most broker quarterlies.</p>
-      <p>If you'd like the underlying data, a custom cut by submarket, or a conversation about how these dynamics apply to your portfolio — <a href="index.html#contact" style="color: var(--accent); font-weight: 500;">get in touch</a>.</p>
+      <p>Every report on this page is produced by the same research function that underwrites every Maco Equity Partners acquisition. We don't publish marketing varnish or broker-quarterly fluff. We publish the analysis we'd want to see ourselves — rigorous, sourced, and unsentimental.</p>
+      <p>If you'd like the underlying data, a custom cut by submarket, or to discuss how these dynamics apply to a specific deal — <a href="index.html#contact">get in touch</a>.</p>
     </div>
   </div>
 </section>
 
 <section class="kpi-section">
-  <div class="kpi-strip">
+  <div class="kpi-band">
     <div class="kpi">
-      <div class="kpi-value">6.9%</div>
       <div class="kpi-label">Tri-County Vacancy</div>
-      <div class="kpi-delta down">+40 bps QoQ</div>
+      <div class="kpi-value">6.9%</div>
+      <div class="kpi-delta down">↑ 40 bps QoQ</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value">$16.74</div>
       <div class="kpi-label">Avg Asking Rent NNN</div>
-      <div class="kpi-delta">+1.2% QoQ</div>
+      <div class="kpi-value">$16.74</div>
+      <div class="kpi-delta">↑ 1.2% QoQ</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value">4.2M SF</div>
       <div class="kpi-label">Under Construction</div>
-      <div class="kpi-delta down">−8% QoQ</div>
+      <div class="kpi-value">4.2M<span style="font-size:.5em;color:var(--muted);margin-left:.15em"> SF</span></div>
+      <div class="kpi-delta down">↓ 8% QoQ</div>
     </div>
     <div class="kpi">
-      <div class="kpi-value">6.3%</div>
       <div class="kpi-label">Avg Cap Rate</div>
-      <div class="kpi-delta">−20 bps QoQ</div>
+      <div class="kpi-value">6.3%</div>
+      <div class="kpi-delta">↓ 20 bps QoQ</div>
     </div>
   </div>
-  <div class="kpi-source">Maco Equity Partners Research, Q1 2026. Sources: CoStar, Colliers, JLL, CBRE EA.</div>
+  <div class="kpi-source">Maco Equity Partners Research · Q1 2026 · Sources: CoStar, Colliers, JLL, CBRE EA</div>
 </section>
 
-<section class="reports-section">
-  <div class="reports-header">
-    <div>
-      <span class="eyebrow">Q1 2026 Reports</span>
-      <h2 class="section-title">South Florida Industrial.</h2>
-    </div>
-    <div class="filter-bar">
-      <button class="filter-chip active">All</button>
-      <button class="filter-chip">Market Overview</button>
-      <button class="filter-chip">Transactions</button>
-      <button class="filter-chip">Supply</button>
-    </div>
+<section class="reports">
+  <div class="reports-head">
+    <span class="eyebrow bookend">Q1 2026 Reports</span>
+    <h2>South Florida Industrial.</h2>
   </div>
-
-  <div class="reports-grid">
-    <a href="Q1_2026_SFL_Industrial_Overview.html" class="report-card">
-      <div class="report-card-img">
-        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=85" alt="South Florida industrial market">
-        <span class="report-card-quarter">Q1 2026</span>
-      </div>
-      <div class="report-card-body">
-        <div class="report-card-cat">Market Overview</div>
+  <div class="reports-list">
+    <a href="Q1_2026_SFL_Industrial_Overview.html" class="report-item">
+      <div class="report-num">I.</div>
+      <div class="report-body">
         <h3>South Florida Industrial Market Overview</h3>
         <p>Comprehensive analysis of the Tri-County industrial market: vacancy trends, rental rate movement, net absorption, capital markets activity, and submarket performance.</p>
-        <div class="report-card-meta">
-          <span class="meta-tag">Vacancy</span>
-          <span class="meta-tag">Rents</span>
-          <span class="meta-tag">Cap Rates</span>
-          <span class="meta-tag">Absorption</span>
-        </div>
-        <div class="report-card-footer">
-          <span class="text-link">Read report
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
-          <span class="pages">24 pages</span>
+        <div class="report-meta">
+          <span>Vacancy</span><span>Rents</span><span>Cap Rates</span><span>Absorption</span>
         </div>
       </div>
+      <div class="report-cta">Read →</div>
     </a>
-
-    <a href="Q1_2026_Small_Bay_Deals.html" class="report-card">
-      <div class="report-card-img">
-        <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=85" alt="Small bay industrial">
-        <span class="report-card-quarter">Q1 2026</span>
-      </div>
-      <div class="report-card-body">
-        <div class="report-card-cat">Transactions</div>
+    <a href="Q1_2026_Small_Bay_Deals.html" class="report-item">
+      <div class="report-num">II.</div>
+      <div class="report-body">
         <h3>Small-Bay Industrial Deal Activity</h3>
         <p>Transaction-level analysis of small-bay sales across South Florida. Deal spotlights, cap rate trends, price-per-SF benchmarking, and small-bay vs. big-box comparison.</p>
-        <div class="report-card-meta">
-          <span class="meta-tag">Transactions</span>
-          <span class="meta-tag">Small-Bay</span>
-          <span class="meta-tag">Pricing</span>
-        </div>
-        <div class="report-card-footer">
-          <span class="text-link">Read report
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
-          <span class="pages">18 pages</span>
+        <div class="report-meta">
+          <span>Transactions</span><span>Small-Bay</span><span>Pricing</span>
         </div>
       </div>
+      <div class="report-cta">Read →</div>
     </a>
-
-    <a href="Q1_2026_New_Industrial_Supply.html" class="report-card">
-      <div class="report-card-img">
-        <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=85" alt="Industrial construction">
-        <span class="report-card-quarter">Q1 2026</span>
-      </div>
-      <div class="report-card-body">
-        <div class="report-card-cat">Supply Pipeline</div>
+    <a href="Q1_2026_New_Industrial_Supply.html" class="report-item">
+      <div class="report-num">III.</div>
+      <div class="report-body">
         <h3>New Industrial Supply Pipeline</h3>
-        <p>Analysis of the SFL construction pipeline, Q1 deliveries, pre-lease rates by county, and implications for vacancy and rent trajectory through year-end.</p>
-        <div class="report-card-meta">
-          <span class="meta-tag">Construction</span>
-          <span class="meta-tag">Pipeline</span>
-          <span class="meta-tag">Deliveries</span>
-        </div>
-        <div class="report-card-footer">
-          <span class="text-link">Read report
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
-          <span class="pages">16 pages</span>
+        <p>Analysis of the South Florida construction pipeline, Q1 deliveries, pre-lease rates by county, and implications for vacancy and rent trajectory through year-end.</p>
+        <div class="report-meta">
+          <span>Construction</span><span>Pipeline</span><span>Deliveries</span>
         </div>
       </div>
+      <div class="report-cta">Read →</div>
     </a>
   </div>
 </section>
 
 <section class="coverage">
   <div class="coverage-grid">
-    <div>
-      <span class="eyebrow">Coverage universe</span>
-      <h2 class="section-title">What we track.</h2>
-      <p style="color: var(--slate); font-weight: 300; line-height: 1.75; margin-top: 1rem;">Our research focuses on the South Florida industrial corridor — the densest, supply-constrained logistics market in the Southeast. We cover transaction activity, supply, and capital markets across six core submarkets.</p>
+    <div class="coverage-text">
+      <span class="eyebrow">Coverage Universe</span>
+      <h2 class="section-title">What we <em>track.</em></h2>
+      <p>Our research focuses on the South Florida industrial corridor — the densest, most supply-constrained logistics market in the Southeast. We cover transaction activity, supply, and capital markets across six core submarkets.</p>
     </div>
     <div class="coverage-list">
       <div class="coverage-item">
@@ -476,7 +254,7 @@
   <div class="method-grid">
     <div>
       <span class="eyebrow">Methodology</span>
-      <h2 class="section-title">Sources &amp; rigor.</h2>
+      <h2 class="section-title">Sources &amp; <em>rigor.</em></h2>
     </div>
     <div>
       <p>Market data is triangulated from multiple institutional sources to mitigate vendor-specific bias. We disclose every dataset, time series, and definition. Where we estimate, we say so. Where we project, we publish the assumptions.</p>
@@ -496,8 +274,8 @@
 
 <section class="subscribe">
   <div class="subscribe-card">
-    <span class="eyebrow" style="justify-content: center; display: flex;">Quarterly research</span>
-    <h3>Get reports in your inbox.</h3>
+    <span class="eyebrow bookend">Quarterly Research</span>
+    <h3>Get reports in <em>your inbox.</em></h3>
     <p>New research drops the first week of each quarter. No spam — just the data and commentary we'd want to see ourselves.</p>
     <form class="subscribe-form" action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST">
       <input type="hidden" name="_subject" value="New research subscriber">
@@ -505,38 +283,36 @@
       <input type="hidden" name="_next" value="https://macoequitypartners.com/research.html?subscribed=1">
       <input type="text" name="_honey" style="display:none">
       <input type="email" name="email" placeholder="your@email.com" required>
-      <button type="submit" class="btn btn-primary">Subscribe
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </button>
+      <button type="submit">Subscribe →</button>
     </form>
   </div>
 </section>
 
 <section class="disclaimer-section">
-  <p><strong style="color: var(--slate);">Disclaimer.</strong> This research is for informational purposes only and does not constitute investment advice, a solicitation, or an offer to buy or sell any security or interest. Past performance is not indicative of future results.</p>
-  <p>Prepared by Maco Equity Partners Research. Inquiries: <a href="mailto:rmac@macoequitypartners.com" style="color: var(--accent);">rmac@macoequitypartners.com</a>. macoequitypartners.com</p>
+  <p><strong style="color:var(--ivory-soft)">Disclaimer.</strong> This research is for informational purposes only and does not constitute investment advice, a solicitation, or an offer to buy or sell any security or interest. Past performance is not indicative of future results.</p>
+  <p>Prepared by Maco Equity Partners Research. Inquiries: <a href="mailto:rmac@macoequitypartners.com">rmac@macoequitypartners.com</a> · macoequitypartners.com</p>
 </section>
 
 <footer class="footer">
   <div class="footer-grid">
     <div class="footer-brand">
-      <span class="footer-logo">Maco Equity Partners</span>
-      <p>Private equity and asset management. A decade of disciplined investment across real estate, growth equity, and small-business acquisitions.</p>
+      <span class="footer-logo">Maco <span class="accent">·</span> Equity Partners</span>
+      <p>A value-add real estate and private equity firm. We underwrite, we execute, we exit — delivering realized returns to our investors.</p>
     </div>
     <div class="footer-col">
       <h4>Firm</h4>
       <ul>
-        <li><a href="index.html#about">About</a></li>
-        <li><a href="index.html#focus">Investment focus</a></li>
-        <li><a href="index.html#approach">Process</a></li>
-        <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="index.html#disciplines">Disciplines</a></li>
+        <li><a href="index.html#network">Network</a></li>
+        <li><a href="index.html#approach">Approach</a></li>
+        <li><a href="index.html#contact">Enquire</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Research</h4>
       <ul>
         <li><a href="research.html">Market reports</a></li>
-        <li><a href="blog.html">Blog</a></li>
+        <li><a href="blog.html">Journal</a></li>
         <li><a href="Q1_2026_SFL_Industrial_Overview.html">SFL Industrial Q1</a></li>
         <li><a href="Q1_2026_Small_Bay_Deals.html">Small-Bay Deals</a></li>
       </ul>
@@ -550,7 +326,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; 2026 Maco Equity Partners. All rights reserved.</span>
+    <span>© 2026 Maco Equity Partners · South Florida · By appointment</span>
     <div class="meta">
       <a href="#">Privacy</a>
       <a href="#">Terms</a>
@@ -558,6 +334,14 @@
     </div>
   </div>
 </footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 60) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  });
+</script>
 
 </body>
 </html>

@@ -3,312 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Insights | Maco Equity Partners</title>
-<meta name="description" content="Market commentary, deal analysis, and thought leadership from the Maco Equity Partners team. Insights on South Florida industrial real estate, growth equity, and operational value creation.">
+<title>The Journal — Maco Equity Partners</title>
+<meta name="description" content="Market commentary, deal analysis, and operational notes from the Maco Equity Partners team. The diligence behind the deals we close — and the ones we walk away from.">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://macoequitypartners.com/blog.html">
 <meta property="og:site_name" content="Maco Equity Partners">
-<meta property="og:title" content="The Blog — Maco Equity Partners">
-<meta property="og:description" content="Market commentary, deal analysis, and thought leadership on South Florida industrial real estate and private equity.">
+<meta property="og:title" content="The Journal — Maco Equity Partners">
+<meta property="og:description" content="Market commentary, deal analysis, and operational notes.">
 <meta property="og:image" content="https://macoequitypartners.com/logo.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The Blog — Maco Equity Partners">
-<meta name="twitter:description" content="Market commentary, deal analysis, and thought leadership on South Florida industrial real estate and private equity.">
+<meta name="twitter:title" content="The Journal — Maco Equity Partners">
+<meta name="twitter:description" content="Market commentary, deal analysis, and operational notes.">
 <meta name="twitter:image" content="https://macoequitypartners.com/logo.jpg">
 
 <script defer data-domain="macoequitypartners.com" src="https://plausible.io/js/script.js"></script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
-<link rel="stylesheet" href="styles.css?v=4">
+<link rel="stylesheet" href="styles.css?v=5">
 <style>
-  /* Featured */
-  .featured-section {
-    padding: 5rem 5vw 4rem;
-    background: var(--white);
-  }
-  .featured {
-    max-width: 1180px; margin: 0 auto;
-    display: grid; grid-template-columns: 1.2fr 1fr;
-    gap: 4rem;
-    align-items: center;
-    padding-bottom: 4rem;
-    border-bottom: 1px solid var(--line);
-  }
-  .featured-image {
-    aspect-ratio: 4/3;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    box-shadow: var(--shadow-md);
-  }
-  .featured-image img {
-    width: 100%; height: 100%; object-fit: cover;
-    transition: transform 0.6s ease;
-  }
-  .featured:hover .featured-image img { transform: scale(1.03); }
-  .featured-image .badge {
-    position: absolute; top: 1.2rem; left: 1.2rem;
-    background: var(--accent);
-    color: var(--white);
-    font-size: 0.66rem; font-weight: 600;
-    letter-spacing: 0.15em; text-transform: uppercase;
-    padding: 0.4rem 0.9rem;
-    border-radius: 100px;
-  }
-  .featured-meta {
-    display: flex; gap: 1rem; align-items: center;
-    margin-bottom: 1.2rem;
-    font-size: 0.72rem; letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-  .featured-meta-cat { color: var(--accent); font-weight: 600; }
-  .featured-meta-date { color: var(--muted); }
-  .featured-meta-read { color: var(--muted); }
-  .featured-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.7rem, 3vw, 2.4rem);
-    font-weight: 500;
-    color: var(--ink);
-    line-height: 1.2;
-    margin-bottom: 1.2rem;
-    letter-spacing: -0.01em;
-  }
-  .featured-excerpt {
-    font-size: 1.02rem;
-    color: var(--slate);
-    font-weight: 300;
-    line-height: 1.7;
-    margin-bottom: 2rem;
-  }
-  .featured-author {
-    display: flex; align-items: center; gap: 0.8rem;
-    margin-bottom: 1.5rem;
-  }
-  .author-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-    display: flex; align-items: center; justify-content: center;
-    color: var(--white);
-    font-family: 'Playfair Display', serif;
-    font-weight: 600;
-    font-size: 0.85rem;
-  }
-  .author-info { font-size: 0.85rem; }
-  .author-info strong { color: var(--ink); font-weight: 500; display: block; }
-  .author-info span { color: var(--muted); font-size: 0.78rem; }
+  .featured-section{padding:6rem 5vw 5rem;background:var(--bg);border-bottom:1px solid var(--rule)}
+  .featured-inner{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.1fr;gap:5vw;align-items:center}
+  .featured-image{aspect-ratio:5/4;overflow:hidden;position:relative;border:1px solid var(--rule)}
+  .featured-image img{width:100%;height:100%;object-fit:cover;filter:saturate(.75);transition:transform 1s ease}
+  .featured-image:hover img{transform:scale(1.04)}
+  .featured-image .badge{position:absolute;top:1.2rem;left:1.2rem;background:var(--bronze);color:var(--bg);font-size:.6rem;font-weight:600;letter-spacing:.3em;text-transform:uppercase;padding:.45rem .9rem;z-index:2}
+  .featured-meta{display:flex;gap:1.1rem;align-items:center;margin-bottom:1.6rem;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase}
+  .featured-meta-cat{color:var(--bronze);font-weight:500}
+  .featured-meta-date{color:var(--muted)}
+  .featured-meta-read{color:var(--muted)}
+  .featured-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.4rem);font-weight:400;color:var(--ivory);line-height:1.1;margin-bottom:1.8rem;letter-spacing:-.01em}
+  .featured-title em{font-style:italic;color:var(--bronze-soft)}
+  .featured-excerpt{font-size:1.08rem;color:var(--ivory-soft);font-weight:300;line-height:1.7;margin-bottom:2.5rem}
+  .featured-author{display:flex;align-items:center;gap:1rem;margin-bottom:2rem}
+  .author-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--bronze),var(--bronze-deep));display:flex;align-items:center;justify-content:center;color:var(--bg);font-family:'Cormorant Garamond',serif;font-weight:600;font-size:.85rem}
+  .author-info strong{color:var(--ivory);font-weight:500;display:block;font-size:.95rem;margin-bottom:.15rem}
+  .author-info span{color:var(--muted);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase}
 
-  /* Categories filter */
-  .filters-bar {
-    max-width: 1180px; margin: 0 auto;
-    padding: 0 5vw;
-    display: flex; justify-content: space-between; align-items: end;
-    gap: 2rem; flex-wrap: wrap;
-    margin-bottom: 2.5rem;
-  }
-  .filter-chips {
-    display: flex; gap: 0.5rem; flex-wrap: wrap;
-  }
-  .chip {
-    padding: 0.5rem 1rem;
-    font-size: 0.78rem; font-weight: 500;
-    letter-spacing: 0.04em;
-    border: 1px solid var(--line);
-    border-radius: 100px;
-    background: var(--white);
-    color: var(--slate);
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .chip.active, .chip:hover {
-    background: var(--ink); color: var(--white); border-color: var(--ink);
-  }
+  .filters-bar{max-width:var(--container);margin:0 auto;padding:5rem 5vw 2.5rem;display:flex;justify-content:space-between;align-items:end;gap:2rem;flex-wrap:wrap}
+  .filter-head h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(2rem,4vw,3.4rem);line-height:1;letter-spacing:-.01em;color:var(--ivory);margin-bottom:0;margin-top:.5rem}
+  .filter-head h2 em{font-style:italic;color:var(--bronze-soft)}
+  .filter-chips{display:flex;gap:.5rem;flex-wrap:wrap}
+  .chip{padding:.55rem 1.1rem;font-size:.62rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;border:1px solid var(--rule-strong);background:transparent;color:var(--ivory-soft);cursor:pointer;transition:all .3s ease;font-family:inherit}
+  .chip.active,.chip:hover{background:var(--bronze);color:var(--bg);border-color:var(--bronze)}
 
-  /* Posts grid */
-  .posts-section { padding: 0 5vw 5rem; background: var(--white); }
-  .posts-grid {
-    max-width: 1180px; margin: 0 auto;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
-  }
-  .post-card {
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    overflow: hidden;
-    display: flex; flex-direction: column;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-decoration: none; color: inherit;
-  }
-  .post-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-md);
-  }
-  .post-card-img {
-    height: 200px; overflow: hidden;
-    position: relative;
-  }
-  .post-card-img img {
-    width: 100%; height: 100%; object-fit: cover;
-    transition: transform 0.5s ease;
-  }
-  .post-card:hover .post-card-img img { transform: scale(1.05); }
-  .post-card-cat-tag {
-    position: absolute; top: 1rem; left: 1rem;
-    background: rgba(255,255,255,0.95);
-    color: var(--ink);
-    font-size: 0.65rem; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    padding: 0.35rem 0.8rem;
-    border-radius: 100px;
-  }
-  .post-card-body {
-    padding: 1.8rem;
-    flex: 1; display: flex; flex-direction: column;
-  }
-  .post-card-meta {
-    display: flex; gap: 0.8rem; align-items: center;
-    margin-bottom: 0.8rem;
-    font-size: 0.7rem; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--muted);
-  }
-  .post-card-meta .dot { width: 3px; height: 3px; background: var(--soft); border-radius: 50%; }
-  .post-card h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.2rem; font-weight: 500;
-    color: var(--ink); line-height: 1.3;
-    margin-bottom: 0.8rem;
-    letter-spacing: -0.005em;
-  }
-  .post-card p {
-    font-size: 0.92rem; color: var(--slate);
-    font-weight: 300; line-height: 1.65;
-    margin-bottom: 1.3rem; flex: 1;
-  }
-  .post-card .text-link { font-size: 0.78rem; margin-top: auto; }
+  .posts-section{padding:0 5vw 8rem;background:var(--bg)}
+  .posts-list{max-width:var(--container);margin:0 auto;border-top:1px solid var(--rule)}
+  .post-row{display:grid;grid-template-columns:auto 1fr 2fr auto;gap:3vw;padding:3.5rem 0;border-bottom:1px solid var(--rule);transition:padding .4s ease;align-items:center}
+  .post-row:hover{padding-left:1rem;padding-right:1rem}
+  .post-row-num{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--bronze);min-width:60px}
+  .post-row-cat{font-size:.62rem;font-weight:500;letter-spacing:.32em;text-transform:uppercase;color:var(--bronze)}
+  .post-row-cat .date{display:block;color:var(--muted);font-weight:400;margin-top:.4rem}
+  .post-row-title h3{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(1.4rem,2.4vw,1.9rem);color:var(--ivory);line-height:1.2;margin-bottom:.8rem;letter-spacing:-.005em}
+  .post-row-title h3 em{font-style:italic;color:var(--bronze-soft)}
+  .post-row-title p{font-size:.95rem;color:var(--ivory-soft);font-weight:300;line-height:1.65;max-width:580px}
+  .post-row-cta{font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;color:var(--bronze);transition:color .3s;text-align:right}
+  .post-row:hover .post-row-cta{color:var(--bronze-soft)}
 
-  /* Editorial section */
-  .editorial {
-    padding: 6rem 5vw;
-    background: var(--cream);
-  }
-  .editorial-inner {
-    max-width: 820px; margin: 0 auto;
-    text-align: center;
-  }
-  .editorial blockquote {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.4rem, 2.5vw, 2rem);
-    color: var(--ink);
-    font-style: italic;
-    font-weight: 400;
-    line-height: 1.4;
-    margin: 2rem 0;
-    letter-spacing: -0.005em;
-  }
-  .editorial-attribution {
-    font-size: 0.78rem;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
+  .editorial{padding:9rem 5vw;background:var(--bg-deep);border-top:1px solid var(--rule);text-align:center}
+  .editorial-inner{max-width:900px;margin:0 auto}
+  .editorial blockquote{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(1.8rem,4vw,3rem);color:var(--ivory);font-style:italic;line-height:1.3;margin:2.5rem 0;letter-spacing:-.005em}
+  .editorial blockquote em{color:var(--bronze-soft)}
+  .editorial-attribution{font-size:.65rem;letter-spacing:.4em;text-transform:uppercase;color:var(--muted)}
 
-  /* CTA strip */
-  .cta-section { padding: 5rem 5vw; background: var(--white); }
-  .cta-strip {
-    max-width: 1180px; margin: 0 auto;
-    background: var(--ink); color: var(--white);
-    border-radius: 12px;
-    padding: 4rem;
-    display: grid; grid-template-columns: 1.4fr 1fr;
-    gap: 3rem;
-    align-items: center;
-    position: relative; overflow: hidden;
-  }
-  .cta-strip::before {
-    content: ''; position: absolute; inset: 0;
-    background:
-      radial-gradient(ellipse at top right, rgba(45,95,74,0.25) 0%, transparent 55%);
-  }
-  .cta-strip > * { position: relative; }
-  .cta-strip h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.9rem; font-weight: 500;
-    color: var(--white);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-    letter-spacing: -0.01em;
-  }
-  .cta-strip p {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.7);
-    font-weight: 300;
-    line-height: 1.65;
-  }
-  .cta-strip .cta-actions {
-    display: flex; flex-direction: column; gap: 0.8rem;
-  }
+  .cta-section{padding:7rem 5vw;background:var(--bg);border-top:1px solid var(--rule)}
+  .cta-strip{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:5vw;align-items:center}
+  .cta-strip h3{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:300;color:var(--ivory);line-height:1.15;letter-spacing:-.01em;margin-bottom:1rem}
+  .cta-strip h3 em{font-style:italic;color:var(--bronze-soft)}
+  .cta-strip p{font-size:1.05rem;color:var(--ivory-soft);line-height:1.7;font-weight:300}
+  .cta-actions{display:flex;flex-direction:column;gap:.8rem}
 
-  @media (max-width: 960px) {
-    .featured { grid-template-columns: 1fr; gap: 2rem; padding-bottom: 3rem; }
-    .filters-bar { flex-direction: column; align-items: flex-start; }
-    .posts-grid { grid-template-columns: 1fr; }
-    .cta-strip { grid-template-columns: 1fr; padding: 2.5rem; gap: 2rem; }
+  @media(max-width:960px){
+    .featured-inner{grid-template-columns:1fr;gap:3rem}
+    .post-row{grid-template-columns:auto 1fr;gap:1.5rem}
+    .post-row-cat{display:none}
+    .post-row-cta{display:none}
+    .filters-bar{flex-direction:column;align-items:flex-start}
+    .cta-strip{grid-template-columns:1fr;gap:2.5rem}
   }
 </style>
 </head>
 <body>
 
-<nav class="nav">
+<nav class="nav" id="nav">
   <a href="index.html" class="nav-logo">
     <img src="logo.jpg" alt="Maco Equity Partners logo">
-    <span class="text">Maco <span class="accent">Equity</span> Partners</span>
+    <span class="text">Maco <span class="accent">·</span> Equity Partners</span>
   </a>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="this.classList.toggle('open'); this.parentElement.querySelector('.nav-links').classList.toggle('open'); this.setAttribute('aria-expanded', this.classList.contains('open'));">
     <span></span><span></span><span></span>
   </button>
   <ul class="nav-links">
-    <li><a href="index.html#about">About</a></li>
-    <li><a href="index.html#focus">Focus</a></li>
+    <li><a href="index.html#disciplines">Disciplines</a></li>
+    <li><a href="index.html#network">Network</a></li>
     <li><a href="index.html#approach">Approach</a></li>
     <li><a href="research.html">Research</a></li>
-    <li><a href="blog.html" class="active">Blog</a></li>
-    <li><a href="index.html#contact" class="nav-cta">Contact</a></li>
+    <li><a href="blog.html" class="active">Journal</a></li>
+    <li><a href="index.html#contact" class="nav-cta">Enquire</a></li>
   </ul>
 </nav>
 
 <section class="page-hero">
-  <span class="eyebrow">Insights &amp; Commentary</span>
-  <h1>The view from the desk.</h1>
-  <p>Market commentary, deal analysis, and thought leadership from the Maco Equity Partners team. Plain-English reads on what we're seeing, where capital is moving, and how we're underwriting.</p>
+  <div class="page-hero-inner">
+    <span class="eyebrow">Notes &amp; Commentary</span>
+    <h1>The <em>Journal.</em></h1>
+    <p>Market commentary, deal analysis, and operational notes from the Maco Equity Partners team. The diligence behind the deals we close — and the ones we walk away from.</p>
+  </div>
 </section>
 
 <section class="featured-section">
-  <div class="featured">
-    <a href="Q1_2026_SFL_Industrial_Overview.html" class="featured-image">
-      <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1000&q=85" alt="South Florida industrial skyline">
+  <div class="featured-inner">
+    <a href="post-underwriting-is-the-edge.html" class="featured-image">
+      <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=90" alt="South Florida industrial">
       <div class="badge">Featured</div>
     </a>
     <div>
       <div class="featured-meta">
-        <span class="featured-meta-cat">Market Analysis</span>
+        <span class="featured-meta-cat">Deal Analysis</span>
         <span class="featured-meta-date">April 2026</span>
-        <span class="featured-meta-read">8 min read</span>
+        <span class="featured-meta-read">7 min read</span>
       </div>
-      <h2 class="featured-title">South Florida Industrial: What the Q1 2026 Numbers Are Telling Us</h2>
-      <p class="featured-excerpt">Tri-County vacancy ticked up to 6.9% as 4.2 million square feet of new supply entered the pipeline — yet average asking rents held firm at $16.74 NNN. We break down the county-level divergence, where capital is moving, and what it means for operators and investors positioning for the back half of the year.</p>
+      <h2 class="featured-title">Underwriting Is the <em>Edge.</em> How We Stress-Test Every Deal.</h2>
+      <p class="featured-excerpt">Most deals look good in the pitchbook. The ones we close look good after the stress test. The four scenarios we run on every acquisition, the line items that have killed our last six passes, and what our network sees before we ever sign an LOI.</p>
       <div class="featured-author">
         <div class="author-avatar">MEP</div>
         <div class="author-info">
-          <strong>Maco Research Team</strong>
-          <span>Published April 8, 2026</span>
+          <strong>Maco Equity Partners</strong>
+          <span>April 2026</span>
         </div>
       </div>
-      <a href="Q1_2026_SFL_Industrial_Overview.html" class="btn btn-primary">Read full report
+      <a href="post-underwriting-is-the-edge.html" class="btn btn-primary">Read the post
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
     </div>
@@ -316,173 +144,80 @@
 </section>
 
 <div class="filters-bar">
-  <div>
-    <span class="eyebrow">Recent posts</span>
-    <h2 class="section-title" style="margin-bottom: 0;">All insights.</h2>
+  <div class="filter-head">
+    <span class="eyebrow">All Posts</span>
+    <h2><em>Recent</em> notes.</h2>
   </div>
   <div class="filter-chips">
     <button class="chip active">All</button>
-    <button class="chip">Market Analysis</button>
     <button class="chip">Deal Analysis</button>
-    <button class="chip">Thought Leadership</button>
+    <button class="chip">Market</button>
     <button class="chip">Operational</button>
+    <button class="chip">Thought</button>
   </div>
 </div>
 
 <section class="posts-section">
-  <div class="posts-grid">
+  <div class="posts-list">
 
-    <a href="Q1_2026_Small_Bay_Deals.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=700&q=85" alt="Small bay industrial">
-        <span class="post-card-cat-tag">Deal Analysis</span>
+    <a href="post-value-add-underwrite.html" class="post-row">
+      <div class="post-row-num">I.</div>
+      <div class="post-row-cat">Deal Analysis<span class="date">April 2026</span></div>
+      <div class="post-row-title">
+        <h3>Anatomy of a Value-Add <em>Underwrite.</em></h3>
+        <p>We walk through an actual underwrite — anonymized — from sourcing through LOI. The assumptions we tested, the sensitivities that mattered, and the line item that ultimately killed the deal.</p>
       </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>April 2026</span><span class="dot"></span><span>6 min read</span>
-        </div>
-        <h3>Small-Bay Deals Are Outperforming — Here's Why</h3>
-        <p>Transaction-level data from Q1 2026 shows small-bay industrial assets consistently trading at tighter cap rates than big-box product. The deal flow, pricing trends, and structural demand drivers behind the premium.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
+      <div class="post-row-cta">Read →</div>
     </a>
 
-    <a href="Q1_2026_New_Industrial_Supply.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=700&q=85" alt="Industrial construction">
-        <span class="post-card-cat-tag">Supply Pipeline</span>
+    <a href="post-palm-beach-industrial.html" class="post-row">
+      <div class="post-row-num">II.</div>
+      <div class="post-row-cat">Market Analysis<span class="date">February 2026</span></div>
+      <div class="post-row-title">
+        <h3>Why We're Still <em>Bullish</em> on Palm Beach Industrial.</h3>
+        <p>Palm Beach County's industrial fundamentals continue to outperform consensus. Population in-migration, the I-95 logistics corridor, and constrained land supply support our positioning.</p>
       </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>April 2026</span><span class="dot"></span><span>5 min read</span>
-        </div>
-        <h3>New Industrial Supply: Where It's Landing and What It Means</h3>
-        <p>Over 4 million square feet of industrial product is under construction across South Florida. Mapping new deliveries by county, analyzing pre-lease rates, and assessing the impact on vacancy and rent trajectory.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
+      <div class="post-row-cta">Read →</div>
     </a>
 
-    <a href="Q1_2026_SFL_Industrial_Overview.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=700&q=85" alt="Market data analytics">
-        <span class="post-card-cat-tag">Thought Leadership</span>
+    <a href="post-first-100-days.html" class="post-row">
+      <div class="post-row-num">III.</div>
+      <div class="post-row-cat">Operational<span class="date">March 2026</span></div>
+      <div class="post-row-title">
+        <h3>The <em>First 100 Days.</em> How We Onboard a Newly Acquired Business.</h3>
+        <p>Our operational playbook for the first 100 days post-close: stakeholder mapping, the 30-60-90 plan, where to act immediately, and where to actively resist the urge to change anything.</p>
       </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>March 2026</span><span class="dot"></span><span>7 min read</span>
-        </div>
-        <h3>Cap Rate Compression in Tertiary Markets: Opportunity or Signal?</h3>
-        <p>Average cap rates in South Florida's secondary corridors have compressed to 6.3%. Is this genuine fundamentals-driven repricing, or are investors stretching for yield in an increasingly competitive landscape?</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
+      <div class="post-row-cta">Read →</div>
     </a>
 
-    <a href="post-first-100-days.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=700&q=85" alt="Workspace and operations">
-        <span class="post-card-cat-tag">Operational</span>
+    <a href="post-hiring-operators.html" class="post-row">
+      <div class="post-row-num">IV.</div>
+      <div class="post-row-cat">Operational<span class="date">January 2026</span></div>
+      <div class="post-row-title">
+        <h3>Hiring the Right <em>Operator.</em> The Single Highest-Leverage Decision.</h3>
+        <p>Across every investment, the difference between the median outcome and the top-quartile outcome was almost always the operator. What we look for, how we test it, the questions we ask.</p>
       </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>March 2026</span><span class="dot"></span><span>5 min read</span>
-        </div>
-        <h3>The First 100 Days: How We Onboard a Newly Acquired Business</h3>
-        <p>Our operational playbook for the first 100 days post-close: stakeholder mapping, the 30-60-90 plan, where to take action immediately, and where to actively resist the urge to change anything at all.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
+      <div class="post-row-cta">Read →</div>
     </a>
 
-    <a href="post-palm-beach-industrial.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=700&q=85" alt="South Florida urban">
-        <span class="post-card-cat-tag">Market Analysis</span>
+    <a href="post-2026-outlook.html" class="post-row">
+      <div class="post-row-num">V.</div>
+      <div class="post-row-cat">Market Analysis<span class="date">December 2025</span></div>
+      <div class="post-row-title">
+        <h3>2026 <em>Outlook.</em> Five Themes We're Underwriting.</h3>
+        <p>Our annual look forward. Five themes that will shape capital deployment in 2026 — small-bay supply, debt cost normalization, Florida insurance, demographics, and capital concentration.</p>
       </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>February 2026</span><span class="dot"></span><span>6 min read</span>
-        </div>
-        <h3>Why We're Still Bullish on Palm Beach Industrial</h3>
-        <p>Palm Beach County's industrial fundamentals continue to outperform consensus. Population in-migration, the I-95 logistics corridor, and constrained land supply support our long-duration positioning thesis.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
+      <div class="post-row-cta">Read →</div>
     </a>
 
-    <a href="post-patient-capital-2026.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=700&q=85" alt="City skyline">
-        <span class="post-card-cat-tag">Thought Leadership</span>
+    <a href="post-underwriting-is-the-edge.html" class="post-row">
+      <div class="post-row-num">VI.</div>
+      <div class="post-row-cat">Deal Analysis<span class="date">April 2026</span></div>
+      <div class="post-row-title">
+        <h3>Underwriting Is the <em>Edge.</em> How We Stress-Test Every Deal.</h3>
+        <p>The four scenarios we run on every acquisition, the line items that have killed our last six passes, and what our network sees before we ever sign an LOI.</p>
       </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>February 2026</span><span class="dot"></span><span>8 min read</span>
-        </div>
-        <h3>What "Patient Capital" Actually Means in 2026</h3>
-        <p>The phrase has been worn smooth from overuse. We unpack what real patient capital looks like in today's environment: hold periods, leverage discipline, and the specific deals we've walked away from.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
-    </a>
-
-    <a href="post-value-add-underwrite.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=700&q=85" alt="Industrial corridor aerial">
-        <span class="post-card-cat-tag">Deal Analysis</span>
-      </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>January 2026</span><span class="dot"></span><span>5 min read</span>
-        </div>
-        <h3>Anatomy of a Value-Add Underwrite</h3>
-        <p>We walk through an actual underwrite — anonymized — from sourcing through letter of intent. The assumptions we tested, the sensitivities that mattered, and the line item that ultimately killed the deal.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
-    </a>
-
-    <a href="post-hiring-operators.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1507679799987-c73b1538e4e6?w=700&q=85" alt="Modern architecture">
-        <span class="post-card-cat-tag">Operational</span>
-      </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>January 2026</span><span class="dot"></span><span>6 min read</span>
-        </div>
-        <h3>Hiring the Right Operator: The Single Highest-Leverage Decision</h3>
-        <p>Across every investment we've made, the difference between the median outcome and the top-quartile outcome was almost always the operator. What we look for, how we test it, and the questions we ask.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
-    </a>
-
-    <a href="post-2026-outlook.html" class="post-card">
-      <div class="post-card-img">
-        <img src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=700&q=85" alt="Commercial property">
-        <span class="post-card-cat-tag">Market Analysis</span>
-      </div>
-      <div class="post-card-body">
-        <div class="post-card-meta">
-          <span>December 2025</span><span class="dot"></span><span>7 min read</span>
-        </div>
-        <h3>2026 Outlook: Five Themes We're Underwriting</h3>
-        <p>Our annual look forward. Five themes that will shape capital deployment in 2026 — from the small-bay supercycle to the slow normalization of debt costs and the structural tailwinds for South Florida demand.</p>
-        <span class="text-link">Read more
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </span>
-      </div>
+      <div class="post-row-cta">Read →</div>
     </a>
 
   </div>
@@ -490,8 +225,8 @@
 
 <section class="editorial">
   <div class="editorial-inner">
-    <span class="eyebrow" style="justify-content: center; display: flex;">Editorial</span>
-    <blockquote>"We publish what we'd want to read ourselves — the analysis behind the analysis, the assumptions made explicit, and the calls we got wrong alongside the ones we got right."</blockquote>
+    <span class="eyebrow bookend">Editorial</span>
+    <blockquote>"We publish what we'd want to read ourselves — the analysis behind the analysis, the assumptions made explicit, and the deals we got <em>wrong</em> alongside the ones we got right."</blockquote>
     <div class="editorial-attribution">— Maco Equity Partners Research</div>
   </div>
 </section>
@@ -499,14 +234,14 @@
 <section class="cta-section">
   <div class="cta-strip">
     <div>
-      <h3>Get insights in your inbox.</h3>
+      <h3>Get notes in <em>your inbox.</em></h3>
       <p>New posts and quarterly research delivered the first week of each quarter. No spam, no sales sequences — just the analysis.</p>
     </div>
     <div class="cta-actions">
-      <a href="index.html#contact" class="btn btn-light">Subscribe
+      <a href="index.html#contact" class="btn btn-primary">Subscribe
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </a>
-      <a href="research.html" class="btn btn-outline">View market reports</a>
+      <a href="research.html" class="btn btn-ghost">View Market Reports</a>
     </div>
   </div>
 </section>
@@ -514,23 +249,23 @@
 <footer class="footer">
   <div class="footer-grid">
     <div class="footer-brand">
-      <span class="footer-logo">Maco Equity Partners</span>
-      <p>Private equity and asset management. A decade of disciplined investment across real estate, growth equity, and small-business acquisitions.</p>
+      <span class="footer-logo">Maco <span class="accent">·</span> Equity Partners</span>
+      <p>A value-add real estate and private equity firm. We underwrite, we execute, we exit — delivering realized returns to our investors.</p>
     </div>
     <div class="footer-col">
       <h4>Firm</h4>
       <ul>
-        <li><a href="index.html#about">About</a></li>
-        <li><a href="index.html#focus">Investment focus</a></li>
-        <li><a href="index.html#approach">Process</a></li>
-        <li><a href="index.html#contact">Contact</a></li>
+        <li><a href="index.html#disciplines">Disciplines</a></li>
+        <li><a href="index.html#network">Network</a></li>
+        <li><a href="index.html#approach">Approach</a></li>
+        <li><a href="index.html#contact">Enquire</a></li>
       </ul>
     </div>
     <div class="footer-col">
       <h4>Research</h4>
       <ul>
         <li><a href="research.html">Market reports</a></li>
-        <li><a href="blog.html">Blog</a></li>
+        <li><a href="blog.html">Journal</a></li>
         <li><a href="Q1_2026_SFL_Industrial_Overview.html">SFL Industrial Q1</a></li>
         <li><a href="Q1_2026_Small_Bay_Deals.html">Small-Bay Deals</a></li>
       </ul>
@@ -544,7 +279,7 @@
     </div>
   </div>
   <div class="footer-bottom">
-    <span>&copy; 2026 Maco Equity Partners. All rights reserved.</span>
+    <span>© 2026 Maco Equity Partners · South Florida · By appointment</span>
     <div class="meta">
       <a href="#">Privacy</a>
       <a href="#">Terms</a>
@@ -552,6 +287,14 @@
     </div>
   </div>
 </footer>
+
+<script>
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 60) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+  });
+</script>
 
 </body>
 </html>
