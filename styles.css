@@ -84,7 +84,7 @@ main,nav,footer,section,header{position:relative;z-index:2}
 }
 .nav-logo img{
   height:38px;width:auto;
-  filter:brightness(0) invert(1);
+  filter:invert(1) brightness(.95) sepia(.15) saturate(.7);
   opacity:.95;
 }
 .nav-logo .accent{color:var(--bronze)}
@@ -480,7 +480,7 @@ main,nav,footer,section,header{position:relative;z-index:2}
 }
 .report-hero-mark img{
   width:100%;height:auto;
-  filter:brightness(0) invert(1) sepia(.3) saturate(.6) hue-rotate(0deg);
+  filter:invert(1) brightness(.95) sepia(.2) saturate(.8);
   opacity:.95;
 }
 .report-hero-meta{
