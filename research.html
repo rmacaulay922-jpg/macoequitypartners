@@ -8,7 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=3">
+<link rel="icon" type="image/jpeg" href="favicon.jpg">
+<link rel="apple-touch-icon" href="favicon.jpg">
+<link rel="stylesheet" href="styles.css?v=4">
 <style>
   /* Research-specific */
   .research-intro { padding: 5rem 5vw 3rem; background: var(--white); }
@@ -271,7 +273,10 @@
 <body>
 
 <nav class="nav">
-  <a href="index.html" class="nav-logo">Maco <span class="accent">Equity</span> Partners</a>
+  <a href="index.html" class="nav-logo">
+    <img src="logo.jpg" alt="Maco Equity Partners logo">
+    <span class="text">Maco <span class="accent">Equity</span> Partners</span>
+  </a>
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="this.classList.toggle('open'); this.parentElement.querySelector('.nav-links').classList.toggle('open'); this.setAttribute('aria-expanded', this.classList.contains('open'));">
     <span></span><span></span><span></span>
   </button>
