@@ -464,6 +464,34 @@ main,nav,footer,section,header{position:relative;z-index:2}
   color:var(--ivory);line-height:1.3;
 }
 
+/* ===== Action buttons (export PDF / CSV) ===== */
+.report-actions,
+.post-actions{
+  display:flex;gap:.6rem;flex-wrap:wrap;
+  margin-top:2rem;
+}
+.report-action,
+.post-action{
+  display:inline-flex;align-items:center;gap:.55rem;
+  padding:.65rem 1.2rem;
+  font-family:'Inter',sans-serif;
+  font-size:.65rem;font-weight:500;
+  letter-spacing:.28em;text-transform:uppercase;
+  background:transparent;
+  color:var(--bronze);
+  border:1px solid var(--bronze);
+  cursor:pointer;
+  transition:all .25s ease;
+}
+.report-action:hover,
+.post-action:hover{
+  background:var(--bronze);color:var(--bg);
+}
+.report-action svg,
+.post-action svg{
+  width:13px;height:13px;flex-shrink:0;
+}
+
 /* ===== Reports (market research PDFs styled as web) ===== */
 .report-hero{
   padding:9rem 5vw 4rem;
@@ -859,3 +887,154 @@ main,nav,footer,section,header{position:relative;z-index:2}
   .footer-grid{grid-template-columns:1fr}
   .footer-bottom{flex-direction:column;align-items:flex-start}
 }
+
+/* ===== Print styles (Save as PDF) ===== */
+@media print{
+  @page{size:letter;margin:.6in .65in .65in}
+
+  /* Force light background + remove decorative effects so the PDF prints cleanly */
+  body{background:#fff !important;color:#1a1a2e !important}
+  body::before{display:none !important}
+
+  /* Hide all interactive chrome */
+  .nav,.nav-toggle,.footer,
+  .scroll-indicator,.hero-scroll,
+  .report-actions,.post-actions,
+  .post-footer-cta,.report-disclaimer,
+  .cta-section,.cta-strip,.subscribe,
+  .editorial,.related-posts,
+  .featured-section,.filters-bar,.posts-section,
+  .nav-cta{display:none !important}
+
+  /* Convert dark sections to light */
+  section,
+  .report-hero,.report-body,.report-tldr,.report-kpi,
+  .report-methodology,
+  .post-hero,.post-body{
+    background:#fff !important;
+    color:#1a1a2e !important;
+    padding:.5rem 0 !important;
+    border:none !important;
+  }
+
+  /* Page hero spacing */
+  .report-hero{padding-top:0 !important}
+  .post-hero{padding-top:0 !important}
+
+  /* Logo */
+  .report-hero-mark img,.nav-logo img{filter:none !important;opacity:1 !important}
+
+  /* Type colors */
+  h1,h2,h3,h4,.section-title{color:#0d0c0a !important}
+  h1 em,h2 em,h3 em,.section-title em{color:#8b6f47 !important}
+  p,li,td,.subtitle{color:#1a1a2e !important}
+  strong{color:#0d0c0a !important}
+
+  /* Eyebrows + meta */
+  .eyebrow,.eyebrow::before,.eyebrow::after,
+  .report-hero-meta,.post-meta,
+  .report-section-num,.report-kpi-source,
+  .report-chart-eyebrow,.report-chart-source,
+  .post-cat{color:#8b6f47 !important}
+  .eyebrow::before,.eyebrow::after{background:#8b6f47 !important}
+
+  /* KPI band */
+  .report-kpi-band{
+    border-top:1px solid #ccc !important;
+    border-bottom:1px solid #ccc !important;
+    page-break-inside:avoid;
+  }
+  .report-kpi-band .kpi{border-right:1px solid #ddd !important}
+  .report-kpi-band .kpi-value{color:#0d0c0a !important}
+  .report-kpi-band .kpi-delta{color:#8b6f47 !important}
+
+  /* TL;DR callout */
+  .report-tldr-inner{
+    background:#faf9f5 !important;
+    border-left:2px solid #8b6f47 !important;
+    page-break-inside:avoid;
+  }
+  .report-tldr-inner li::before{background:#8b6f47 !important}
+
+  /* Charts — keep dark fill colors via inline SVG, only re-tint axis labels and grid */
+  .report-chart{
+    background:#faf9f5 !important;
+    border:1px solid #ddd !important;
+    page-break-inside:avoid;
+  }
+  .report-chart text[fill="#8a8478"]{fill:#666 !important}
+  .report-chart line[stroke^="rgba(244"]{stroke:#ddd !important}
+
+  /* Tables */
+  .report-table th{
+    color:#8b6f47 !important;
+    border-bottom:1px solid #999 !important;
+  }
+  .report-table td{
+    color:#1a1a2e !important;
+    border-bottom:1px solid #e0e0e0 !important;
+  }
+  .report-table tr.total td{
+    background:#faf9f5 !important;
+    border-top:1px solid #999 !important;
+  }
+  .report-table-wrap{page-break-inside:avoid}
+
+  /* Deal cards */
+  .report-deal{
+    background:#faf9f5 !important;
+    border:1px solid #ddd !important;
+    page-break-inside:avoid;
+  }
+  .report-deal .submarket{color:#555 !important}
+  .report-deal-stat .label{color:#8b6f47 !important}
+  .report-deal-stat .value{color:#0d0c0a !important}
+
+  /* Callouts */
+  .report-callout,.post-callout{
+    background:#faf9f5 !important;
+    border-left:2px solid #8b6f47 !important;
+    page-break-inside:avoid;
+  }
+  .report-callout-label,.post-callout strong{color:#8b6f47 !important}
+  .post-callout p{color:#1a1a2e !important}
+
+  /* Blockquotes */
+  .report-blockquote,
+  .post-body-inner blockquote{
+    color:#1a1a2e !important;
+    border-left-color:#8b6f47 !important;
+  }
+  .report-blockquote em,
+  .post-body-inner blockquote em{color:#8b6f47 !important}
+
+  /* Article body */
+  .post-body-inner > p:first-of-type{color:#0d0c0a !important}
+
+  /* Methodology source list */
+  .report-methodology .source-list span{
+    border:1px solid #ddd !important;
+    color:#1a1a2e !important;
+  }
+
+  /* Section page-break behavior */
+  .report-section{page-break-inside:avoid}
+  .report-section h2,.post-body-inner h2{
+    page-break-after:avoid;
+  }
+  .report-section + .report-section{page-break-before:auto}
+
+  /* Hide hero background images */
+  .hero,.hero::before,.hero::after,
+  .hero-image,.network-image,.network::before{display:none !important}
+
+  /* Links — show URL after for context */
+  a[href^="http"]::after{
+    content:" (" attr(href) ")";
+    font-size:.85em;color:#888;
+  }
+  a[href^="mailto:"]::after{content:""}
+  a[href^="#"]::after,a[href^="index"]::after,a[href^="research"]::after,
+  a[href^="blog"]::after,a[href^="post-"]::after,a[href^="Q1_"]::after{content:""}
+}
+
