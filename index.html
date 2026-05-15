@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Maco Equity Partners — Disciplined Capital. Lasting Value.</title>
 <meta name="description" content="Maco Equity Partners is a private equity firm with over a decade of asset management experience, partnering with management teams to build enduring value across real estate, growth equity, and small-business acquisitions.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://macoequitypartners.com/">
+<meta property="og:site_name" content="Maco Equity Partners">
+<meta property="og:title" content="Maco Equity Partners — Disciplined Capital. Lasting Value.">
+<meta property="og:description" content="Private equity and asset management. South Florida industrial real estate, growth equity, and small-business acquisitions.">
+<meta property="og:image" content="https://macoequitypartners.com/logo.jpg">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="1024">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Maco Equity Partners — Disciplined Capital. Lasting Value.">
+<meta name="twitter:description" content="Private equity and asset management. South Florida industrial real estate, growth equity, and small-business acquisitions.">
+<meta name="twitter:image" content="https://macoequitypartners.com/logo.jpg">
+
+<script defer data-domain="macoequitypartners.com" src="https://plausible.io/js/script.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
@@ -22,8 +38,8 @@
   }
   .hero::before {
     content: ''; position: absolute; inset: 0;
-    background: url('https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1800&q=85') center/cover no-repeat;
-    filter: brightness(0.32) saturate(0.85);
+    background: url('https://images.unsplash.com/photo-1530686577637-0ccce382b327?w=1800&q=85') center/cover no-repeat;
+    filter: brightness(0.38) saturate(0.9);
     z-index: 0;
     transform: scale(1.02);
   }
@@ -653,13 +669,13 @@
           <h4>New Industrial Supply: Where It's Landing</h4>
           <p>Mapping the 4M+ SF construction pipeline by county, with pre-lease rates and vacancy implications.</p>
         </a>
-        <a href="blog.html" class="insight-item">
+        <a href="post-patient-capital-2026.html" class="insight-item">
           <div class="insight-item-meta">
             <span class="insight-item-cat">Thought Leadership</span>
-            <span class="insight-item-date">March 2026</span>
+            <span class="insight-item-date">February 2026</span>
           </div>
-          <h4>Cap Rate Compression in Tertiary Markets</h4>
-          <p>Repricing or stretching for yield? Reading the signal in South Florida's secondary corridors.</p>
+          <h4>What "Patient Capital" Actually Means in 2026</h4>
+          <p>The phrase has been worn smooth from overuse. Hold periods, leverage discipline, and the deals we walked away from.</p>
         </a>
       </div>
     </div>
@@ -708,13 +724,17 @@
         </div>
       </div>
     </div>
-    <form class="contact-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Sent — Thank you'; this.querySelector('button').disabled=true;">
+    <form class="contact-form" action="https://formsubmit.co/info@macoequitypartners.com" method="POST">
+      <input type="hidden" name="_subject" value="New inquiry from macoequitypartners.com">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://macoequitypartners.com/index.html?sent=1">
+      <input type="text" name="_honey" style="display:none">
       <div class="form-row">
-        <div><label for="name">Name</label><input id="name" type="text" required></div>
-        <div><label for="email">Email</label><input id="email" type="email" required></div>
+        <div><label for="name">Name</label><input id="name" name="name" type="text" required></div>
+        <div><label for="email">Email</label><input id="email" name="email" type="email" required></div>
       </div>
       <div><label for="topic">Topic</label>
-        <select id="topic">
+        <select id="topic" name="topic">
           <option>General inquiry</option>
           <option>Deal opportunity</option>
           <option>Partnership / LP interest</option>
@@ -722,7 +742,7 @@
           <option>Press / media</option>
         </select>
       </div>
-      <div><label for="message">Message</label><textarea id="message" placeholder="Tell us about the opportunity, partnership, or question..."></textarea></div>
+      <div><label for="message">Message</label><textarea id="message" name="message" placeholder="Tell us about the opportunity, partnership, or question..." required></textarea></div>
       <button type="submit" class="btn btn-primary">Send message
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>

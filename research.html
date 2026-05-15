@@ -5,6 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Research &amp; Market Reports | Maco Equity Partners</title>
 <meta name="description" content="Institutional-grade market research on South Florida industrial real estate. Quarterly reports covering vacancy, rents, cap rates, supply pipeline, and transaction activity.">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://macoequitypartners.com/research.html">
+<meta property="og:site_name" content="Maco Equity Partners">
+<meta property="og:title" content="Research & Market Reports — Maco Equity Partners">
+<meta property="og:description" content="Institutional-grade analysis of South Florida industrial real estate. Vacancy, rents, cap rates, supply pipeline, transactions. Published quarterly.">
+<meta property="og:image" content="https://macoequitypartners.com/logo.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Research & Market Reports — Maco Equity Partners">
+<meta name="twitter:description" content="Institutional-grade analysis of South Florida industrial real estate. Vacancy, rents, cap rates, supply pipeline, transactions. Published quarterly.">
+<meta name="twitter:image" content="https://macoequitypartners.com/logo.jpg">
+
+<script defer data-domain="macoequitypartners.com" src="https://plausible.io/js/script.js"></script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
@@ -485,8 +499,12 @@
     <span class="eyebrow" style="justify-content: center; display: flex;">Quarterly research</span>
     <h3>Get reports in your inbox.</h3>
     <p>New research drops the first week of each quarter. No spam — just the data and commentary we'd want to see ourselves.</p>
-    <form class="subscribe-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Subscribed'; this.querySelector('button').disabled=true;">
-      <input type="email" placeholder="your@email.com" required>
+    <form class="subscribe-form" action="https://formsubmit.co/info@macoequitypartners.com" method="POST">
+      <input type="hidden" name="_subject" value="New research subscriber">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_next" value="https://macoequitypartners.com/research.html?subscribed=1">
+      <input type="text" name="_honey" style="display:none">
+      <input type="email" name="email" placeholder="your@email.com" required>
       <button type="submit" class="btn btn-primary">Subscribe
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
