@@ -464,6 +464,353 @@ main,nav,footer,section,header{position:relative;z-index:2}
   color:var(--ivory);line-height:1.3;
 }
 
+/* ===== Reports (market research PDFs styled as web) ===== */
+.report-hero{
+  padding:9rem 5vw 4rem;
+  background:var(--bg);
+  border-bottom:1px solid var(--rule);
+}
+.report-hero-inner{
+  max-width:var(--container);margin:0 auto;
+  display:grid;grid-template-columns:auto 1fr;
+  gap:3rem;align-items:center;
+}
+.report-hero-mark{
+  width:120px;flex-shrink:0;
+}
+.report-hero-mark img{
+  width:100%;height:auto;
+  filter:brightness(0) invert(1) sepia(.3) saturate(.6) hue-rotate(0deg);
+  opacity:.95;
+}
+.report-hero-meta{
+  display:flex;align-items:center;gap:1.2rem;
+  font-size:.65rem;letter-spacing:.35em;
+  text-transform:uppercase;color:var(--bronze);
+  margin-bottom:1.5rem;font-weight:500;
+}
+.report-hero-meta .dot{
+  width:4px;height:4px;background:var(--bronze);border-radius:50%;
+}
+.report-hero-meta .muted{color:var(--muted)}
+.report-hero h1{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;
+  font-size:clamp(2.4rem,5vw,4.5rem);
+  line-height:1.05;letter-spacing:-.012em;
+  color:var(--ivory);
+  margin-bottom:1rem;
+}
+.report-hero h1 em{font-style:italic;color:var(--bronze-soft);font-weight:300}
+.report-hero .subtitle{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-weight:300;
+  font-size:1.3rem;color:var(--ivory-soft);
+  line-height:1.5;max-width:780px;
+}
+
+.report-tldr{
+  padding:4rem 5vw 0;
+  background:var(--bg);
+}
+.report-tldr-inner{
+  max-width:var(--container);margin:0 auto;
+  background:var(--bg-soft);
+  border-left:2px solid var(--bronze);
+  padding:2.5rem 2.5rem 2rem;
+}
+.report-tldr-label{
+  font-size:.62rem;font-weight:500;
+  letter-spacing:.35em;text-transform:uppercase;
+  color:var(--bronze);margin-bottom:1.2rem;
+}
+.report-tldr-inner h3{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:400;font-size:1.5rem;
+  color:var(--ivory);line-height:1.3;
+  margin-bottom:1.2rem;letter-spacing:-.005em;
+}
+.report-tldr-inner ul{
+  list-style:none;padding:0;display:flex;
+  flex-direction:column;gap:.8rem;
+}
+.report-tldr-inner li{
+  display:flex;gap:.8rem;align-items:flex-start;
+  font-size:.98rem;color:var(--ivory-soft);
+  line-height:1.6;font-weight:300;
+}
+.report-tldr-inner li::before{
+  content:'';flex-shrink:0;
+  width:6px;height:6px;border-radius:50%;
+  background:var(--bronze);margin-top:.55rem;
+}
+
+.report-kpi{padding:4rem 5vw 3rem;background:var(--bg)}
+.report-kpi-band{
+  max-width:var(--container);margin:0 auto;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--rule);
+  border-bottom:1px solid var(--rule);
+}
+.report-kpi-band .kpi{
+  padding:2.5rem 1.8rem;
+  border-right:1px solid var(--rule);
+  position:relative;
+}
+.report-kpi-band .kpi:last-child{border-right:none}
+.report-kpi-band .kpi-label{
+  font-size:.6rem;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--bronze);
+  font-weight:500;margin-bottom:1rem;
+}
+.report-kpi-band .kpi-value{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2.2rem,3.5vw,3.2rem);
+  font-weight:300;color:var(--ivory);
+  letter-spacing:-.015em;line-height:1;
+  margin-bottom:.6rem;
+}
+.report-kpi-band .kpi-value .unit{
+  font-size:.5em;color:var(--muted);margin-left:.15em;font-weight:400;
+}
+.report-kpi-band .kpi-delta{
+  font-size:.78rem;color:var(--bronze);
+  font-weight:400;letter-spacing:.04em;
+}
+.report-kpi-band .kpi-delta.down{color:#c97a6a}
+.report-kpi-source{
+  max-width:var(--container);margin:1.2rem auto 0;
+  font-size:.65rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);text-align:right;
+}
+
+.report-body{
+  padding:5rem 5vw 6rem;background:var(--bg);
+}
+.report-body-inner{
+  max-width:980px;margin:0 auto;
+  font-size:1.05rem;line-height:1.8;
+  color:var(--ivory-soft);font-weight:300;
+}
+.report-section{margin-bottom:5rem}
+.report-section:last-child{margin-bottom:0}
+.report-section-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:.85rem;color:var(--bronze);
+  letter-spacing:.2em;margin-bottom:.8rem;
+  font-weight:500;
+}
+.report-section h2{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:400;
+  font-size:clamp(1.8rem,3.2vw,2.6rem);
+  color:var(--ivory);line-height:1.15;
+  letter-spacing:-.005em;margin-bottom:1.8rem;
+}
+.report-section h2 em{font-style:italic;color:var(--bronze-soft);font-weight:300}
+.report-section h3{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500;font-size:1.35rem;
+  color:var(--ivory);margin:2.5rem 0 1rem;
+  letter-spacing:.005em;
+}
+.report-section p{margin-bottom:1.4rem}
+.report-section strong{color:var(--ivory);font-weight:500}
+.report-section ul{padding-left:1.6rem;margin-bottom:1.6rem}
+.report-section li{margin-bottom:.6rem}
+
+.report-chart{
+  background:var(--bg-soft);
+  border:1px solid var(--rule);
+  padding:2rem 2rem 1.5rem;
+  margin:2.5rem 0;
+}
+.report-chart-head{
+  display:flex;justify-content:space-between;align-items:flex-start;
+  margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;
+}
+.report-chart-eyebrow{
+  font-size:.6rem;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--bronze);
+  font-weight:500;margin-bottom:.4rem;display:block;
+}
+.report-chart-title{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500;font-size:1.25rem;
+  color:var(--ivory);letter-spacing:-.005em;
+}
+.report-chart-source{
+  font-size:.65rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--muted);
+  text-align:right;
+}
+.report-chart svg{width:100%;height:auto;display:block;max-height:380px}
+.report-chart-legend{
+  display:flex;gap:1.5rem;flex-wrap:wrap;
+  margin-top:1rem;
+  font-size:.78rem;color:var(--ivory-soft);
+}
+.report-chart-legend-item{
+  display:inline-flex;align-items:center;gap:.5rem;
+}
+.report-chart-legend-item .swatch{
+  width:10px;height:10px;border-radius:1px;
+}
+
+.report-table-wrap{
+  margin:2rem 0;overflow-x:auto;
+}
+.report-table{
+  width:100%;border-collapse:collapse;
+  font-size:.95rem;
+}
+.report-table th{
+  text-align:left;
+  padding:1rem .8rem;
+  border-bottom:1px solid var(--rule-strong);
+  color:var(--bronze);
+  font-size:.62rem;font-weight:500;
+  letter-spacing:.28em;text-transform:uppercase;
+  white-space:nowrap;
+}
+.report-table th.num{text-align:right}
+.report-table td{
+  padding:1rem .8rem;
+  border-bottom:1px solid var(--rule);
+  color:var(--ivory-soft);font-weight:300;
+}
+.report-table td.num{
+  text-align:right;
+  font-variant-numeric:tabular-nums;
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;color:var(--ivory);
+  font-weight:400;
+}
+.report-table td.bold{color:var(--ivory);font-weight:500}
+.report-table tr:last-child td{border-bottom:none}
+.report-table tr.total td{
+  border-top:1px solid var(--rule-strong);
+  background:var(--bg-soft);
+  color:var(--ivory);font-weight:500;
+}
+
+.report-callout{
+  background:var(--bg-soft);
+  border-left:2px solid var(--bronze);
+  padding:1.8rem 2rem;
+  margin:2.5rem 0;
+}
+.report-callout-label{
+  color:var(--bronze);display:block;
+  margin-bottom:.6rem;
+  font-size:.62rem;letter-spacing:.32em;
+  text-transform:uppercase;font-weight:500;
+}
+.report-callout p{margin-bottom:0;font-size:1rem;color:var(--ivory)}
+
+.report-deal-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1.5rem;margin:2rem 0;
+}
+.report-deal{
+  background:var(--bg-soft);
+  border:1px solid var(--rule);
+  padding:1.8rem;
+  transition:border-color .3s ease;
+}
+.report-deal:hover{border-color:var(--rule-bronze)}
+.report-deal-tag{
+  display:inline-block;
+  font-size:.6rem;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--bronze);
+  margin-bottom:.8rem;font-weight:500;
+}
+.report-deal h4{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:500;font-size:1.2rem;
+  color:var(--ivory);margin-bottom:.4rem;
+  letter-spacing:-.005em;
+}
+.report-deal .submarket{
+  font-size:.85rem;color:var(--muted);
+  margin-bottom:1rem;font-style:italic;
+}
+.report-deal-stats{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:.8rem;padding-top:1rem;
+  border-top:1px solid var(--rule);
+}
+.report-deal-stat .label{
+  font-size:.58rem;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--bronze);
+  margin-bottom:.2rem;
+}
+.report-deal-stat .value{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.1rem;color:var(--ivory);font-weight:400;
+}
+
+.report-blockquote{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-weight:300;
+  font-size:1.55rem;color:var(--ivory);
+  line-height:1.4;
+  margin:3rem 0;padding-left:2rem;
+  border-left:2px solid var(--bronze);
+}
+.report-blockquote em{color:var(--bronze-soft)}
+
+.report-methodology{
+  padding:5rem 5vw;
+  background:var(--bg-deep);
+  border-top:1px solid var(--rule);
+}
+.report-methodology-inner{
+  max-width:var(--container);margin:0 auto;
+  display:grid;grid-template-columns:1fr 1.5fr;gap:5vw;
+}
+.report-methodology p{
+  color:var(--ivory-soft);font-weight:300;
+  line-height:1.8;font-size:1rem;
+  margin-bottom:1.2rem;
+}
+.report-methodology .source-list{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:.5rem;margin-top:1.5rem;
+}
+.report-methodology .source-list span{
+  font-size:.85rem;color:var(--ivory-soft);
+  padding:.7rem 1rem;border:1px solid var(--rule);
+  font-weight:300;letter-spacing:.02em;
+}
+
+.report-disclaimer{
+  padding:3rem 5vw;background:var(--bg-deep);
+  border-top:1px solid var(--rule);
+}
+.report-disclaimer-inner{
+  max-width:var(--container);margin:0 auto;
+}
+.report-disclaimer p{
+  font-size:.78rem;color:var(--muted);
+  line-height:1.7;font-weight:300;
+  margin-bottom:.7rem;
+}
+.report-disclaimer strong{color:var(--ivory-soft)}
+.report-disclaimer a{color:var(--bronze)}
+
+@media(max-width:860px){
+  .report-hero-inner{grid-template-columns:1fr;gap:2rem}
+  .report-hero-mark{width:80px}
+  .report-tldr-inner{padding:2rem 1.5rem 1.5rem}
+  .report-kpi-band{grid-template-columns:repeat(2,1fr)}
+  .report-kpi-band .kpi:nth-child(2){border-right:none}
+  .report-kpi-band .kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}
+  .report-deal-grid{grid-template-columns:1fr}
+  .report-methodology-inner{grid-template-columns:1fr;gap:2.5rem}
+  .report-methodology .source-list{grid-template-columns:1fr}
+}
+
 /* ===== Responsive ===== */
 @media(max-width:960px){
   .nav-toggle{display:flex}
