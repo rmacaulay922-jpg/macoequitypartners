@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research | Maco Equity Partners</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #2d2d2d; line-height: 1.6; background: #fff; }
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV — matches main site */
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 60px; background: #fff; border-bottom: 3px solid #0c2340; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { font-family: 'Georgia', serif; font-size: 18px; font-weight: 700; color: #0c2340; letter-spacing: 0.5px; }
+  .nav-links { display: flex; gap: 32px; }
+  .nav-links a { font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #0c2340; transition: color 0.2s; }
+  .nav-links a:hover { color: #c9a84c; }
+  .nav-links a.active { color: #c9a84c; border-bottom: 2px solid #c9a84c; padding-bottom: 2px; }
+
+  /* HERO */
+  .hero { background: #0c2340; padding: 80px 60px; text-align: center; }
+  .hero-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #c9a84c; margin-bottom: 16px; }
+  .hero h1 { font-family: 'Georgia', serif; font-size: 42px; font-weight: 400; color: #fff; margin-bottom: 16px; }
+  .hero p { font-size: 17px; color: rgba(255,255,255,0.7); max-width: 640px; margin: 0 auto; }
+
+  /* CONTENT */
+  .content { max-width: 1100px; margin: 0 auto; padding: 60px 40px; }
+  .section-label { font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #c9a84c; text-align: center; margin-bottom: 12px; }
+  .section-title { font-family: 'Georgia', serif; font-size: 32px; color: #0c2340; text-align: center; margin-bottom: 12px; }
+  .section-subtitle { font-size: 16px; color: #666; text-align: center; max-width: 700px; margin: 0 auto 48px; }
+
+  /* REPORT CARDS */
+  .reports-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-bottom: 60px; }
+  .report-card { border: 1px solid #e8e8e8; border-radius: 8px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; background: #fff; }
+  .report-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .report-card-header { background: #0c2340; padding: 24px 24px 20px; }
+  .report-card-quarter { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #c9a84c; margin-bottom: 8px; }
+  .report-card-title { font-family: 'Georgia', serif; font-size: 20px; color: #fff; line-height: 1.3; }
+  .report-card-body { padding: 24px; }
+  .report-card-desc { font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.6; }
+  .report-card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .meta-tag { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #0c2340; background: #f0f2f5; padding: 4px 10px; border-radius: 4px; }
+  .report-card-links { display: flex; gap: 12px; }
+  .btn-view { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #fff; background: #0c2340; padding: 10px 20px; border-radius: 4px; transition: background 0.2s; }
+  .btn-view:hover { background: #1a3a5c; }
+  .btn-pdf { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #0c2340; background: transparent; border: 1.5px solid #0c2340; padding: 9px 20px; border-radius: 4px; transition: all 0.2s; }
+  .btn-pdf:hover { background: #0c2340; color: #fff; }
+
+  /* KPI STRIP */
+  .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; background: #f8f8f8; border-radius: 8px; overflow: hidden; margin-bottom: 60px; }
+  .kpi-item { padding: 28px 24px; text-align: center; border-right: 1px solid #e8e8e8; }
+  .kpi-item:last-child { border-right: none; }
+  .kpi-value { font-family: 'Georgia', serif; font-size: 28px; color: #0c2340; margin-bottom: 4px; }
+  .kpi-label { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #888; }
+
+  /* METHODOLOGY */
+  .methodology { background: #f8f9fa; border-radius: 8px; padding: 36px 40px; margin-bottom: 60px; }
+  .methodology h3 { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: #0c2340; margin-bottom: 12px; }
+  .methodology p { font-size: 14px; color: #666; line-height: 1.7; }
+
+  /* DISCLAIMER */
+  .disclaimer { border-top: 1px solid #e8e8e8; padding-top: 32px; margin-top: 40px; }
+  .disclaimer p { font-size: 12px; color: #999; line-height: 1.7; }
+
+  /* FOOTER — matches main site */
+  .footer { background: #1a1a2e; padding: 40px 60px; display: flex; align-items: center; justify-content: space-between; }
+  .footer-logo { font-family: 'Georgia', serif; font-size: 14px; font-weight: 700; color: #fff; }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: rgba(255,255,255,0.6); transition: color 0.2s; }
+  .footer-links a:hover { color: #fff; }
+  .footer-copy { font-size: 12px; color: rgba(255,255,255,0.4); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .nav { padding: 16px 24px; }
+    .nav-links { gap: 16px; }
+    .hero { padding: 48px 24px; }
+    .hero h1 { font-size: 28px; }
+    .content { padding: 40px 20px; }
+    .reports-grid { grid-template-columns: 1fr; gap: 20px; }
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .kpi-item:nth-child(2) { border-right: none; }
+    .footer { flex-direction: column; gap: 16px; text-align: center; }
+  }
+
+  @media print {
+    .nav, .footer { display: none; }
+    .report-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">Maco Equity Partners</a>
+  <div class="nav-links">
+    <a href="/#about">About</a>
+    <a href="/#focus">Focus</a>
+    <a href="/#approach">Approach</a>
+    <a href="/research.html" class="active">Research</a>
+    <a href="/#contact">Contact</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Market Intelligence</div>
+  <h1>Research &amp; Market Reports</h1>
+  <p>Institutional-grade market analysis covering South Florida industrial real estate. Data-driven insights to inform investment decisions.</p>
+</div>
+
+<div class="content">
+
+  <div class="kpi-strip">
+    <div class="kpi-item">
+      <div class="kpi-value">6.9%</div>
+      <div class="kpi-label">Tri-County Vacancy</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-value">$16.74</div>
+      <div class="kpi-label">Avg Asking Rent NNN</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-value">4.2M SF</div>
+      <div class="kpi-label">Under Construction</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-value">6.3%</div>
+      <div class="kpi-label">Avg Cap Rate</div>
+    </div>
+  </div>
+
+  <div class="section-label">Q1 2026 Reports</div>
+  <div class="section-title">South Florida Industrial</div>
+  <div class="section-subtitle">Quarterly market research covering the Miami-Dade, Broward, and Palm Beach County industrial markets. Published April 2026.</div>
+
+  <div class="reports-grid">
+
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="report-card-quarter">Q1 2026</div>
+        <div class="report-card-title">South Florida Industrial Market Overview</div>
+      </div>
+      <div class="report-card-body">
+        <p class="report-card-desc">Comprehensive analysis of the Tri-County industrial market including vacancy trends, rental rate movement, net absorption, capital markets activity, and submarket performance.</p>
+        <div class="report-card-meta">
+          <span class="meta-tag">Vacancy</span>
+          <span class="meta-tag">Rents</span>
+          <span class="meta-tag">Cap Rates</span>
+          <span class="meta-tag">Absorption</span>
+        </div>
+        <div class="report-card-links">
+          <a href="Q1_2026_SFL_Industrial_Overview.html" class="btn-view">View Report</a>
+          <a href="Q1_2026_SFL_Industrial_Overview.pdf" class="btn-pdf">PDF</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="report-card-quarter">Q1 2026</div>
+        <div class="report-card-title">Small-Bay Industrial Deals</div>
+      </div>
+      <div class="report-card-body">
+        <p class="report-card-desc">Transaction-level analysis of small-bay industrial sales across South Florida. Includes deal spotlights, cap rate trends, price-per-SF benchmarking, and small-bay vs. big-box comparison.</p>
+        <div class="report-card-meta">
+          <span class="meta-tag">Transactions</span>
+          <span class="meta-tag">Small-Bay</span>
+          <span class="meta-tag">Deal Volume</span>
+        </div>
+        <div class="report-card-links">
+          <a href="Q1_2026_Small_Bay_Deals.html" class="btn-view">View Report</a>
+          <a href="Q1_2026_Small_Bay_Deals.pdf" class="btn-pdf">PDF</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="report-card-header">
+        <div class="report-card-quarter">Q1 2026</div>
+        <div class="report-card-title">New Industrial Supply Pipeline</div>
+      </div>
+      <div class="report-card-body">
+        <p class="report-card-desc">Analysis of the South Florida industrial construction pipeline, Q1 deliveries, pre-lease rates by county, and implications for vacancy and rental rate trajectory.</p>
+        <div class="report-card-meta">
+          <span class="meta-tag">Construction</span>
+          <span class="meta-tag">Pipeline</span>
+          <span class="meta-tag">Deliveries</span>
+        </div>
+        <div class="report-card-links">
+          <a href="Q1_2026_New_Industrial_Supply.html" class="btn-view">View Report</a>
+          <a href="Q1_2026_New_Industrial_Supply.pdf" class="btn-pdf">PDF</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="methodology">
+    <h3>Methodology &amp; Sources</h3>
+    <p>Market data is sourced from CoStar, Colliers South Florida, JLL Research, CBRE Econometric Advisors, Real Capital Analytics, Dodge Data &amp; Analytics, and public county records. Vacancy rates are calculated on a direct basis excluding sublease space. Rental rates represent triple-net (NNN) asking rents. Transaction data reflects arms-length sales recorded during the reporting period. Construction pipeline data reflects ground-up industrial projects tracked by CoStar and Dodge Data &amp; Analytics. Pre-lease rates are based on signed leases as of March 31, 2026.</p>
+  </div>
+
+  <div class="disclaimer">
+    <p>This report contains information from sources deemed reliable but not guaranteed. Maco Equity Partners makes no representation or warranty as to the accuracy or completeness of the information contained herein. This report is for informational purposes only and does not constitute investment advice. Past performance is not indicative of future results. Forward-looking statements are based on current expectations and are subject to change. No part of this publication may be reproduced without the prior written consent of Maco Equity Partners.</p>
+    <p style="margin-top: 12px;">Prepared by Maco Equity Partners Research | info@macoequitypartners.com | macoequitypartners.com</p>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <span class="footer-logo">Maco Equity Partners</span>
+  <div class="footer-links">
+    <a href="/#about">About</a>
+    <a href="/#focus">Focus</a>
+    <a href="/#approach">Process</a>
+    <a href="/research.html">Research</a>
+    <a href="/#contact">Contact</a>
+  </div>
+  <span class="footer-copy">&copy; 2026 Maco Equity Partners. All rights reserved.</span>
+</footer>
+
+</body>
+</html>
