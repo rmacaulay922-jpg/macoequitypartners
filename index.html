@@ -26,7 +26,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=10">
 <style>
   /* index-specific */
   .hero{
@@ -145,7 +145,26 @@
   .vertical:hover{padding-left:1rem;padding-right:1rem}
   .vertical-num{
     font-family:'Cormorant Garamond',serif;
-    font-size:2.5rem;font-weight:300;color:var(--bronze);
+    font-size:3.4rem;font-weight:400;font-style:italic;
+    color:var(--bronze);
+    line-height:1;
+    transition:transform .4s ease, color .3s ease;
+    position:relative;
+    padding-left:.6rem;
+  }
+  .vertical-num::before{
+    content:'';position:absolute;left:-1rem;top:50%;
+    width:1.6rem;height:1px;background:var(--bronze);
+    transform:translateY(-50%) scaleX(0);
+    transform-origin:right center;
+    transition:transform .4s ease;
+  }
+  .vertical:hover .vertical-num{
+    transform:translateX(6px);
+    color:var(--bronze-soft);
+  }
+  .vertical:hover .vertical-num::before{
+    transform:translateY(-50%) scaleX(1);
   }
   .vertical-body h3{
     font-family:'Cormorant Garamond',serif;

@@ -24,7 +24,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/jpeg" href="favicon.jpg">
 <link rel="apple-touch-icon" href="favicon.jpg">
-<link rel="stylesheet" href="styles.css?v=9">
+<link rel="stylesheet" href="styles.css?v=10">
 <style>
   .research-intro{padding:5rem 5vw 4rem;background:var(--bg);border-bottom:1px solid var(--rule)}
   .research-intro-inner{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:5vw;align-items:center}
@@ -51,7 +51,10 @@
   .reports-list{max-width:var(--container-narrow);margin:0 auto;border-top:1px solid var(--rule)}
   .report-item{display:grid;grid-template-columns:auto 1fr auto;gap:3vw;padding:3rem 0;border-bottom:1px solid var(--rule);transition:padding .4s ease;align-items:center}
   .report-item:hover{padding-left:1rem;padding-right:1rem}
-  .report-num{font-family:'Cormorant Garamond',serif;font-size:2.2rem;font-weight:300;color:var(--bronze)}
+  .report-num{font-family:'Cormorant Garamond',serif;font-size:3.2rem;font-weight:400;font-style:italic;color:var(--bronze);line-height:1;transition:transform .4s ease,color .3s ease;position:relative;padding-left:.6rem}
+  .report-num::before{content:'';position:absolute;left:-1rem;top:50%;width:1.6rem;height:1px;background:var(--bronze);transform:translateY(-50%) scaleX(0);transform-origin:right center;transition:transform .4s ease}
+  .report-item:hover .report-num{transform:translateX(6px);color:var(--bronze-soft)}
+  .report-item:hover .report-num::before{transform:translateY(-50%) scaleX(1)}
   .report-body h3{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:400;color:var(--ivory);margin-bottom:.7rem;line-height:1.15;letter-spacing:-.005em}
   .report-body p{font-size:.98rem;color:var(--ivory-soft);line-height:1.65;font-weight:300;max-width:620px;margin-bottom:1rem}
   .report-meta{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}

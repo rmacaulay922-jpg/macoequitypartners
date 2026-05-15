@@ -620,13 +620,58 @@ main,nav,footer,section,header{position:relative;z-index:2}
   font-size:1.05rem;line-height:1.8;
   color:var(--ivory-soft);font-weight:300;
 }
-.report-section{margin-bottom:5rem}
+.report-section{margin-bottom:6rem;position:relative}
 .report-section:last-child{margin-bottom:0}
+
+/* Editorial chapter marker — bold visual cue that a new section begins */
 .report-section-num{
+  display:flex;align-items:center;gap:1.4rem;
+  margin:0 0 2.5rem;padding-top:2rem;
   font-family:'Cormorant Garamond',serif;
-  font-size:.85rem;color:var(--bronze);
-  letter-spacing:.2em;margin-bottom:.8rem;
+  color:var(--bronze);
+  text-transform:none;letter-spacing:0;
+}
+.report-section-num::before{
+  content:'Part';
+  flex-shrink:0;
+  font-family:'Inter',sans-serif;
+  font-style:normal;
+  font-size:.62rem;
   font-weight:500;
+  letter-spacing:.36em;
+  text-transform:uppercase;
+  color:var(--bronze);
+  padding-right:.3rem;
+}
+.report-section-num::after{
+  content:'';
+  flex:1;
+  height:1px;
+  background:linear-gradient(90deg,var(--bronze) 0%,var(--bronze) 35%,rgba(184,153,104,0) 100%);
+  opacity:.55;
+}
+/* The Roman numeral text itself */
+.report-section .report-section-num{
+  font-size:1.9rem;
+  font-style:italic;
+  font-weight:400;
+}
+/* Inner number element styling — for browsers handling text directly */
+.report-section-num{line-height:1}
+
+/* Decorative drop-quote behind larger sections — adds editorial flourish */
+.report-section h2{
+  position:relative;
+}
+.report-section h2::before{
+  content:'';
+  position:absolute;
+  left:-1.4rem;
+  top:.4em;
+  bottom:.2em;
+  width:2px;
+  background:linear-gradient(180deg,var(--bronze) 0%,rgba(184,153,104,0) 100%);
+  opacity:.35;
 }
 .report-section h2{
   font-family:'Cormorant Garamond',serif;
