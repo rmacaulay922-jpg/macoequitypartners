@@ -76,7 +76,7 @@ img { display: block; max-width: 100%; }
 .nav-links a:hover::after { transform: scaleX(1); }
 .nav-links a.active { color: var(--accent); }
 .nav-links a.active::after { transform: scaleX(1); }
-.nav-cta {
+.nav-links a.nav-cta {
   font-size: 0.88rem; font-weight: 600; letter-spacing: 0.02em;
   padding: 0.65rem 1.3rem;
   border: 1.5px solid var(--ink);
@@ -85,8 +85,8 @@ img { display: block; max-width: 100%; }
   border-radius: 4px;
   transition: all 0.2s ease;
 }
-.nav-cta:hover { background: var(--accent); border-color: var(--accent); color: var(--white); }
-.nav-cta::after { display: none !important; }
+.nav-links a.nav-cta:hover { background: var(--accent); border-color: var(--accent); color: var(--white); }
+.nav-links a.nav-cta::after { display: none !important; }
 
 /* Mobile hamburger */
 .nav-toggle {
