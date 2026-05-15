@@ -726,6 +726,30 @@
 </footer>
 
 <script>
+  // Force-play the hero video. The autoplay attribute is unreliable for
+  // cross-origin media in some Chrome configurations, so we explicitly
+  // call .play() once metadata is ready, and again on any user gesture.
+  (function () {
+    const v = document.querySelector('.hero-video');
+    if (!v) return;
+    const start = () => {
+      v.play().then(() => v.classList.add('playing')).catch(() => {
+        // Autoplay blocked — fall back to poster image; first user interaction will resume.
+        const resume = () => {
+          v.play().then(() => v.classList.add('playing')).catch(() => {});
+          document.removeEventListener('pointerdown', resume);
+          document.removeEventListener('touchstart', resume);
+          document.removeEventListener('keydown', resume);
+        };
+        document.addEventListener('pointerdown', resume, { once: true });
+        document.addEventListener('touchstart', resume, { once: true });
+        document.addEventListener('keydown', resume, { once: true });
+      });
+    };
+    if (v.readyState >= 2) start();
+    else v.addEventListener('loadeddata', start, { once: true });
+  })();
+
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 60) nav.classList.add('scrolled');
