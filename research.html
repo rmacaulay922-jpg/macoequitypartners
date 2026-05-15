@@ -272,12 +272,15 @@
 
 <nav class="nav">
   <a href="index.html" class="nav-logo">Maco <span class="accent">Equity</span> Partners</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="this.classList.toggle('open'); this.parentElement.querySelector('.nav-links').classList.toggle('open'); this.setAttribute('aria-expanded', this.classList.contains('open'));">
+    <span></span><span></span><span></span>
+  </button>
   <ul class="nav-links">
     <li><a href="index.html#about">About</a></li>
     <li><a href="index.html#focus">Focus</a></li>
     <li><a href="index.html#approach">Approach</a></li>
     <li><a href="research.html" class="active">Research</a></li>
-    <li><a href="blog.html">Insights</a></li>
+    <li><a href="blog.html">Blog</a></li>
     <li><a href="index.html#contact" class="nav-cta">Contact</a></li>
   </ul>
 </nav>
@@ -510,7 +513,7 @@
       <h4>Research</h4>
       <ul>
         <li><a href="research.html">Market reports</a></li>
-        <li><a href="blog.html">Insights blog</a></li>
+        <li><a href="blog.html">Blog</a></li>
         <li><a href="Q1_2026_SFL_Industrial_Overview.html">SFL Industrial Q1</a></li>
         <li><a href="Q1_2026_Small_Bay_Deals.html">Small-Bay Deals</a></li>
       </ul>

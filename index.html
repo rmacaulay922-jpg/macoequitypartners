@@ -465,12 +465,15 @@
 
 <nav class="nav">
   <a href="/" class="nav-logo">Maco <span class="accent">Equity</span> Partners</a>
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="this.classList.toggle('open'); this.parentElement.querySelector('.nav-links').classList.toggle('open'); this.setAttribute('aria-expanded', this.classList.contains('open'));">
+    <span></span><span></span><span></span>
+  </button>
   <ul class="nav-links">
     <li><a href="#about">About</a></li>
     <li><a href="#focus">Focus</a></li>
     <li><a href="#approach">Approach</a></li>
     <li><a href="research.html">Research</a></li>
-    <li><a href="blog.html">Insights</a></li>
+    <li><a href="blog.html">Blog</a></li>
     <li><a href="#contact" class="nav-cta">Contact</a></li>
   </ul>
 </nav>
@@ -488,6 +491,35 @@
     </div>
   </div>
   <div class="hero-scroll">Scroll</div>
+</section>
+
+<section class="explore-strip" aria-label="Site navigation">
+  <div class="explore-grid">
+    <a href="research.html" class="explore-card">
+      <span class="explore-card-eyebrow">Market Intelligence</span>
+      <h3>Research &amp; Reports</h3>
+      <p>Quarterly South Florida industrial market reports. Vacancy, rents, cap rates, supply pipeline, transactions.</p>
+      <span class="explore-card-arrow">Browse research
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+    <a href="blog.html" class="explore-card">
+      <span class="explore-card-eyebrow">Insights &amp; Commentary</span>
+      <h3>The Blog</h3>
+      <p>Market commentary, deal analysis, and thought leadership from the Maco Equity Partners team.</p>
+      <span class="explore-card-arrow">Read the blog
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+    <a href="#contact" class="explore-card">
+      <span class="explore-card-eyebrow">Connect</span>
+      <h3>Start a Conversation</h3>
+      <p>Exploring a partnership, presenting a deal, or want to discuss the market? We'd like to hear from you.</p>
+      <span class="explore-card-arrow">Contact us
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+  </div>
 </section>
 
 <div class="trust-strip">
@@ -712,7 +744,7 @@
       <h4>Research</h4>
       <ul>
         <li><a href="research.html">Market reports</a></li>
-        <li><a href="blog.html">Insights blog</a></li>
+        <li><a href="blog.html">Blog</a></li>
         <li><a href="Q1_2026_SFL_Industrial_Overview.html">SFL Industrial Q1</a></li>
         <li><a href="Q1_2026_Small_Bay_Deals.html">Small-Bay Deals</a></li>
       </ul>
