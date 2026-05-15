@@ -35,20 +35,47 @@
     display:flex;flex-direction:column;justify-content:flex-end;
     padding:0 0 6rem;
   }
+  /* Fallback image layer — shown until video loads, or always on mobile/reduced-motion */
   .hero-image{
-    position:absolute;inset:0;
+    position:absolute;inset:0;z-index:0;
     background:
-      linear-gradient(180deg,rgba(13,12,10,.55) 0%,rgba(13,12,10,.20) 35%,rgba(13,12,10,.88) 100%),
       url('https://images.unsplash.com/photo-1530686577637-0ccce382b327?w=2400&q=95') center/cover no-repeat;
     filter:saturate(.72) contrast(1.05);
     animation:kenBurns 32s ease-in-out infinite alternate;
+  }
+  /* Video plays on top of fallback image when loaded */
+  .hero-video{
+    position:absolute;inset:0;z-index:1;
+    width:100%;height:100%;
+    object-fit:cover;
+    filter:saturate(.85) contrast(1.05);
+    pointer-events:none;
+    /* fade in once the video starts playing to avoid the flash from poster to first frame */
+    opacity:0;
+    transition:opacity 1s ease;
+  }
+  .hero-video.playing{opacity:1}
+  /* Dark gradient overlay on top of both for headline legibility */
+  .hero-gradient{
+    position:absolute;inset:0;z-index:2;
+    pointer-events:none;
+    background:linear-gradient(180deg,rgba(13,12,10,.55) 0%,rgba(13,12,10,.20) 35%,rgba(13,12,10,.88) 100%);
   }
   @keyframes kenBurns{
     0%{transform:scale(1) translate(0,0)}
     100%{transform:scale(1.08) translate(-1%,-2%)}
   }
+  /* Respect users who prefer reduced motion or have low bandwidth */
+  @media (prefers-reduced-motion: reduce){
+    .hero-video{display:none}
+    .hero-image{animation:none}
+  }
+  /* On mobile/narrow screens, skip the video and use the static image — saves ~8 MB of data */
+  @media (max-width:768px){
+    .hero-video{display:none}
+  }
   .hero-content{
-    position:relative;padding:0 5vw;
+    position:relative;z-index:3;padding:0 5vw;
     max-width:var(--container);
   }
   .hero-eyebrow{
@@ -447,6 +474,12 @@
 
 <section class="hero">
   <div class="hero-image"></div>
+  <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+         poster="https://images.unsplash.com/photo-1530686577637-0ccce382b327?w=2400&q=85"
+         onplaying="this.classList.add('playing')">
+    <source src="https://videos.pexels.com/video-files/19109600/19109600-hd_1280_720_24fps.mp4" type="video/mp4">
+  </video>
+  <div class="hero-gradient"></div>
   <div class="hero-content">
     <div class="hero-eyebrow">A Value-Add Real Estate Firm · Established South Florida</div>
     <h1>Underwritten with <em>rigor.</em><br>Executed with <em>discipline.</em></h1>
