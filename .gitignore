@@ -1,0 +1,35 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local dev
+node_modules/
+.env
+.env.local
+
+# Build artifacts
+dist/
+build/
+
+# Safety: never accidentally commit business files if they get dropped in
+*.xlsx
+*.pptx
+*.docx
+*Investor_Memo*
+*Underwriting*
+*Deal_Pipeline*
+*Deal_Tracker*
+*Waterfall*
+*OM*.pdf
+/LLC*
+/Archive*
+/Deals*
+/Boynton*
+/Lake_Worth*

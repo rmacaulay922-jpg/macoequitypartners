@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research &amp; Market Reports | Maco Equity Partners</title>
+<meta name="description" content="Institutional-grade market research on South Florida industrial real estate. Quarterly reports covering vacancy, rents, cap rates, supply pipeline, and transaction activity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* Research-specific */
+  .research-intro { padding: 5rem 5vw 3rem; background: var(--white); }
+  .research-intro-grid {
+    max-width: 1180px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+    align-items: center;
+  }
+  .research-intro p {
+    color: var(--slate); font-weight: 300;
+    font-size: 1.02rem; line-height: 1.75;
+    margin-bottom: 1.2rem;
+  }
+
+  .kpi-section { padding: 2rem 5vw 4rem; }
+  .kpi-section .kpi-strip { max-width: 1180px; margin: 0 auto; }
+  .kpi-source {
+    max-width: 1180px; margin: 1rem auto 0;
+    font-size: 0.78rem; color: var(--muted); text-align: right;
+    letter-spacing: 0.04em;
+  }
+
+  .reports-section { padding: 4rem 5vw 6rem; background: var(--cream); }
+  .reports-header {
+    max-width: 1180px; margin: 0 auto 3.5rem;
+    display: grid; grid-template-columns: 1fr auto;
+    gap: 2rem; align-items: end;
+  }
+  .filter-bar {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .filter-chip {
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem; font-weight: 500;
+    letter-spacing: 0.04em;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    background: var(--white);
+    color: var(--slate);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .filter-chip.active, .filter-chip:hover {
+    background: var(--ink); color: var(--white); border-color: var(--ink);
+  }
+
+  .reports-grid {
+    max-width: 1180px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+  }
+  .report-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none; color: inherit;
+  }
+  .report-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+  }
+  .report-card-img {
+    height: 180px; overflow: hidden;
+    background: var(--ink);
+    position: relative;
+  }
+  .report-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    opacity: 0.85;
+    transition: transform 0.5s ease, opacity 0.3s ease;
+  }
+  .report-card:hover .report-card-img img {
+    transform: scale(1.04); opacity: 1;
+  }
+  .report-card-quarter {
+    position: absolute; top: 1rem; left: 1rem;
+    background: rgba(255,255,255,0.95);
+    color: var(--ink);
+    font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.35rem 0.75rem;
+    border-radius: 100px;
+  }
+  .report-card-body {
+    padding: 1.8rem;
+    flex: 1; display: flex; flex-direction: column;
+  }
+  .report-card-cat {
+    font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 0.7rem;
+  }
+  .report-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; font-weight: 500;
+    color: var(--ink); line-height: 1.3;
+    margin-bottom: 0.8rem;
+    letter-spacing: -0.005em;
+  }
+  .report-card p {
+    font-size: 0.9rem; color: var(--slate);
+    font-weight: 300; line-height: 1.65;
+    margin-bottom: 1.3rem; flex: 1;
+  }
+  .report-card-meta {
+    display: flex; flex-wrap: wrap; gap: 0.4rem;
+    margin-bottom: 1.3rem;
+  }
+  .meta-tag {
+    font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--slate);
+    background: var(--paper);
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+  }
+  .report-card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+  }
+  .report-card-footer .text-link { font-size: 0.78rem; }
+  .report-card-footer .pages {
+    font-size: 0.72rem; color: var(--muted);
+    letter-spacing: 0.06em;
+  }
+
+  /* Coverage section */
+  .coverage { padding: 6rem 5vw; background: var(--white); }
+  .coverage-grid {
+    max-width: 1180px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 2fr;
+    gap: 4rem;
+  }
+  .coverage-list {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+    align-self: start;
+  }
+  .coverage-item {
+    padding: 1.5rem 1.5rem 1.5rem 0;
+    border-bottom: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+  .coverage-item:nth-child(even) { padding-left: 1.5rem; padding-right: 0; border-right: none; }
+  .coverage-item:nth-last-child(-n+2) { border-bottom: none; }
+  .coverage-item h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 500;
+    color: var(--ink); margin-bottom: 0.4rem;
+  }
+  .coverage-item p {
+    font-size: 0.88rem; color: var(--slate);
+    font-weight: 300; line-height: 1.6;
+  }
+
+  /* Methodology */
+  .methodology {
+    padding: 5rem 5vw;
+    background: var(--ink); color: var(--white);
+    position: relative; overflow: hidden;
+  }
+  .methodology::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse at top left, rgba(45,95,74,0.18) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(45,95,74,0.1) 0%, transparent 60%);
+  }
+  .methodology > * { position: relative; }
+  .method-grid {
+    max-width: 1180px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1.5fr; gap: 4rem;
+  }
+  .methodology .eyebrow { color: rgba(255,255,255,0.6); }
+  .methodology .eyebrow::before { background: rgba(255,255,255,0.35); }
+  .methodology .section-title { color: var(--white); }
+  .methodology p {
+    color: rgba(255,255,255,0.7);
+    font-weight: 300; line-height: 1.75;
+    font-size: 0.98rem;
+  }
+  .source-list {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+    margin-top: 1.5rem;
+  }
+  .source-list span {
+    font-size: 0.85rem; color: rgba(255,255,255,0.75);
+    padding: 0.55rem 0.9rem;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+  }
+
+  /* Subscribe */
+  .subscribe { padding: 5rem 5vw; background: var(--cream); }
+  .subscribe-card {
+    max-width: 720px; margin: 0 auto;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 3.5rem;
+    text-align: center;
+  }
+  .subscribe-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 500;
+    color: var(--ink); margin-bottom: 0.8rem;
+    letter-spacing: -0.005em;
+  }
+  .subscribe-card p {
+    font-size: 1rem; color: var(--slate);
+    font-weight: 300; max-width: 480px;
+    margin: 0 auto 2rem;
+  }
+  .subscribe-form {
+    display: flex; gap: 0.6rem; max-width: 480px;
+    margin: 0 auto; flex-wrap: wrap;
+  }
+  .subscribe-form input {
+    flex: 1; min-width: 220px;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 0.95rem; font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+  .subscribe-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+  /* Disclaimer */
+  .disclaimer-section {
+    padding: 3rem 5vw;
+    background: var(--white);
+    border-top: 1px solid var(--line);
+  }
+  .disclaimer-section p {
+    max-width: 1180px; margin: 0 auto;
+    font-size: 0.78rem; color: var(--muted);
+    line-height: 1.7;
+  }
+  .disclaimer-section p + p { margin-top: 0.7rem; }
+
+  @media (max-width: 960px) {
+    .research-intro-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .reports-header { grid-template-columns: 1fr; }
+    .reports-grid { grid-template-columns: 1fr; }
+    .coverage-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .coverage-list { grid-template-columns: 1fr; }
+    .coverage-item, .coverage-item:nth-child(even) {
+      padding: 1.25rem 0; border-right: none;
+    }
+    .method-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .source-list { grid-template-columns: 1fr; }
+    .subscribe-card { padding: 2.5rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="nav-logo">Maco <span class="accent">Equity</span> Partners</a>
+  <ul class="nav-links">
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="index.html#focus">Focus</a></li>
+    <li><a href="index.html#approach">Approach</a></li>
+    <li><a href="research.html" class="active">Research</a></li>
+    <li><a href="blog.html">Insights</a></li>
+    <li><a href="index.html#contact" class="nav-cta">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="page-hero">
+  <span class="eyebrow">Market Intelligence</span>
+  <h1>Research &amp; Market Reports.</h1>
+  <p>Institutional-grade analysis of South Florida industrial real estate — vacancy, rents, cap rates, transaction volume, and the supply pipeline. Published quarterly.</p>
+</section>
+
+<section class="research-intro">
+  <div class="research-intro-grid">
+    <div>
+      <span class="eyebrow">From the desk</span>
+      <h2 class="section-title">Data we use to make our own decisions.</h2>
+    </div>
+    <div>
+      <p>Every report on this page is produced by the same research function that underwrites Maco Equity Partners' own deals. We publish the analysis we'd want to see ourselves: rigorous, sourced, and free from the marketing varnish that fills most broker quarterlies.</p>
+      <p>If you'd like the underlying data, a custom cut by submarket, or a conversation about how these dynamics apply to your portfolio — <a href="index.html#contact" style="color: var(--accent); font-weight: 500;">get in touch</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="kpi-section">
+  <div class="kpi-strip">
+    <div class="kpi">
+      <div class="kpi-value">6.9%</div>
+      <div class="kpi-label">Tri-County Vacancy</div>
+      <div class="kpi-delta down">+40 bps QoQ</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">$16.74</div>
+      <div class="kpi-label">Avg Asking Rent NNN</div>
+      <div class="kpi-delta">+1.2% QoQ</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">4.2M SF</div>
+      <div class="kpi-label">Under Construction</div>
+      <div class="kpi-delta down">−8% QoQ</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-value">6.3%</div>
+      <div class="kpi-label">Avg Cap Rate</div>
+      <div class="kpi-delta">−20 bps QoQ</div>
+    </div>
+  </div>
+  <div class="kpi-source">Maco Equity Partners Research, Q1 2026. Sources: CoStar, Colliers, JLL, CBRE EA.</div>
+</section>
+
+<section class="reports-section">
+  <div class="reports-header">
+    <div>
+      <span class="eyebrow">Q1 2026 Reports</span>
+      <h2 class="section-title">South Florida Industrial.</h2>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-chip active">All</button>
+      <button class="filter-chip">Market Overview</button>
+      <button class="filter-chip">Transactions</button>
+      <button class="filter-chip">Supply</button>
+    </div>
+  </div>
+
+  <div class="reports-grid">
+    <a href="Q1_2026_SFL_Industrial_Overview.html" class="report-card">
+      <div class="report-card-img">
+        <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=85" alt="South Florida industrial market">
+        <span class="report-card-quarter">Q1 2026</span>
+      </div>
+      <div class="report-card-body">
+        <div class="report-card-cat">Market Overview</div>
+        <h3>South Florida Industrial Market Overview</h3>
+        <p>Comprehensive analysis of the Tri-County industrial market: vacancy trends, rental rate movement, net absorption, capital markets activity, and submarket performance.</p>
+        <div class="report-card-meta">
+          <span class="meta-tag">Vacancy</span>
+          <span class="meta-tag">Rents</span>
+          <span class="meta-tag">Cap Rates</span>
+          <span class="meta-tag">Absorption</span>
+        </div>
+        <div class="report-card-footer">
+          <span class="text-link">Read report
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+          <span class="pages">24 pages</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="Q1_2026_Small_Bay_Deals.html" class="report-card">
+      <div class="report-card-img">
+        <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=800&q=85" alt="Small bay industrial">
+        <span class="report-card-quarter">Q1 2026</span>
+      </div>
+      <div class="report-card-body">
+        <div class="report-card-cat">Transactions</div>
+        <h3>Small-Bay Industrial Deal Activity</h3>
+        <p>Transaction-level analysis of small-bay sales across South Florida. Deal spotlights, cap rate trends, price-per-SF benchmarking, and small-bay vs. big-box comparison.</p>
+        <div class="report-card-meta">
+          <span class="meta-tag">Transactions</span>
+          <span class="meta-tag">Small-Bay</span>
+          <span class="meta-tag">Pricing</span>
+        </div>
+        <div class="report-card-footer">
+          <span class="text-link">Read report
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+          <span class="pages">18 pages</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="Q1_2026_New_Industrial_Supply.html" class="report-card">
+      <div class="report-card-img">
+        <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&q=85" alt="Industrial construction">
+        <span class="report-card-quarter">Q1 2026</span>
+      </div>
+      <div class="report-card-body">
+        <div class="report-card-cat">Supply Pipeline</div>
+        <h3>New Industrial Supply Pipeline</h3>
+        <p>Analysis of the SFL construction pipeline, Q1 deliveries, pre-lease rates by county, and implications for vacancy and rent trajectory through year-end.</p>
+        <div class="report-card-meta">
+          <span class="meta-tag">Construction</span>
+          <span class="meta-tag">Pipeline</span>
+          <span class="meta-tag">Deliveries</span>
+        </div>
+        <div class="report-card-footer">
+          <span class="text-link">Read report
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+          <span class="pages">16 pages</span>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<section class="coverage">
+  <div class="coverage-grid">
+    <div>
+      <span class="eyebrow">Coverage universe</span>
+      <h2 class="section-title">What we track.</h2>
+      <p style="color: var(--slate); font-weight: 300; line-height: 1.75; margin-top: 1rem;">Our research focuses on the South Florida industrial corridor — the densest, supply-constrained logistics market in the Southeast. We cover transaction activity, supply, and capital markets across six core submarkets.</p>
+    </div>
+    <div class="coverage-list">
+      <div class="coverage-item">
+        <h4>Miami-Dade</h4>
+        <p>Airport West, Hialeah, Medley, Doral. The institutional core.</p>
+      </div>
+      <div class="coverage-item">
+        <h4>Broward</h4>
+        <p>Pompano, Deerfield, Davie, Sunrise. Last-mile distribution belt.</p>
+      </div>
+      <div class="coverage-item">
+        <h4>Palm Beach</h4>
+        <p>Lake Worth, Boynton, Riviera Beach, West Palm. The growth frontier.</p>
+      </div>
+      <div class="coverage-item">
+        <h4>Treasure Coast</h4>
+        <p>Stuart, Port St. Lucie. Emerging small-bay and flex demand.</p>
+      </div>
+      <div class="coverage-item">
+        <h4>Small-Bay Segment</h4>
+        <p>5,000–25,000 SF flex and warehouse. Our highest-conviction subsegment.</p>
+      </div>
+      <div class="coverage-item">
+        <h4>Capital Markets</h4>
+        <p>Sales volume, cap rates, buyer composition, debt cost.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="methodology">
+  <div class="method-grid">
+    <div>
+      <span class="eyebrow">Methodology</span>
+      <h2 class="section-title">Sources &amp; rigor.</h2>
+    </div>
+    <div>
+      <p>Market data is triangulated from multiple institutional sources to mitigate vendor-specific bias. We disclose every dataset, time series, and definition. Where we estimate, we say so. Where we project, we publish the assumptions.</p>
+      <div class="source-list">
+        <span>CoStar Group</span>
+        <span>Colliers South Florida</span>
+        <span>JLL Research</span>
+        <span>CBRE Econometric Advisors</span>
+        <span>Real Capital Analytics</span>
+        <span>Dodge Data &amp; Analytics</span>
+        <span>Public county records</span>
+        <span>Maco proprietary tracking</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="subscribe">
+  <div class="subscribe-card">
+    <span class="eyebrow" style="justify-content: center; display: flex;">Quarterly research</span>
+    <h3>Get reports in your inbox.</h3>
+    <p>New research drops the first week of each quarter. No spam — just the data and commentary we'd want to see ourselves.</p>
+    <form class="subscribe-form" onsubmit="event.preventDefault(); this.querySelector('button').textContent='Subscribed'; this.querySelector('button').disabled=true;">
+      <input type="email" placeholder="your@email.com" required>
+      <button type="submit" class="btn btn-primary">Subscribe
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </form>
+  </div>
+</section>
+
+<section class="disclaimer-section">
+  <p><strong style="color: var(--slate);">Disclaimer.</strong> This research is for informational purposes only and does not constitute investment advice, a solicitation, or an offer to buy or sell any security or interest. Past performance is not indicative of future results.</p>
+  <p>Prepared by Maco Equity Partners Research. Inquiries: <a href="mailto:info@macoequitypartners.com" style="color: var(--accent);">info@macoequitypartners.com</a>. macoequitypartners.com</p>
+</section>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="footer-logo">Maco Equity Partners</span>
+      <p>Private equity and asset management. A decade of disciplined investment across real estate, growth equity, and small-business acquisitions.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Firm</h4>
+      <ul>
+        <li><a href="index.html#about">About</a></li>
+        <li><a href="index.html#focus">Investment focus</a></li>
+        <li><a href="index.html#approach">Process</a></li>
+        <li><a href="index.html#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Research</h4>
+      <ul>
+        <li><a href="research.html">Market reports</a></li>
+        <li><a href="blog.html">Insights blog</a></li>
+        <li><a href="Q1_2026_SFL_Industrial_Overview.html">SFL Industrial Q1</a></li>
+        <li><a href="Q1_2026_Small_Bay_Deals.html">Small-Bay Deals</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="mailto:info@macoequitypartners.com">info@macoequitypartners.com</a></li>
+        <li><a href="index.html#contact">Inquiry form</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Maco Equity Partners. All rights reserved.</span>
+    <div class="meta">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Disclosures</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
