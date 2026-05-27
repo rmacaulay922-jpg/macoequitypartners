@@ -3,30 +3,102 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MACO EQUITY PARTNERS · Deal Intelligence Portal</title>
+<title>Off-Market Deal Finder · Maco Equity Partners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/jpeg" href="/favicon.jpg">
 
 <style>
 :root {
-  --black:#0A0A0A; --gold:#D4AF37; --gold-light:#F0D060;
-  --bg:#F5F3EE; --card:#FFFFFF; --border:#E8E4DC;
-  --text:#1A1A1A; --muted:#6B6B6B; --green:#1A6B3C; --red:#B91C1C;
+  --bg:#0d0c0a; --bg-deep:#080806; --bg-soft:#16140f; --bg-warm:#1a1812; --bg-card:#1c1a14;
+  --ivory:#f4f1ea; --ivory-soft:#e8e3d6; --muted:#8a8478; --faint:#5a554c;
+  --bronze:#b89968; --bronze-soft:#d4b884; --bronze-deep:#8b6f47;
+  --rule:rgba(244,241,234,.10); --rule-strong:rgba(244,241,234,.20); --rule-bronze:rgba(184,153,104,.30);
+  /* aliases used throughout portal */
+  --black:#0d0c0a; --gold:#b89968; --gold-light:#d4b884;
+  --card:#1c1a14; --border:rgba(244,241,234,.12);
+  --text:#f4f1ea; --green:#4a8c6a; --red:#c97a6a;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text)}
+html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ivory);-webkit-font-smoothing:antialiased;}
 
-/* LOGIN */
-#loginGate{position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;overflow:hidden}
-#bgCanvas{position:absolute;inset:0}
-#loginCard{position:relative;z-index:2;background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.3);backdrop-filter:blur(12px);border-radius:16px;padding:48px 40px;text-align:center;min-width:340px;box-shadow:0 0 60px rgba(212,175,55,.1)}
-.mep-monogram{font-family:Georgia,serif;font-size:56px;font-weight:700;color:var(--gold);letter-spacing:-2px;line-height:1;margin-bottom:12px}
-.mep-wordmark{font-family:Georgia,serif;font-size:18px;font-weight:700;color:#fff;letter-spacing:3px;text-transform:uppercase}
-.mep-subtitle{font-size:12px;color:rgba(212,175,55,.7);letter-spacing:2px;text-transform:uppercase;margin-top:6px;margin-bottom:32px}
-#pwInput{width:100%;padding:12px 16px;background:rgba(255,255,255,.08);border:1px solid rgba(212,175,55,.4);border-radius:8px;color:#fff;font-size:15px;text-align:center;outline:none;transition:border-color .2s;margin-bottom:12px}
-#pwInput::placeholder{color:rgba(255,255,255,.3)}
-#pwInput:focus{border-color:var(--gold)}
-#loginBtn{width:100%;padding:13px;background:var(--gold);color:var(--black);border:none;border-radius:8px;font-size:15px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:background .2s}
-#loginBtn:hover{background:var(--gold-light)}
-#loginErr{margin-top:12px;font-size:13px;color:#ef4444;min-height:18px}
+/* ── LOGIN GATE ────────────────────────────────── */
+#loginGate{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;
+}
+/* film grain identical to main site */
+#loginGate::before{
+  content:'';position:absolute;inset:0;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 .95 0 0 0 0 .9 0 0 0 .04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:overlay;opacity:.45;pointer-events:none;
+}
+#bgCanvas{position:absolute;inset:0;z-index:1;opacity:.18}
+#loginCard{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:0 2rem;
+  max-width:440px;width:100%;
+}
+.login-logo-wrap{margin-bottom:3rem}
+.login-logo-wrap img{height:52px;width:auto;margin:0 auto;filter:invert(1) brightness(.92) sepia(.12) saturate(.7);opacity:.9}
+.login-wordmark{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.35rem;font-weight:500;
+  color:var(--ivory);letter-spacing:.12em;
+  text-transform:uppercase;margin-top:1rem;
+}
+.login-wordmark .accent{color:var(--bronze)}
+.login-eyebrow{
+  display:inline-flex;align-items:center;gap:.8rem;
+  font-size:.65rem;letter-spacing:.4em;text-transform:uppercase;
+  color:var(--bronze);font-weight:400;
+  margin:2.5rem 0 2rem;
+}
+.login-eyebrow::before,.login-eyebrow::after{content:'';width:24px;height:1px;background:var(--bronze)}
+.login-heading{
+  font-family:'Cormorant Garamond',serif;
+  font-weight:300;
+  font-size:clamp(2.4rem,5vw,3.6rem);
+  line-height:1.05;letter-spacing:-.012em;
+  color:var(--ivory);margin-bottom:2.5rem;
+}
+.login-heading em{font-style:italic;color:var(--bronze-soft);font-weight:300}
+.login-input-wrap{margin-bottom:1rem;text-align:left}
+.login-label{
+  display:block;font-size:.62rem;font-weight:500;
+  letter-spacing:.35em;text-transform:uppercase;
+  color:var(--bronze);margin-bottom:.6rem;
+}
+#pwInput{
+  width:100%;
+  padding:.85rem 0;
+  background:transparent;
+  border:none;border-bottom:1px solid var(--rule-strong);
+  color:var(--ivory);
+  font-family:'Inter',sans-serif;font-size:1rem;font-weight:300;
+  outline:none;transition:border-color .3s;
+  letter-spacing:.05em;
+}
+#pwInput::placeholder{color:var(--faint)}
+#pwInput:focus{border-bottom-color:var(--bronze)}
+#loginBtn{
+  width:100%;margin-top:1.8rem;
+  padding:1rem 1.8rem;
+  font-family:'Inter',sans-serif;
+  font-size:.72rem;font-weight:500;
+  letter-spacing:.28em;text-transform:uppercase;
+  background:var(--bronze);color:var(--bg);
+  border:1px solid var(--bronze);
+  cursor:pointer;transition:background .3s,border-color .3s;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;
+}
+#loginBtn:hover{background:var(--bronze-soft);border-color:var(--bronze-soft)}
+#loginErr{margin-top:1rem;font-size:.8rem;color:#c97a6a;min-height:20px;letter-spacing:.05em}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
 .shake{animation:shake .4s ease}
 
@@ -34,26 +106,68 @@ html,body{height:100%;font-family:system-ui,-apple-system,sans-serif;background:
 #app{display:none;flex-direction:column;min-height:100vh}
 
 /* HEADER */
-header{background:var(--black);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold)}
-.hdr-brand{display:flex;align-items:center;gap:12px}
-.hdr-mono{font-family:Georgia,serif;font-size:22px;font-weight:700;color:var(--gold);background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.4);width:38px;height:38px;border-radius:6px;display:flex;align-items:center;justify-content:center}
-.hdr-title{font-family:Georgia,serif;font-size:15px;font-weight:700;color:#fff;letter-spacing:2px}
-.hdr-tag{font-size:10px;color:rgba(212,175,55,.6);letter-spacing:1.5px;text-transform:uppercase}
-.hdr-date{font-size:12px;color:var(--muted)}
+header{
+  background:rgba(13,12,10,.92);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  padding:0 5vw;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;position:sticky;top:0;z-index:100;
+  border-bottom:1px solid var(--rule);
+}
+.hdr-brand{display:flex;align-items:center;gap:.8rem}
+.hdr-logo{height:34px;width:auto;filter:invert(1) brightness(.92) sepia(.12) saturate(.7);opacity:.9}
+.hdr-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:1.15rem;font-weight:500;
+  letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ivory);
+}
+.hdr-name .accent{color:var(--bronze)}
+.hdr-divider{width:1px;height:22px;background:var(--rule-strong);margin:0 1.2rem}
+.hdr-title{
+  font-size:.65rem;font-weight:500;
+  letter-spacing:.3em;text-transform:uppercase;
+  color:var(--bronze);
+}
+.hdr-date{font-size:.7rem;color:var(--muted);letter-spacing:.08em}
+.hdr-back{
+  font-size:.65rem;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;
+  transition:color .3s;
+  display:flex;align-items:center;gap:.4rem;
+}
+.hdr-back:hover{color:var(--bronze)}
 
 /* TABS */
-nav.tabs{background:var(--black);display:flex;padding:0 24px;border-bottom:1px solid #222;position:sticky;top:58px;z-index:99}
-nav.tabs button{background:none;border:none;color:rgba(255,255,255,.5);padding:12px 20px;font-size:13px;font-weight:500;letter-spacing:.5px;cursor:pointer;border-bottom:3px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap}
-nav.tabs button:hover{color:rgba(255,255,255,.8)}
-nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-weight:700}
+nav.tabs{
+  background:var(--bg-deep);
+  display:flex;padding:0 5vw;
+  border-bottom:1px solid var(--rule);
+  position:sticky;top:64px;z-index:99;
+  overflow-x:auto;
+}
+nav.tabs button{
+  background:none;border:none;
+  color:var(--muted);
+  padding:1rem 1.4rem;
+  font-family:'Inter',sans-serif;
+  font-size:.65rem;font-weight:500;letter-spacing:.25em;text-transform:uppercase;
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:color .25s,border-color .25s;
+  white-space:nowrap;flex-shrink:0;
+}
+nav.tabs button:hover{color:var(--ivory-soft)}
+nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);font-weight:600}
 
 /* SETTINGS */
-#settingsToggle{background:var(--black);border:none;border-bottom:1px solid #222;color:rgba(212,175,55,.7);font-size:11px;letter-spacing:1px;padding:5px 24px;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;transition:color .2s;position:sticky;top:97px;z-index:98}
+#settingsToggle{background:var(--bg-deep);border:none;border-bottom:1px solid var(--rule);color:var(--muted);font-family:'Inter',sans-serif;font-size:.62rem;font-weight:500;letter-spacing:.28em;text-transform:uppercase;padding:6px 5vw;cursor:pointer;display:flex;align-items:center;gap:6px;width:100%;transition:color .2s;position:sticky;top:114px;z-index:98}
 #settingsToggle:hover{color:var(--gold)}
 #settingsBar{background:var(--black);border-bottom:1px solid #2a2000;overflow:hidden;transition:max-height .3s ease;max-height:0;position:sticky;top:120px;z-index:97}
 #settingsBar.open{max-height:80px}
 .settings-inner{display:flex;align-items:center;gap:24px;padding:12px 24px}
-.s-label{font-size:12px;color:rgba(212,175,55,.8);letter-spacing:1px;text-transform:uppercase}
+.s-label{font-size:12px;color:rgba(184,153,104,.8);letter-spacing:1px;text-transform:uppercase}
 #maoSlider{-webkit-appearance:none;width:200px;height:4px;border-radius:2px;outline:none;cursor:pointer}
 #maoSlider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);border:2px solid var(--black);box-shadow:0 0 0 2px var(--gold);cursor:pointer}
 #maoLabel{font-size:14px;font-weight:700;color:var(--gold);min-width:64px}
@@ -64,15 +178,15 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 
 /* STAT CARDS */
 .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px 20px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:24px 20px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),transparent)}
-.stat-card:hover{border-color:var(--gold);box-shadow:0 4px 20px rgba(212,175,55,.15)}
+.stat-card:hover{border-color:var(--gold);box-shadow:0 4px 20px rgba(184,153,104,.15)}
 .stat-lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px}
-.stat-val{font-size:32px;font-weight:800;color:var(--text);line-height:1}
+.stat-val{font-size:32px;font-weight:800;color:var(--ivory);line-height:1}
 .stat-sub{font-size:12px;color:var(--muted);margin-top:4px}
 
 /* ARV CALLOUT */
-.arv-callout{background:#fefce8;border:1px solid #fbbf24;border-left:4px solid #f59e0b;border-radius:8px;padding:12px 16px;font-size:13px;color:#78350f;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px}
+.arv-callout{background:rgba(184,153,104,.08);border:1px solid rgba(184,153,104,.25);border-left:3px solid var(--bronze);padding:12px 16px;font-size:13px;color:var(--ivory-soft);margin-bottom:20px;display:flex;align-items:flex-start;gap:10px}
 
 /* ARV TOOLTIP */
 .arv-tip{position:relative;display:inline-flex;align-items:center}
@@ -82,14 +196,14 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 
 /* DEAL CARDS */
 .deal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px}
-.deal-card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:box-shadow .2s,transform .2s}
+.deal-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:box-shadow .2s,transform .2s}
 .deal-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.12);transform:translateY(-2px)}
 .card-border{position:absolute;left:0;top:0;bottom:0;width:4px}
 .card-header{padding:16px 16px 12px 20px;border-bottom:1px solid var(--border);position:relative}
 .card-rank{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
-.score-circle{width:42px;height:42px;border-radius:50%;background:var(--gold);color:var(--black);font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;border:3px solid #fff;box-shadow:0 0 0 2px var(--gold)}
+.score-circle{width:42px;height:42px;border-radius:50%;background:var(--gold);color:var(--black);font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid var(--bronze-deep);box-shadow:0 0 0 1px rgba(184,153,104,.3)}
 .priority-ribbon{position:absolute;top:-1px;left:16px;background:var(--gold);color:var(--black);font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:2px 10px 4px;border-radius:0 0 6px 6px}
-.deal-addr{font-size:17px;font-weight:700;color:var(--text);margin-bottom:2px;padding-right:56px;margin-top:20px}
+.deal-addr{font-size:17px;font-weight:700;color:var(--ivory);margin-bottom:2px;padding-right:56px;margin-top:20px}
 .deal-meta{font-size:12px;color:var(--muted)}
 .metrics-row{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
 .metric-cell{padding:12px 16px;border-right:1px solid var(--border);text-align:center}
@@ -108,24 +222,24 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 /* STATUS PILL */
 .status-pill-wrap{position:relative}
 .status-pill{font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:20px;cursor:pointer;border:none;user-select:none;text-transform:uppercase}
-.status-dropdown{display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:600;min-width:140px;overflow:hidden}
+.status-dropdown{display:none;position:absolute;right:0;top:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:600;min-width:140px;overflow:hidden}
 .status-dropdown.open{display:block}
-.status-dropdown button{display:block;width:100%;padding:8px 12px;background:none;border:none;font-size:12px;text-align:left;cursor:pointer;color:var(--text);transition:background .15s}
+.status-dropdown button{display:block;width:100%;padding:8px 12px;background:none;border:none;font-size:12px;text-align:left;cursor:pointer;color:var(--ivory);transition:background .15s}
 .status-dropdown button:hover{background:var(--bg)}
 
 /* BUTTONS */
 .btn{padding:8px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;text-align:center;transition:opacity .15s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:4px}
 .btn:hover{opacity:.85}
 .btn-gold{background:var(--gold);color:var(--black)}
-.btn-dark{background:var(--text);color:#fff}
-.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-dark{background:var(--ivory);color:var(--bg)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--ivory)}
 
 /* TABLE */
-.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.table-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .table-controls{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .search-input{padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:200px}
 .search-input:focus{border-color:var(--gold)}
-.filter-sel{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:#fff;cursor:pointer;outline:none}
+.filter-sel{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-card);cursor:pointer;outline:none}
 .filter-sel:focus{border-color:var(--gold)}
 .tbl-count{font-size:12px;color:var(--muted);margin-left:auto}
 #propTable{width:100%;border-collapse:collapse;font-size:12px}
@@ -134,13 +248,13 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 #propTable th:hover{color:var(--gold)}
 #propTable td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
 #propTable tr:nth-child(even) td{background:#fafaf9}
-#propTable tbody tr:hover td{background:#fffef5}
+#propTable tbody tr:hover td{background:var(--bg-card)ef5}
 #propTable a{color:var(--gold);text-decoration:none}
 #propTable a:hover{text-decoration:underline}
 .rehab-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px}
 .rehab-light{background:#dcfce7;color:#166534}
 .rehab-moderate{background:#fef3c7;color:#92400e}
-.rehab-heavy{background:#fee2e2;color:#991b1b}
+.rehab-heavy{background:rgba(201,122,106,.12);color:#c97a6a}
 .rehab-gut{background:#fce7f3;color:#9d174d}
 .pagination{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
 .page-btns{display:flex;gap:6px}
@@ -149,7 +263,7 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 .page-btn.active{background:var(--gold);color:var(--black);border-color:var(--gold);font-weight:700}
 
 /* MAP */
-#mapWrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+#mapWrap{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .map-header{background:var(--black);padding:14px 20px;display:flex;align-items:center;gap:10px}
 .map-header h2{color:#fff;font-size:16px}
 .map-header span{color:var(--gold);font-size:12px}
@@ -157,18 +271,18 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 
 /* SALES COMPS */
 .comps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.comp-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s}
+.comp-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border-color .2s}
 .comp-card:hover{border-color:var(--gold)}
-.comp-price{font-size:22px;font-weight:800;color:var(--text);margin-bottom:4px}
+.comp-price{font-size:22px;font-weight:800;color:var(--ivory);margin-bottom:4px}
 .comp-addr{font-size:12px;color:var(--muted);margin-bottom:10px}
 .comp-details{display:flex;gap:12px;flex-wrap:wrap}
 .comp-detail{font-size:11px;color:var(--muted)}
-.comp-detail strong{color:var(--text)}
-.comp-ppsf{display:inline-block;background:#fffbeb;color:#92400e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:8px}
+.comp-detail strong{color:var(--ivory)}
+.comp-ppsf{display:inline-block;background:var(--bg-card)beb;color:#92400e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:8px}
 
 /* VIOLATIONS */
 .viol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
-.viol-card{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--red);border-radius:10px;padding:16px}
+.viol-card{background:var(--bg-card);border:1px solid var(--border);border-left:4px solid var(--red);border-radius:10px;padding:16px}
 .viol-addr{font-size:14px;font-weight:700;margin-bottom:4px}
 .viol-case{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
 .viol-case:last-child{border-bottom:none}
@@ -178,9 +292,9 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 /* PRINT MODAL */
 #printModal{display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px}
 #printModal.open{display:flex}
-#printContent{background:#fff;border-radius:12px;padding:40px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+#printContent{background:var(--bg-card);border-radius:12px;padding:40px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
 .print-hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--gold);padding-bottom:16px;margin-bottom:24px}
-.print-logo{font-family:Georgia,serif;font-size:20px;font-weight:700;color:var(--black)}
+.print-logo{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:var(--black)}
 .print-logo span{color:var(--gold)}
 .print-date-lbl{font-size:11px;color:var(--muted);text-align:right}
 .print-section{margin-bottom:20px}
@@ -192,7 +306,7 @@ nav.tabs button.active{color:var(--gold);border-bottom-color:var(--gold);font-we
 .print-disclaimer{font-size:10px;color:var(--muted);text-align:center;border-top:1px solid var(--border);padding-top:12px;margin-top:20px;line-height:1.6}
 .print-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
 #closePrintBtn{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)}
-#closePrintBtn:hover{color:var(--text)}
+#closePrintBtn:hover{color:var(--ivory)}
 
 /* FOOTER */
 footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-size:11px;color:rgba(255,255,255,.3);text-align:center;letter-spacing:.5px}
@@ -213,24 +327,24 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
 /* ── CRM PIPELINE ── */
 .pipeline-board{display:flex;gap:14px;overflow-x:auto;padding:0 0 16px;min-height:400px}
-.pipeline-col{flex:0 0 200px;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.pipeline-col{flex:0 0 200px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .pipeline-col-hdr{padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border)}
 .pipeline-col-body{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:200px}
-.pipeline-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:grab;transition:all .2s;position:relative}
-.pipeline-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(212,175,55,.15);transform:translateY(-1px)}
+.pipeline-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:grab;transition:all .2s;position:relative}
+.pipeline-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(184,153,104,.15);transform:translateY(-1px)}
 .pipeline-card.dragging{opacity:.5;cursor:grabbing}
-.pipeline-card .pc-addr{font-size:12px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:4px}
+.pipeline-card .pc-addr{font-size:12px;font-weight:700;color:var(--ivory);line-height:1.3;margin-bottom:4px}
 .pipeline-card .pc-nb{font-size:10px;color:var(--muted);margin-bottom:6px}
 .pipeline-card .pc-arv{font-size:12px;font-weight:700;color:var(--green)}
 .pipeline-card .pc-profit{font-size:10px;color:var(--muted)}
 .pipeline-card .pc-score{position:absolute;top:8px;right:8px;background:var(--gold);color:#000;font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px}
 .pipeline-card .pc-notes{font-size:10px;color:var(--muted);margin-top:6px;border-top:1px solid var(--border);padding-top:6px;font-style:italic}
-.pipeline-card .pc-note-input{width:100%;font-size:10px;border:1px solid var(--border);border-radius:4px;padding:3px 6px;margin-top:4px;font-family:inherit;resize:none;color:var(--text);background:#fafafa}
+.pipeline-card .pc-note-input{width:100%;font-size:10px;border:1px solid var(--border);border-radius:4px;padding:3px 6px;margin-top:4px;font-family:inherit;resize:none;color:var(--ivory);background:#fafafa}
 .col-count{display:inline-flex;align-items:center;justify-content:center;background:var(--gold);color:#000;font-size:10px;font-weight:800;width:18px;height:18px;border-radius:50%;margin-left:6px}
 .pipeline-dropzone{min-height:80px;border:2px dashed transparent;border-radius:8px;transition:border-color .2s}
-.pipeline-dropzone.drag-over{border-color:var(--gold);background:rgba(212,175,55,.04)}
+.pipeline-dropzone.drag-over{border-color:var(--gold);background:rgba(184,153,104,.04)}
 .add-all-btn{width:100%;padding:8px;background:none;border:1px dashed var(--gold);border-radius:8px;color:var(--gold);font-size:11px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px}
-.add-all-btn:hover{background:rgba(212,175,55,.08)}
+.add-all-btn:hover{background:rgba(184,153,104,.08)}
 
 /* ── CHART BARS ── */
 .chart-bar-wrap{margin-bottom:12px}
@@ -239,16 +353,16 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 .chart-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),#b8962e);border-radius:4px;transition:width .6s ease}
 
 /* ── STAT CARDS IMPROVED ── */
-.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
 .stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
 .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),#b8962e)}
 .stat-lbl{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.stat-val{font-size:28px;font-weight:800;color:var(--text);line-height:1;font-family:Georgia,serif}
+.stat-val{font-size:28px;font-weight:800;color:var(--ivory);line-height:1;font-family:'Cormorant Garamond',Georgia,serif}
 .stat-sub{font-size:11px;color:var(--muted);margin-top:6px}
 .stat-icon{position:absolute;top:16px;right:16px;font-size:24px;opacity:.15}
 
 /* ── DEAL CARD IMPROVED ── */
-.deal-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;position:relative;transition:box-shadow .2s}
+.deal-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:22px;position:relative;transition:box-shadow .2s}
 .deal-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .deal-card.top3{border-left:4px solid var(--gold)}
 .deal-rank{position:absolute;top:16px;right:16px;font-size:11px;font-weight:800;color:var(--gold);letter-spacing:1px;text-transform:uppercase}
@@ -265,17 +379,17 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 .score-lbl{font-size:11px;font-weight:700;color:var(--muted)}
 
 /* ── OVERVIEW MINI CHART ── */
-.mini-chart-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px}
+.mini-chart-wrap{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px}
 .mini-chart-title{font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 
 /* ── PIPELINE SUMMARY STRIP ── */
 .pipeline-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
-.ps-pill{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .2s}
+.ps-pill{display:flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;cursor:pointer;transition:all .2s}
 .ps-pill:hover{border-color:var(--gold)}
 .ps-dot{width:8px;height:8px;border-radius:50%}
 
 /* ── IMPROVED TABLE ── */
-#propTbody tr:hover td{background:rgba(212,175,55,.04)}
+#propTbody tr:hover td{background:rgba(184,153,104,.04)}
 
 </style>
 </head>
@@ -285,11 +399,19 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 <div id="loginGate">
   <canvas id="bgCanvas"></canvas>
   <div id="loginCard">
-    <div class="mep-monogram">MEP</div>
-    <div class="mep-wordmark">MACO EQUITY PARTNERS</div>
-    <div class="mep-subtitle">Deal Intelligence Portal</div>
-    <input type="password" id="pwInput" placeholder="Enter access code" autocomplete="off">
-    <button id="loginBtn">Enter Portal</button>
+    <div class="login-logo-wrap">
+      <img src="/logo.jpg" alt="Maco Equity Partners">
+      <div class="login-wordmark">Maco <span class="accent">·</span> Equity Partners</div>
+    </div>
+    <div class="login-eyebrow">Investor Access</div>
+    <h1 class="login-heading">Off-Market Deal <em>Intelligence</em></h1>
+    <div class="login-input-wrap">
+      <label class="login-label" for="pwInput">Access Code</label>
+      <input type="password" id="pwInput" placeholder="Enter your access code" autocomplete="off">
+    </div>
+    <button id="loginBtn">Enter Portal
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </button>
     <div id="loginErr"></div>
   </div>
 </div>
@@ -298,13 +420,15 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 <div id="app">
   <header>
     <div class="hdr-brand">
-      <div class="hdr-mono">MEP</div>
-      <div>
-        <div class="hdr-title">MACO EQUITY PARTNERS</div>
-        <div class="hdr-tag">Off-Market Deal Intelligence</div>
-      </div>
+      <img src="/logo.jpg" alt="Maco Equity Partners" class="hdr-logo">
+      <div class="hdr-name">Maco <span class="accent">·</span> Equity Partners</div>
+      <div class="hdr-divider"></div>
+      <div class="hdr-title">Off-Market Deal Finder</div>
     </div>
-    <div style="display:flex;align-items:center;gap:20px"><a href="/" style="font-size:12px;color:rgba(212,175,55,.7);text-decoration:none;letter-spacing:.5px;transition:color .2s" onmouseover="this.style.color='#D4AF37'" onmouseout="this.style.color='rgba(212,175,55,.7)'">← macoequitypartners.com</a><div class="hdr-date" id="headerDate"></div></div>
+    <div style="display:flex;align-items:center;gap:1.5rem">
+      <a href="/" class="hdr-back">← macoequitypartners.com</a>
+      <div class="hdr-date" id="headerDate"></div>
+    </div>
   </header>
 
   <nav class="tabs" id="tabBar">
@@ -484,7 +608,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <div class="pipeline-col-body pipeline-dropzone" id="stage-contacted" ondragover="onDragOver(event)" ondrop="onDrop(event,'contacted')" ondragleave="onDragLeave(event)"></div>
     </div>
     <div class="pipeline-col" data-stage="negotiating">
-      <div class="pipeline-col-hdr" style="background:#fff7ed;color:#c2410c;">
+      <div class="pipeline-col-hdr" style="background:var(--bg-card)7ed;color:#c2410c;">
         🤝 Negotiating <span class="col-count" id="cnt-negotiating">0</span>
       </div>
       <div class="pipeline-col-body pipeline-dropzone" id="stage-negotiating" ondragover="onDragOver(event)" ondrop="onDrop(event,'negotiating')" ondragleave="onDragLeave(event)"></div>
@@ -564,11 +688,11 @@ var STAT_ICONS=['🏠','📊','💰','📈','🎯','🔑'];
   function drawBg(){
     canvas.width=window.innerWidth;canvas.height=window.innerHeight;
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.strokeStyle='rgba(212,175,55,0.08)';ctx.lineWidth=1;
+    ctx.strokeStyle='rgba(184,153,104,0.08)';ctx.lineWidth=1;
     var sp=48;
     for(var x=0;x<canvas.width;x+=sp){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke()}
     for(var y=0;y<canvas.height;y+=sp){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke()}
-    ctx.fillStyle='rgba(212,175,55,0.15)';
+    ctx.fillStyle='rgba(184,153,104,0.15)';
     for(var xi=0;xi<canvas.width;xi+=sp){for(var yi=0;yi<canvas.height;yi+=sp){ctx.beginPath();ctx.arc(xi,yi,2,0,2*Math.PI);ctx.fill()}}
   }
   drawBg();window.addEventListener('resize',drawBg);
@@ -616,7 +740,7 @@ function onMaoChange(val){
   maoP=parseInt(val);
   document.getElementById('maoLabel').textContent='MAO: '+maoP+'%';
   var pct=((maoP-60)/20*100).toFixed(0);
-  document.getElementById('maoSlider').style.background='linear-gradient(to right,#D4AF37 0%,#D4AF37 '+pct+'%,#333 '+pct+'%,#333 100%)';
+  document.getElementById('maoSlider').style.background='linear-gradient(to right,#b89968 0%,#b89968 '+pct+'%,#333 '+pct+'%,#333 100%)';
   buildDeals();renderTablePage();buildOverview();
 }
 
@@ -627,7 +751,7 @@ function initApp(){
   document.getElementById('headerDate').textContent=ds;
   document.getElementById('printDateLbl').textContent=ds;
   // set initial slider bg
-  document.getElementById('maoSlider').style.background='linear-gradient(to right,#D4AF37 0%,#D4AF37 50%,#333 50%,#333 100%)';
+  document.getElementById('maoSlider').style.background='linear-gradient(to right,#b89968 0%,#b89968 50%,#333 50%,#333 100%)';
   buildOverview();buildDeals();buildAllTable();buildSales();buildViolations();buildPipeline();
   document.addEventListener('click',function(e){
     if(openDropdown&&!openDropdown.contains(e.target)){
@@ -660,7 +784,7 @@ function buildOverview(){
 
   document.getElementById('overviewTop5').innerHTML=TOP10.slice(0,5).map(function(d,i){
     var p=getProfit(d.arv,d.repair);
-    return '<div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">'+
+    return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">'+
       '<div style="width:36px;height:36px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">'+(i+1)+'</div>'+
       '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">'+d.address+'</div>'+
       '<div style="font-size:11px;color:var(--muted);">'+d.neighborhood+' &middot; Score '+d.score+'</div></div>'+
@@ -677,7 +801,7 @@ function buildOverview(){
     return '<div style="margin-bottom:10px;">'+
       '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">'+
       '<span style="font-weight:600;">'+e[0]+'</span><span style="color:var(--muted);">'+e[1]+'</span></div>'+
-      '<div style="height:6px;background:#f0ede6;border-radius:3px;overflow:hidden;">'+
+      '<div style="height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;">'+
       '<div style="height:100%;width:'+pct+'%;background:var(--gold);border-radius:3px;"></div></div></div>';
   }).join('');
 }
@@ -687,7 +811,7 @@ function buildDeals(){
   document.getElementById('dealGrid').innerHTML=TOP10.map(function(d,idx){
     var mao=getMao(d.arv);
     var profit=getProfit(d.arv,d.repair);
-    var borderColor=idx<3?'#D4AF37':'#9ca3af';
+    var borderColor=idx<3?'#b89968':'#9ca3af';
     var st=getStatus(d.address);
     var flags=(d.flags||'').split(' | ').filter(Boolean).map(function(f){return '<span class="flag-badge">'+f+'</span>'}).join('');
     var violHtml='';
@@ -734,7 +858,7 @@ function buildDeals(){
         '<button class="btn btn-outline" data-printidx="'+idx+'" onclick="openPrint(this.dataset.printidx)">&#128196; Deal Sheet</button>'+
         '<a class="btn btn-outline" href="'+(d.sunbiz_url||'#')+'" target="_blank">&#128269; SunBiz</a>'+
         '<div style="grid-column:1/-1;background:#f8f6f0;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--muted);">'+
-          '<strong style="color:var(--text);">Outreach:</strong> '+(d.outreach_type||'')+' &middot; '+(d.priority_action||'')+
+          '<strong style="color:var(--ivory);">Outreach:</strong> '+(d.outreach_type||'')+' &middot; '+(d.priority_action||'')+
         '</div>'+
       '</div>'+
       violHtml+
@@ -912,7 +1036,7 @@ function renderMap(){
       radius:pin.type==='top10'?12:8,
       fillColor:color,color:'#fff',weight:2,opacity:1,fillOpacity:.85
     }).addTo(map);
-    marker.bindPopup('<div style="min-width:180px;"><strong>'+pin.address+'</strong><br>Score: '+pin.score+'<br>ARV: '+fmtK(pin.arv)+'<br>Est. Profit: '+fmtK(pin.profit)+(pin.rank?'<br><span style="color:#D4AF37;font-weight:700;">Rank #'+pin.rank+'</span>':'')+'</div>');
+    marker.bindPopup('<div style="min-width:180px;"><strong>'+pin.address+'</strong><br>Score: '+pin.score+'<br>ARV: '+fmtK(pin.arv)+'<br>Est. Profit: '+fmtK(pin.profit)+(pin.rank?'<br><span style="color:#b89968;font-weight:700;">Rank #'+pin.rank+'</span>':'')+'</div>');
   });
 }
 
