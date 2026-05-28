@@ -439,6 +439,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <button data-tab="sales" onclick="showTab(this)">Recent Sales</button>
     <button data-tab="violations" onclick="showTab(this)">Violations</button>
     <button data-tab="pipeline" onclick="showTab(this)">🎯 Pipeline</button>
+    <button data-tab="field" onclick="showTab(this)" style="color:#e8854a;border-bottom:2px solid transparent;">📍 Field Intel</button>
   </nav>
 
   <button id="settingsToggle" onclick="toggleSettings()">
@@ -625,6 +626,180 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       </div>
       <div class="pipeline-col-body pipeline-dropzone" id="stage-closed" ondragover="onDragOver(event)" ondrop="onDrop(event,'closed')" ondragleave="onDragLeave(event)"></div>
     </div>
+  </div>
+</div>
+
+<!-- ── FIELD INTEL TAB ──────────────────────────────── -->
+<div class="tab-content" id="tab-field">
+  <div style="max-width:900px;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;">
+      <div style="background:#e8854a22;border:1px solid #e8854a55;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:22px;">📍</div>
+      <div>
+        <div style="font-size:11px;letter-spacing:.25em;text-transform:uppercase;color:#e8854a;font-weight:500;margin-bottom:4px;">Field Investigation · Active Deal</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:500;color:var(--ivory);letter-spacing:-.01em;">16842 SW 86th Ave</div>
+        <div style="font-size:13px;color:var(--muted);">Palmetto Bay, FL 33157 · Folio 33-5034-004-0380</div>
+      </div>
+    </div>
+
+    <!-- Street View embed -->
+    <div style="border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:24px;position:relative;">
+      <div style="position:absolute;top:12px;left:12px;z-index:2;background:rgba(13,12,10,.75);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--bronze);letter-spacing:.1em;text-transform:uppercase;backdrop-filter:blur(4px);">Google Street View · Oct 2025</div>
+      <iframe
+        src="https://maps.google.com/maps?layer=c&cbll=25.6134261,-80.3319173&z=17&output=embed"
+        width="100%" height="380" style="border:0;display:block;" allowfullscreen loading="lazy"
+        title="Street View — 16842 SW 86 AVE Palmetto Bay"></iframe>
+    </div>
+
+    <!-- Two-column grid -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+      <!-- Property Details -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--bronze);margin-bottom:14px;font-weight:500;">Property Details</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <tr><td style="color:var(--muted);padding:5px 0;width:45%;">Owner</td><td style="color:var(--ivory);font-weight:500;">RYSI HOLDINGS LLC</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">Principal</td><td style="color:var(--ivory);">Ivette Yern (FL LLC)</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">Built</td><td style="color:var(--ivory);">1969 (57 yrs)</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">Size</td><td style="color:var(--ivory);">3 bd / 2 ba · ~1,854 sqft</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">Lot</td><td style="color:var(--ivory);">10,978 sqft</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">Neighborhood</td><td style="color:var(--ivory);">Palmetto Bay (incorporated)</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">Mail Address</td><td style="color:var(--ivory);">Same as property</td></tr>
+        </table>
+      </div>
+
+      <!-- Deal Analysis -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--bronze);margin-bottom:14px;font-weight:500;">Deal Analysis</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+          <div style="background:var(--bg-soft);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Comp ARV</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--bronze);">$816K</div>
+            <div style="font-size:10px;color:var(--muted);">$440/sqft × 1,854</div>
+          </div>
+          <div style="background:var(--bg-soft);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">MAO @ 70%</div>
+            <div style="font-size:1.4rem;font-weight:700;color:var(--ivory);">$451K</div>
+            <div style="font-size:10px;color:var(--muted);">max offer</div>
+          </div>
+          <div style="background:var(--bg-soft);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Repair Est.</div>
+            <div style="font-size:1.4rem;font-weight:700;color:#c97a6a;">$121K</div>
+            <div style="font-size:10px;color:var(--muted);">$65/sqft · 57yr old</div>
+          </div>
+          <div style="background:var(--bg-soft);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Est. Profit</div>
+            <div style="font-size:1.4rem;font-weight:700;color:#4a8c6a;">$179K</div>
+            <div style="font-size:10px;color:var(--muted);">after repair</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);font-style:italic;">ARV based on 33157 comp sales. Verify with current MLS before offer.</div>
+      </div>
+
+    </div>
+
+    <!-- Field Observations -->
+    <div style="background:var(--bg-card);border:1px solid #e8854a44;border-radius:10px;padding:20px;margin-bottom:16px;">
+      <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:#e8854a;margin-bottom:14px;font-weight:500;">⚠️ Field Observations · Recorded 5/28/2026</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:12px;">
+        <div style="background:var(--bg-soft);border-radius:8px;padding:12px;">
+          <div style="font-size:18px;margin-bottom:6px;">🚧</div>
+          <div style="color:var(--ivory);font-weight:500;margin-bottom:4px;">Chain-Link Fence</div>
+          <div style="color:var(--muted);">Full perimeter fence surrounding structure. Access restricted.</div>
+        </div>
+        <div style="background:var(--bg-soft);border-radius:8px;padding:12px;">
+          <div style="font-size:18px;margin-bottom:6px;">🪟</div>
+          <div style="color:var(--ivory);font-weight:500;margin-bottom:4px;">No Visible Windows</div>
+          <div style="color:var(--muted);">Windows covered / screened. Property appears vacant and secured.</div>
+        </div>
+        <div style="background:var(--bg-soft);border-radius:8px;padding:12px;">
+          <div style="font-size:18px;margin-bottom:6px;">📋</div>
+          <div style="color:var(--ivory);font-weight:500;margin-bottom:4px;">Notice Posted</div>
+          <div style="color:var(--muted);">Permit or violation notice visible on property. Likely Palmetto Bay Code Enforcement citation.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Two-column: Permit History + Code Enforcement -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+
+      <!-- Permit History -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--bronze);margin-bottom:14px;font-weight:500;">Permit History · Palmetto Bay Eden</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+          <div style="background:#4a8c6a18;border:1px solid #4a8c6a44;border-radius:6px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="color:#4a8c6a;font-weight:600;">✅ BRF-2022-5331</span>
+              <span style="color:var(--muted);">Jul 2022 · FINAL</span>
+            </div>
+            <div style="color:var(--ivory);">SHINGLE ROOF — Re-Roof 3,900 sqft F.B.C. 2020</div>
+            <div style="color:var(--muted);margin-top:2px;">Finalized 7/6/2022 · Prior owner: Frank &amp; Marlene Angulo</div>
+          </div>
+          <div style="background:#4a8c6a18;border:1px solid #4a8c6a44;border-radius:6px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="color:#4a8c6a;font-weight:600;">✅ MEC-2012-0367</span>
+              <span style="color:var(--muted);">Mar 2012 · FINAL</span>
+            </div>
+            <div style="color:var(--ivory);">HVAC — A/C Replacement 5 TON 10 KW</div>
+          </div>
+          <div style="background:#4a8c6a18;border:1px solid #4a8c6a44;border-radius:6px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="color:#4a8c6a;font-weight:600;">✅ ZLG-2005-2253</span>
+              <span style="color:var(--muted);">Aug 2005 · FINAL</span>
+            </div>
+            <div style="color:var(--ivory);">Generator — 11KW Standby Install + 30ft Gas Line</div>
+          </div>
+          <div style="background:#5a554c22;border:1px solid var(--border);border-radius:6px;padding:10px;">
+            <div style="color:var(--muted);font-weight:600;margin-bottom:2px;">📁 MDC-2023 (×4) — Expired</div>
+            <div style="color:var(--muted);">MDC permits from 1993 (Tile Roof, Electrical, Building, Screen) converted &amp; expired</div>
+          </div>
+          <div style="background:#4a8c6a18;border:1px solid #4a8c6a44;border-radius:6px;padding:10px;text-align:center;">
+            <span style="color:#4a8c6a;font-weight:700;font-size:13px;">✅ ZERO OPEN PERMITS CONFIRMED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Code Enforcement + Liens -->
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--bronze);margin-bottom:14px;font-weight:500;">Code Enforcement &amp; Lien Activity</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;">
+          <div style="background:#c97a6a18;border:1px solid #c97a6a44;border-radius:6px;padding:10px;">
+            <div style="color:#c97a6a;font-weight:600;margin-bottom:4px;">⚠️ Notice Posted On Property</div>
+            <div style="color:var(--ivory);">Field-observed permit/violation notice. Likely Palmetto Bay Code Compliance.</div>
+            <div style="color:var(--muted);margin-top:4px;">Palmetto Bay does not expose code cases in public portal. Call (305) 259-1250 to confirm.</div>
+          </div>
+          <div style="background:#b8996818;border:1px solid var(--rule-bronze);border-radius:6px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="color:var(--bronze);font-weight:600;">🔍 SRP-2023-08610</span>
+              <span style="color:var(--muted);">Aug 2023</span>
+            </div>
+            <div style="color:var(--ivory);">Proplogix Lien Search — title search during attempted sale #1</div>
+          </div>
+          <div style="background:#b8996818;border:1px solid var(--rule-bronze);border-radius:6px;padding:10px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+              <span style="color:var(--bronze);font-weight:600;">🔍 SRP-2024-09208</span>
+              <span style="color:var(--muted);">Sep 2024</span>
+            </div>
+            <div style="color:var(--ivory);">Proplogix Lien Search — title search during attempted sale #2</div>
+          </div>
+          <div style="background:var(--bg-soft);border-radius:6px;padding:10px;font-size:11px;color:var(--muted);line-height:1.5;">
+            <strong style="color:var(--ivory);">💡 Intel:</strong> Two Proplogix searches = two prior sale attempts that likely fell through. RYSI Holdings LLC may be motivated to close quickly. Previous owner Angulo pulled roof permit = updated 2022 roof is a positive capital improvement.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a class="btn btn-gold" href="https://apps.miamidadepa.gov/PropertySearch/#/?folio=3350340040380" target="_blank">🏛️ PA Record</a>
+      <a class="btn btn-dark" href="https://maps.google.com/maps?layer=c&cbll=25.6134261,-80.3319173&z=17" target="_blank">📷 Street View</a>
+      <a class="btn btn-outline" href="https://eden.palmettobay-fl.gov/EdenWebNet/Default.aspx?Build=PM.pmPermit.SearchForm&utask=normalview" target="_blank">🏗️ PB Permit Search</a>
+      <a class="btn btn-outline" href="https://www.google.com/maps/place/16842+SW+86th+Ave,+Palmetto+Bay,+FL+33157" target="_blank">📍 Google Maps</a>
+      <a class="btn btn-outline" href="https://www.zillow.com/homes/16842-SW-86th-Ave-Palmetto-Bay-FL_rb/" target="_blank" style="border-color:#006AFF;color:#006AFF;">🏠 Zillow</a>
+    </div>
+
   </div>
 </div>
 
@@ -858,6 +1033,7 @@ function buildDeals(){
         (d.zillow_url?'<a class="btn btn-outline" href="'+d.zillow_url+'" target="_blank" style="border-color:#006AFF;color:#006AFF;">&#127968; Zillow</a>':'')+
         '<button class="btn btn-outline" data-printidx="'+idx+'" onclick="openPrint(this.dataset.printidx)">&#128196; Deal Sheet</button>'+
         '<a class="btn btn-outline" href="'+(d.sunbiz_url||'#')+'" target="_blank">&#128269; SunBiz</a>'+
+        '<a class="btn btn-outline" href="https://maps.google.com/maps?layer=c&cbll='+d.lat+','+d.lng+'&z=17" target="_blank" style="border-color:#34a853;color:#34a853;">&#128247; Street View</a>'+
         '<div style="grid-column:1/-1;background:#f8f6f0;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--muted);">'+
           '<strong style="color:var(--ivory);">Outreach:</strong> '+(d.outreach_type||'')+' &middot; '+(d.priority_action||'')+
         '</div>'+
