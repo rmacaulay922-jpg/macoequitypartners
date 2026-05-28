@@ -1121,11 +1121,20 @@ function buildOverview(){
 
   document.getElementById('overviewTop5').innerHTML=TOP10.slice(0,5).map(function(d,i){
     var p=d.profit||getProfit(d.arv,d.repair);
-    return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;">'+
-      '<div style="width:36px;height:36px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">'+(i+1)+'</div>'+
-      '<div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:14px;">'+d.address+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);">'+d.neighborhood+' &middot; Score '+d.score+'</div></div>'+
-      '<div style="text-align:right;"><div style="font-weight:700;color:var(--green);">'+fmtK(p)+'</div>'+
+    var t=satTile(d.lat,d.lng,17);
+    var offX=Math.round((0.5-t.xF)*256);
+    var offY=Math.round((0.5-t.yF)*256);
+    var tileUrl='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/17/'+t.y+'/'+t.x;
+    var satUrl='https://www.google.com/maps/@'+d.lat+','+d.lng+',19z/data=!3m1!1e3';
+    return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;display:flex;align-items:center;overflow:hidden;">'+
+      '<div style="width:90px;height:72px;flex-shrink:0;position:relative;background:#111;overflow:hidden;cursor:pointer;" onclick="window.open(\''+satUrl+'\',\'_blank\')">'+
+        '<img src="'+tileUrl+'" loading="eager" style="width:256px;height:256px;position:absolute;left:calc(50% + '+offX+'px);top:calc(50% + '+offY+'px);transform:translate(-50%,-50%);image-rendering:crisp-edges;" />'+
+        '<div style="position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;z-index:1;box-shadow:0 2px 5px rgba(0,0,0,.6);">'+(i+1)+'</div>'+
+        '<div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 55%,var(--bg-card) 100%);pointer-events:none;"></div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0;padding:10px 14px;"><div style="font-weight:700;font-size:13px;">'+d.address+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+d.neighborhood+' &middot; Score '+d.score+'</div></div>'+
+      '<div style="text-align:right;padding:10px 14px;flex-shrink:0;"><div style="font-weight:700;color:var(--green);font-size:15px;">'+fmtK(p)+'</div>'+
       '<div style="font-size:10px;color:var(--muted);">est. profit</div></div></div>';
   }).join('');
 
