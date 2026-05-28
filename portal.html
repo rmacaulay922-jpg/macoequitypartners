@@ -1125,7 +1125,7 @@ function buildOverview(){
     var thumbUrl='https://streetviewpixels-pa.googleapis.com/v1/thumbnail?cb_client=maps_sv.tactile&w=800&h=400&pitch=0&panoid='+(d.pano||'')+'&yaw=90';
     return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;display:flex;align-items:center;overflow:hidden;">'+
       '<div style="width:110px;height:78px;flex-shrink:0;position:relative;background:#1a1a1a;overflow:hidden;cursor:pointer;" onclick="window.open(\''+svUrl+'\',\'_blank\')">'+
-        '<img src="'+thumbUrl+'" style="width:110px;height:78px;object-fit:cover;object-position:center;display:block;" loading="lazy" onerror="this.style.display=\'none\'" />'+
+        '<img src="'+thumbUrl+'" style="width:110px;height:78px;object-fit:cover;object-position:center;display:block;" loading="eager" onerror="this.style.display=\'none\'" />'+
         '<div style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;z-index:1;box-shadow:0 2px 5px rgba(0,0,0,.6);">'+(i+1)+'</div>'+
         '<div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 60%,var(--bg-card) 100%);pointer-events:none;"></div>'+
       '</div>'+
@@ -1154,7 +1154,7 @@ function svPhoto(d,idx){
   var svUrl='https://www.google.com/maps/@'+d.lat+','+d.lng+',3a,75y,90t/data=!3m6!1e1!3m4!1s0!2e0!7i16384!8i8192';
   var thumbUrl='https://streetviewpixels-pa.googleapis.com/v1/thumbnail?cb_client=maps_sv.tactile&w=800&h=400&pitch=0&panoid='+(d.pano||'')+'&yaw=90';
   return '<div style="height:170px;overflow:hidden;position:relative;background:#1a1a1a;cursor:pointer;border-radius:var(--card-radius) var(--card-radius) 0 0;" onclick="window.open(\''+svUrl+'\',\'_blank\')">'
-    +'<img src="'+thumbUrl+'" style="width:100%;height:170px;object-fit:cover;object-position:center;display:block;" loading="lazy" onerror="this.style.display=\'none\'" />'
+    +'<img src="'+thumbUrl+'" style="width:100%;height:170px;object-fit:cover;object-position:center;display:block;" loading="eager" onerror="this.style.display=\'none\'" />'
     +'<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 45%,rgba(0,0,0,.85) 100%);pointer-events:none;"></div>'
     +'<div style="position:absolute;bottom:0;left:0;right:0;padding:7px 12px;display:flex;justify-content:space-between;align-items:flex-end;">'
       +'<div><div style="font-size:11px;font-weight:700;color:#fff;line-height:1.2;">'+d.address+'</div>'
