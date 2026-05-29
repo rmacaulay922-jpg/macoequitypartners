@@ -416,7 +416,8 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   nav.tabs{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
   .deal-grid{grid-template-columns:1fr}
   .dossier-grid{grid-template-columns:1fr!important}
-  #tab-construction > div[style*="grid-template-columns:320px"]{grid-template-columns:1fr!important}
+  #tab-construction > div[style*="grid-template-columns:320px"]{display:flex!important;flex-direction:column;gap:16px}
+  #tab-construction > div[style*="grid-template-columns:320px"]>div:nth-child(2){order:-1}
   #cst-line-items{grid-template-columns:1fr!important}
   #ovMarketIntel [style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important}
   #ovMarketIntel [style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr!important}
@@ -628,7 +629,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <button data-tab="deals" onclick="showTab(this)">Top 50 Deals</button>
     <button data-tab="all" onclick="showTab(this)">All Properties</button>
     <button data-tab="construction" onclick="showTab(this)">Construction</button>
-    <button data-tab="violations" onclick="showTab(this)">Violations</button>
+    <button data-tab="violations" onclick="showTab(this)">Code &amp; Liens</button>
   </nav>
 
   <!-- Settings/MAO bar removed — wholesale MAO is no longer used -->
@@ -676,16 +677,32 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <span style="font-size:18px;">&#9888;</span>
       <span>ARV is comp-based (recent neighborhood $/sqft &times; living area), <strong>not</strong> PA assessed value. Est. Net Profit assumes a 6-month hard-money flip with all closing, holding &amp; selling costs. Always verify with current MLS comps before making offers.</span>
     </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-gold" type="button" onclick="refreshDeals()" style="font-size:12px;padding:7px 14px;">&#8635; Refresh county data</button>
+      <select class="filter-sel" id="dealSort" onchange="buildDeals()">
+        <option value="score">Sort: Distress score (high &rarr; low)</option>
+        <option value="score-asc">Distress score (low &rarr; high)</option>
+        <option value="arv-desc">ARV / value (high &rarr; low)</option>
+        <option value="arv-asc">ARV / value (low &rarr; high)</option>
+        <option value="profit-desc">Est. net profit (high &rarr; low)</option>
+        <option value="cases-desc">Most open code cases</option>
+      </select>
+      <span id="dealRefreshStatus" style="font-size:11px;color:var(--muted);"></span>
+    </div>
     <div class="deal-grid" id="dealGrid"></div>
     <div style="margin-top:24px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:16px 20px;">
       <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:8px;">How the Distress Score Works</div>
-      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.8;">Every property gets a <strong>Distress Score</strong> &mdash; the sum of weighted signals from county records. Higher = more likely to sell below market, and the list is <strong>ranked by it</strong>. Point weights: out-of-state owner <strong>+22</strong> &middot; long ownership <strong>+6 to +18</strong> (10/15/20/30+ yrs) &middot; home age <strong>+3 to +14</strong> (25/35/45/55+ yrs) &middot; trust / LLC / estate owner <strong>+12</strong> &middot; no homestead <strong>+10</strong> &middot; rehab condition <strong>+4 to +14</strong> (cosmetic &rarr; full gut) &middot; high equity / low cost basis <strong>+10</strong> &middot; open code violation <strong>+16</strong> &middot; recent permit activity <strong>+6</strong>. Open any deal's <strong>Field Report</strong> for its exact breakdown. It's a triage tool to rank outreach &mdash; always verify condition and live comps before offering.</div>
+      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.8;">Every property gets a <strong>Distress Score</strong> &mdash; the sum of weighted signals from county records. Higher = more likely to sell below market, and the list is <strong>ranked by it</strong>. Point weights: out-of-state owner <strong>+22</strong> &middot; long ownership <strong>+6 to +18</strong> (10/15/20/30+ yrs) &middot; home age <strong>+3 to +14</strong> (25/35/45/55+ yrs) &middot; trust / LLC / estate owner <strong>+12</strong> &middot; no homestead <strong>+10</strong> &middot; rehab condition <strong>+4 to +14</strong> (cosmetic &rarr; full gut) &middot; high equity / low cost basis <strong>+10</strong> &middot; open code violations <strong>+12 to +38</strong> (live county cases &mdash; more cases score higher) &middot; recorded county lien <strong>+16</strong> &middot; recent permit activity <strong>+6</strong>. Code-case &amp; lien counts come from the live Miami-Dade feed and refresh into the score. Open any deal's <strong>Field Report</strong> for its exact breakdown. It's a triage tool to rank outreach &mdash; always verify condition and live comps before offering.</div>
     </div>
   </div>
 
   <!-- ALL PROPERTIES -->
   <div id="tab-all" class="tab-content">
     <div class="section-title">All Properties <span class="badge" id="allBadge">2,387</span></div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-gold" type="button" onclick="refreshAll()" style="font-size:12px;padding:7px 14px;">&#8635; Refresh county data</button>
+      <span id="allRefreshStatus" style="font-size:11px;color:var(--muted);"></span>
+    </div>
     <div class="uw-seg" style="max-width:440px;margin-bottom:18px;">
       <button class="uw-seg-on" data-allview="leads" onclick="setAllView('leads')">Scored Leads</button>
       <button data-allview="sales" onclick="setAllView('sales')">Recent Sales (176)</button>
@@ -828,16 +845,18 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
   <!-- VIOLATIONS -->
   <div id="tab-violations" class="tab-content">
-    <div class="section-title">Active Code Violations <span class="badge" id="violBadge"></span></div>
+    <div class="section-title">Code Violations &amp; Liens <span class="badge" id="violBadge"></span></div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;max-width:880px;">Pulls <strong style="color:var(--green);">live open code cases</strong> and <strong style="color:#e0664a;">recorded county code liens</strong> straight from the Miami-Dade Open Data feed for the farm area (Kendall, Pinecrest, Palmetto Bay, South Miami). Properties with a recorded lien are flagged with the OR Book/Page &mdash; the lien must be cleared at closing. If the live feed can't be reached, it falls back to the <strong style="color:var(--green);">verified scrape</strong> plus a clearly-tagged <strong style="color:#e8854a;">sample set</strong>. <em>Probate has no public data feed &mdash; track estate cases through the Clerk of Courts manually.</em> <strong>Always confirm a case with Miami-Dade Code Enforcement before outreach.</strong></div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
       <button class="btn btn-gold" id="violRefreshBtn" type="button" onclick="fetchLiveViolations(true)" style="font-size:12px;padding:7px 14px;">&#8635; Refresh from Miami-Dade</button>
+      <a class="btn btn-outline" href="https://www.arcgis.com/home/item.html?id=da0e434c7a914bb983222393dab2b897" target="_blank" rel="noopener" style="font-size:12px;padding:7px 14px;">View data source &#8599;</a>
       <span id="violLiveStatus" style="font-size:12px;color:var(--muted);"></span>
     </div>
+    <div id="violTypeChips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;"></div>
     <div class="filter-bar">
       <input type="text" class="filter-sel" id="violSearch" placeholder="Search address, owner, or violation type" style="min-width:240px;padding:7px 12px" oninput="buildViolations()">
       <select class="filter-sel" id="violNeighFilter" onchange="buildViolations()"><option value="">All Neighborhoods</option></select>
-      <select class="filter-sel" id="violStatusFilter" onchange="buildViolations()"><option value="">All Statuses</option><option value="Open">Open</option><option value="__LIEN__">Liened only</option><option value="Unverified">Sample / Unverified</option></select>
+      <select class="filter-sel" id="violSort" onchange="buildViolations()"><option value="cases-desc">Most cases first</option><option value="cases-asc">Fewest cases first</option><option value="newest">Newest case first</option><option value="lien">Liens first</option></select>
       <span style="font-size:12px;color:var(--muted);margin-left:auto" id="violCount"></span>
     </div>
     <div class="viol-grid" id="violGrid"></div>
@@ -1276,7 +1295,7 @@ function initApp(){
   // Feature modules self-initialize at end of script (renderRateCenter, calcUnderwriter);
   // market extras render lazily via showTab('market'). Re-run guarded in case auth path ran initApp early.
   setTimeout(function(){
-    ['decorateNav','renderRateCenter','calcUnderwriter'].forEach(function(fn){ if(typeof window[fn]==='function'){try{window[fn]();}catch(e){}} });
+    ['decorateNav','renderRateCenter','calcUnderwriter','fetchLiveViolations'].forEach(function(fn){ if(typeof window[fn]==='function'){try{window[fn]();}catch(e){}} });
   },0);
   document.addEventListener('click',function(e){
     if(openDropdown&&!openDropdown.contains(e.target)){
@@ -1365,22 +1384,21 @@ function buildOverviewMarket(market){
   el.innerHTML=html;
 }
 
-// ── STREET VIEW PHOTO HELPER ──
+// ── DEAL CARD HEADER (Zillow visual cue) ──
+function zillowUrl(d){
+  if(d&&d.zillow_url)return d.zillow_url;
+  var addr=(''+((d&&d.address)||'')).replace(/#/g,'').trim().replace(/\s+/g,'-');
+  return 'https://www.zillow.com/homes/'+addr+'-Miami-FL_rb/';
+}
 function svPhoto(d,idx){
-  var hasPano=!!d.pano;
-  var svUrl=(d.lat&&d.lng)?'https://www.google.com/maps/@'+d.lat+','+d.lng+',3a,75y,90t/data=!3m6!1e1!3m4!1s0!2e0!7i16384!8i8192':(d.maps_url||'#');
-  var h=hasPano?170:88;
-  var img=hasPano?'<img src="https://geo0.ggpht.com/cbk?output=thumbnail&cb_client=apiv3&thumbfov=100&w=800&h=400&panoid='+d.pano+'" style="width:100%;height:170px;object-fit:cover;object-position:center;display:block;" loading="eager" onerror="this.style.display=\'none\'" />':'';
-  var bg=hasPano?'#1a1a1a':'linear-gradient(135deg,#1c1a14,#262318)';
-  return '<div style="height:'+h+'px;overflow:hidden;position:relative;background:'+bg+';cursor:pointer;border-radius:var(--card-radius) var(--card-radius) 0 0;" onclick="window.open(\''+svUrl+'\',\'_blank\')">'
-    +img
-    +'<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.85) 100%);pointer-events:none;"></div>'
-    +'<div style="position:absolute;bottom:0;left:0;right:0;padding:7px 12px;display:flex;justify-content:space-between;align-items:flex-end;">'
-      +'<div><div style="font-size:11px;font-weight:700;color:#fff;line-height:1.2;">'+d.address+'</div>'
-      +'<div style="font-size:9px;color:rgba(255,255,255,.6);">'+d.neighborhood+'</div></div>'
-      +'<span style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);border-radius:5px;padding:4px 8px;font-size:9px;color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;">'+ICON('camera',10)+' '+(hasPano?'Street View':'Map')+'</span>'
+  var zUrl=zillowUrl(d);
+  return '<a href="'+zUrl+'" target="_blank" rel="noopener" style="text-decoration:none;display:block;height:92px;position:relative;background:linear-gradient(135deg,#23211a,#2c2920);border-bottom:1px solid var(--border);border-radius:var(--card-radius) var(--card-radius) 0 0;overflow:hidden;">'
+    +'<div style="position:absolute;inset:0;padding:12px 14px;display:flex;flex-direction:column;justify-content:space-between;">'
+      +'<div><div style="font-size:12px;font-weight:700;color:var(--ivory);line-height:1.25;">'+d.address+'</div>'
+        +'<div style="font-size:10px;color:var(--muted);margin-top:2px;">'+(d.neighborhood||'')+'</div></div>'
+      +'<span style="align-self:flex-start;background:#006AFF;color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:5px;">'+ICON('camera',11)+' View photos on Zillow</span>'
     +'</div>'
-  +'</div>';
+  +'</a>';
 }
 
 // ── DISTRESS SCORE (single formula used across the app) ──
@@ -1389,6 +1407,18 @@ function _normAddr(a){return (''+a).toLowerCase().replace(/(\d+)(st|nd|rd|th)\b/
 function _buildSets(){_violSet={};if(typeof VIOL_DETAIL!=='undefined')VIOL_DETAIL.forEach(function(v){_violSet[_normAddr(v.address)]=1;});_permSet={};if(typeof PERM_DETAIL!=='undefined')PERM_DETAIL.forEach(function(p){_permSet[_normAddr(p.address)]=1;});}
 function hasViolation(a){if(!_violSet)_buildSets();return !!_violSet[_normAddr(a)];}
 function hasPermit(a){if(!_permSet)_buildSets();return !!_permSet[_normAddr(a)];}
+// Live county cross-reference (open code cases + recorded liens) keyed by normalized address.
+var _violIndex=null;
+function buildViolIndex(){
+  _violIndex={};
+  if(_liveViols)_liveViols.forEach(function(v){_violIndex[_normAddr(v.address)]={n:(v.violations||[]).length,lien:v._lien||null,live:true};});
+  if(typeof VIOL_DETAIL!=='undefined')VIOL_DETAIL.forEach(function(v){var k=_normAddr(v.address);if(!_violIndex[k])_violIndex[k]={n:(v.violations||[]).length,lien:null,live:false};});
+}
+function violInfo(a){if(!_violIndex)buildViolIndex();return _violIndex[_normAddr(a)]||null;}
+function dealFlags(d){var vi=violInfo(d.address);if(!vi)return '';var p=[];
+  if(vi.n)p.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">'+vi.n+' OPEN CODE CASE'+(vi.n!==1?'S':'')+'</span>');
+  if(vi.lien)p.push('<span style="background:rgba(224,102,74,.2);color:#e0664a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">LIEN'+(vi.lien.date?' &middot; '+vi.lien.date:' RECORDED')+'</span>');
+  return p.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">'+p.join('')+'</div>':'';}
 // Weighted distress/motivation signals -> 0-~100 score. Higher = more likely to sell below market.
 function computeScore(d){
   var s=0,why=[];function add(p,t){s+=p;why.push({p:p,t:t});}
@@ -1402,11 +1432,33 @@ function computeScore(d){
   var c=(d.rehab_condition||'').toLowerCase();
   if(c.indexOf('gut')>=0)add(14,'Full-gut condition');else if(c.indexOf('heavy')>=0)add(11,'Heavy rehab needed');else if(c.indexOf('moderate')>=0)add(7,'Moderate rehab');else if(c.indexOf('light')>=0||c.indexOf('cosmetic')>=0)add(4,'Cosmetic / light rehab');
   if(d.last_sale_price>0&&d.market_value>0&&d.last_sale_price<d.market_value*0.45)add(10,'High equity (low cost basis)');
-  if(hasViolation(d.address))add(16,'Open code violation');
+  var _vi=violInfo(d.address);
+  if(_vi&&_vi.n){var _n=_vi.n;add(_n>=10?38:_n>=6?30:_n>=4?24:_n>=3?19:_n>=2?15:12,'Open code violations ('+_n+' case'+(_n!==1?'s':'')+')');if(_vi.lien)add(16,'Recorded county lien');}
+  else if(hasViolation(d.address))add(16,'Open code violation');
   if(hasPermit(d.address))add(6,'Recent permit activity');
   return {score:Math.round(s),why:why};
 }
 function rowToDeal(r){return {address:r[1],neighborhood:r[2],owner:r[3],owner_state:r[4],beds:r[6],baths:r[7],beds_baths:(r[6]?r[6]+'bd':'')+(r[7]?'/'+r[7]+'ba':''),arv:r[8],repair:r[9],market_value:r[10],last_sale_price:r[11],year_built:r[12],held_years:r[13],sqft:r[18],rehab_condition:r[17],mail_city:r[19],outreach_type:r[20],pa_url:r[16],maps_url:r[15]};}
+// County-flagged leads: live violation/lien properties NOT already in the lead set, with 3+ open cases or a recorded lien.
+var _countyLeads=null;
+function getCountyLeads(){
+  if(_countyLeads)return _countyLeads;
+  _countyLeads=[];
+  if(!_liveViols)return _countyLeads;
+  var known={}; ALL_ROWS.forEach(function(r){known[_normAddr(r[1])]=1;}); TOP10.forEach(function(d){known[_normAddr(d.address)]=1;});
+  _liveViols.forEach(function(v){
+    var k=_normAddr(v.address); if(known[k])return;
+    var n=(v.violations||[]).length;
+    if(n<3 && !v._lien)return;
+    var d={address:v.address,neighborhood:'County-flagged',owner:'Owner — pull via PA Record',owner_state:'',arv:0,repair:0,
+      folio:v.folio||'',pa_url:v.pa_url||'',maps_url:v.maps_url||'',zillow_url:'',_needsComp:true,_countySourced:true,_caseN:n,_lien:v._lien||null};
+    var c=computeScore(d); d._score=c.score; d._why=c.why;
+    _countyLeads.push(d);
+  });
+  _countyLeads.sort(function(a,b){return b._score-a._score;});
+  return _countyLeads;
+}
+function countyLeadRow(d){var r=['—',d.address,'County-flagged',d.owner,'',d._score,'','',0,0,0,0,'','',0,d.maps_url,d.pa_url,'Needs comp','','','County code / lien'];r[21]='county';r._cn=d._caseN;r._lien=d._lien;return r;}
 var DEALS50=null;
 function getTop50(){
   if(DEALS50)return DEALS50;
@@ -1415,6 +1467,8 @@ function getTop50(){
   var arr=ALL_ROWS.map(function(r){var d=rowToDeal(r);var c=computeScore(d);d._score=c.score;d._why=c.why;d._rich=false;return d;});
   arr.sort(function(a,b){return b._score-a._score;});
   for(var i=0;i<arr.length&&list.length<50;i++){var k=_normAddr(arr[i].address);if(!seen[k]){seen[k]=1;list.push(arr[i]);}}
+  // guarantee the worst county-flagged leads appear in the deal pipeline
+  getCountyLeads().slice(0,12).forEach(function(d){var k=_normAddr(d.address);if(!seen[k]){seen[k]=1;list.push(d);}});
   list.sort(function(a,b){return b._score-a._score;});
   DEALS50=list;return list;
 }
@@ -1425,11 +1479,49 @@ function isRecentDeal(d){
   return false;
 }
 
+// County-flagged lead card: live violation/lien property with no comp data yet (honest "needs comp").
+function countyDealCard(d,idx){
+  return '<div class="deal-card" style="overflow:hidden;">'+
+    svPhoto(d,idx)+
+    '<div class="card-border" style="background:#e0664a;"></div>'+
+    '<div class="card-header">'+
+      '<div class="card-rank">'+
+        '<div class="score-circle" title="Distress score">'+d._score+'</div>'+
+        '<span style="background:rgba(224,102,74,.18);color:#e0664a;font-size:9px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.5px;align-self:center;white-space:nowrap;">COUNTY-FLAGGED</span>'+
+      '</div>'+
+      '<div class="deal-addr">'+d.address+'</div>'+
+      '<div class="deal-meta">Live Miami-Dade code record &middot; not yet in your lead set</div>'+
+      '<div class="deal-meta" style="margin-top:2px;">'+d.owner+'</div>'+
+      dealFlags(d)+
+    '</div>'+
+    '<div class="metrics-row">'+
+      '<div class="metric-cell"><div class="metric-lbl">Open Code Cases</div><div class="metric-val" style="color:#e8854a;">'+(d._caseN||0)+'</div><div class="metric-sub">county violations</div></div>'+
+      '<div class="metric-cell"><div class="metric-lbl">Recorded Lien</div><div class="metric-val" style="font-size:15px;color:'+(d._lien?'#e0664a':'var(--muted)')+';">'+(d._lien?'Yes':'None')+'</div><div class="metric-sub">'+(d._lien&&d._lien.date?d._lien.date:'&mdash;')+'</div></div>'+
+      '<div class="metric-cell"><div class="metric-lbl">Financials</div><div class="metric-val" style="font-size:13px;color:var(--muted);">Needs comp</div><div class="metric-sub">skip-trace owner</div></div>'+
+    '</div>'+
+    '<div class="deal-actions">'+
+      '<button class="btn btn-gold" onclick="runUnderwriter(DEALS50['+idx+'])">'+ICON('underwriter',13)+' Underwrite</button>'+
+      '<a class="btn btn-dark" href="'+zillowUrl(d)+'" target="_blank">Zillow</a>'+
+      '<a class="btn btn-dark" href="'+(d.maps_url||'#')+'" target="_blank">Maps</a>'+
+      '<a class="btn btn-dark" href="'+(d.pa_url||'#')+'" target="_blank">PA Record</a>'+
+    '</div>'+
+  '</div>';
+}
 // ── DEAL CARDS ──
 function buildDeals(){
   var deals=getTop50();
+  var sortBy=(document.getElementById('dealSort')||{}).value||'score';
+  deals.sort(function(a,b){
+    if(sortBy==='score-asc')return a._score-b._score;
+    if(sortBy==='arv-desc')return (b.arv||0)-(a.arv||0);
+    if(sortBy==='arv-asc')return (a.arv||0)-(b.arv||0);
+    if(sortBy==='profit-desc')return getProfit(b.arv,b.repair)-getProfit(a.arv,a.repair);
+    if(sortBy==='cases-desc'){var ca=(violInfo(a.address)||{}).n||0,cb=(violInfo(b.address)||{}).n||0;return (cb-ca)||(b._score-a._score);}
+    return b._score-a._score;
+  });
   var badge=document.getElementById('dealsBadge'); if(badge)badge.textContent=deals.length;
   document.getElementById('dealGrid').innerHTML=deals.map(function(d,idx){
+    if(d._countySourced)return countyDealCard(d,idx);
     var profit=getProfit(d.arv,d.repair);
     var rs=isRecentDeal(d);
     var borderColor=idx<3?'#b89968':'#9ca3af';
@@ -1453,6 +1545,7 @@ function buildDeals(){
         '<div class="deal-addr">'+d.address+(rs?' <span style="background:#e8854a;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;vertical-align:middle;letter-spacing:.5px;">RECENTLY SOLD</span>':'')+'</div>'+
         '<div class="deal-meta">'+d.neighborhood+(d.beds_baths?' &middot; '+d.beds_baths:'')+' &middot; '+(d.sqft||0).toLocaleString()+' sqft'+(d.year_built?' &middot; Built '+d.year_built:'')+'</div>'+
         '<div class="deal-meta" style="margin-top:2px;">Owner: '+d.owner+(d.owner_state?' ('+d.owner_state+')':'')+(d.held_years!=null?' &middot; Held '+d.held_years+'y':'')+'</div>'+
+        dealFlags(d)+
       '</div>'+
       '<div class="metrics-row">'+
         '<div class="metric-cell"><div class="metric-lbl">Comp ARV '+ARV_TIP+'</div><div class="metric-val">'+fmtK(d.arv)+'</div><div class="metric-sub">'+(d.comp_ppsf?'$'+d.comp_ppsf+'/sqft':'est. value')+'</div></div>'+
@@ -1502,12 +1595,12 @@ function setDealStatus(btn){
 function buildAllTable(){
   var nf=document.getElementById('neighborFilter');
   if(!nf)return; // panel not present -> nothing to build
-  var nbs={};ALL_ROWS.forEach(function(r){nbs[r[2]]=1});
-  Object.keys(nbs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;nf.appendChild(o)});
+  if(nf.options.length<=1){var nbs={};ALL_ROWS.forEach(function(r){nbs[r[2]]=1});Object.keys(nbs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;nf.appendChild(o)});}
   var rf=document.getElementById('rehabFilter');
-  if(rf){var rhs={};ALL_ROWS.forEach(function(r){if(r[17])rhs[r[17]]=1});Object.keys(rhs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;rf.appendChild(o)});}
-  var ab=document.getElementById('allBadge');if(ab)ab.textContent=ALL_ROWS.length.toLocaleString();
-  tableData=ALL_ROWS.slice();filteredRows=tableData.slice();
+  if(rf&&rf.options.length<=1){var rhs={};ALL_ROWS.forEach(function(r){if(r[17])rhs[r[17]]=1});Object.keys(rhs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;rf.appendChild(o)});}
+  var cl=getCountyLeads().map(countyLeadRow);
+  var ab=document.getElementById('allBadge');if(ab)ab.textContent=(ALL_ROWS.length+cl.length).toLocaleString();
+  tableData=ALL_ROWS.concat(cl);filteredRows=tableData.slice();
   renderTablePage();
 }
 
@@ -1542,6 +1635,21 @@ function setAllView(v){
   document.querySelectorAll('#tab-all .uw-seg button').forEach(function(b){b.classList.toggle('uw-seg-on',b.dataset.allview===v);});
   if(v==='sales'){try{filterSales();}catch(e){}}
 }
+var _pendingAllRefresh=false;
+function refreshDeals(){
+  var s=document.getElementById('dealRefreshStatus'); if(s)s.textContent='Refreshing from Miami-Dade…';
+  _liveTried=false; _violIndex=null; _countyLeads=null; DEALS50=null;
+  fetchLiveViolations(true);
+  buildDeals();
+  if(s)setTimeout(function(){if(s.textContent.indexOf('Refreshing')===0)s.textContent='Updated '+new Date().toLocaleTimeString();},2500);
+}
+function refreshAll(){
+  var s=document.getElementById('allRefreshStatus'); if(s)s.textContent='Refreshing from Miami-Dade…';
+  _pendingAllRefresh=true; _liveTried=false; _violIndex=null; DEALS50=null;
+  fetchLiveViolations(true);
+  try{buildAllTable();}catch(e){}
+  if(s)setTimeout(function(){if(s.textContent.indexOf('Refreshing')===0)s.textContent='Updated '+new Date().toLocaleTimeString();},2500);
+}
 
 function sortTable(th){
   var col=th.dataset.col;
@@ -1571,9 +1679,15 @@ function renderTablePage(){
     var rc=rehabClass(r[17]);
     var st=statuses[r[1]]||'unreviewed';
     var addrEsc=(''+r[1]).replace(/"/g,'&quot;');
-    var profitCell=rs
-      ? '<span class="rehab-badge" style="background:#fde3c7;color:#b45309;white-space:nowrap;">Recently Sold</span>'
-      : '<span style="font-weight:700;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</span>';
+    var isCounty=r[21]==='county';
+    var profitCell=isCounty
+      ? '<span class="rehab-badge" style="background:rgba(224,102,74,.15);color:#e0664a;white-space:nowrap;">Needs comp</span>'
+      : (rs
+        ? '<span class="rehab-badge" style="background:#fde3c7;color:#b45309;white-space:nowrap;">Recently Sold</span>'
+        : '<span style="font-weight:700;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</span>');
+    var arvCell=isCounty?'<span style="color:var(--muted);">&mdash;</span>':fmtK(r[8]);
+    var repairCell=isCounty?'<span style="color:var(--muted);">&mdash;</span>':fmtK(r[9]);
+    var condCell=isCounty?'<span class="rehab-badge" style="background:rgba(232,133,74,.15);color:#e8854a;white-space:nowrap;">'+(r._cn||0)+' case'+((r._cn||0)!==1?'s':'')+(r._lien?' &middot; Lien':'')+'</span>':'<span class="rehab-badge '+rc+'">'+(r[17]||'&mdash;')+'</span>';
     return '<tr>'+
       '<td style="font-weight:700;color:var(--gold);">'+r[0]+'</td>'+
       '<td><a href="'+r[15]+'" target="_blank">'+r[1]+'</a></td>'+
@@ -1583,9 +1697,9 @@ function renderTablePage(){
       '<td style="text-align:center;">'+(r[6]||'&mdash;')+'</td>'+
       '<td style="text-align:right;">'+(r[18]?r[18].toLocaleString():'&mdash;')+'</td>'+
       '<td style="text-align:center;">'+(r[12]||'&mdash;')+'</td>'+
-      '<td style="text-align:right;">'+fmtK(r[8])+'</td>'+
-      '<td style="text-align:right;white-space:nowrap;">'+fmtK(r[9])+'</td>'+
-      '<td><span class="rehab-badge '+rc+'">'+(r[17]||'&mdash;')+'</span></td>'+
+      '<td style="text-align:right;">'+arvCell+'</td>'+
+      '<td style="text-align:right;white-space:nowrap;">'+repairCell+'</td>'+
+      '<td>'+condCell+'</td>'+
       '<td style="text-align:right;">'+profitCell+'</td>'+
       '<td style="font-size:10px;color:var(--muted);">'+(r[20]||'')+'</td>'+
       '<td data-addr="'+addrEsc+'"><span class="status-pill" style="background:'+statusBg(st)+';color:'+statusFg(st)+';cursor:pointer;" onclick="cycleTblStatus(this)" data-addr2="'+addrEsc+'">'+statusLabel(st)+'</span></td>'+
@@ -1816,6 +1930,7 @@ function fetchLiveViolations(force){
     (jv.features||[]).forEach(function(f){
       var a=f.attributes||{}; if(_badAddr(a.ADDRESS))return;
       var r=rec(byAddr,a),when=a.CASE_DATE?(' · '+_fmtEpoch(a.CASE_DATE)):'';
+      if(a.CASE_DATE&&a.CASE_DATE>(r._latest||0))r._latest=a.CASE_DATE;
       r.violations.push({case:_cleanTxt(a.CASE_NUM)||r.folio||'—',desc:(_cleanTxt(a.PROBLEM_DESC)||'Code violation')+when,status:_cleanTxt(a.STAT_DESC)||'Open'});
       openCases++;
     });
@@ -1829,30 +1944,49 @@ function fetchLiveViolations(force){
     var arr=Object.keys(byAddr).map(function(k){return byAddr[k];});
     arr.forEach(function(v){if(v._lien)lienProps++;});
     arr.sort(function(x,y){var d=(y._lien?1:0)-(x._lien?1:0);return d||(y.violations.length-x.violations.length);});
-    _liveViols=arr;_violAll=null;buildViolations();
+    _liveViols=arr;_violAll=null;_violIndex=null;_countyLeads=null;DEALS50=null;buildViolations();
+    try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
+    _pendingAllRefresh=false;try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
     _setViolStatus('<span style="color:var(--green);font-weight:600">&#9679; Live</span> <span style="color:var(--muted)">&mdash; '+openCases+' open code cases across '+arr.length+' properties'+(lienProps?', incl. <strong style="color:#e0664a">'+lienProps+' with a recorded county lien</strong>':'')+'. Pulled from Miami-Dade Open Data just now &mdash; confirmed county records.</span>');
     _violBtnReset();
   }).catch(function(e){
-    _liveViols=null;_violAll=null;buildViolations();
+    _liveViols=null;_violAll=null;_violIndex=null;_countyLeads=null;DEALS50=null;buildViolations();
+    try{if(document.getElementById('dealGrid'))buildDeals();}catch(_e){}
+    _pendingAllRefresh=false;try{if(document.getElementById('propTbody'))buildAllTable();}catch(_e){}
     _setViolStatus('<span style="color:#e8854a;font-weight:600">&#9679; Live feed unavailable</span> <span style="color:var(--muted)">&mdash; '+((e&&e.message)||'network / CORS')+'. Showing the verified scrape + sample set. The live pull works from the deployed site (macoequitypartners.com).</span>');
     _violBtnReset();
   });
 }
+var _violTypeFilter='';
+function setViolType(t){_violTypeFilter=t;buildViolations();}
+function _isOpenViol(v){return (v.violations||[]).some(function(c){return c.status==='Open'||c.status==='Active LP'||c.status==='Unverified';});}
 function buildViolations(){
   var data=buildViolationData();
   var nf=document.getElementById('violNeighFilter');
   if(nf){var cur=nf.value;var nbs={};data.forEach(function(v){if(v.neighborhood)nbs[v.neighborhood]=1;});nf.innerHTML='<option value="">All Neighborhoods</option>'+Object.keys(nbs).sort().map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('');if(cur&&nbs[cur])nf.value=cur;}
   var q=((document.getElementById('violSearch')||{}).value||'').toLowerCase();
   var nb=(document.getElementById('violNeighFilter')||{}).value||'';
-  var st=(document.getElementById('violStatusFilter')||{}).value||'';
-  var totalCases=0,verifiedCases=0,lienCount=0; data.forEach(function(v){if(v._lien)lienCount++;(v.violations||[]).forEach(function(c){totalCases++;if(v._verified)verifiedCases++;});});
-  var shownProps=0, shownCases=0, lienOnly=(st==='__LIEN__');
-  var html=data.map(function(v){
-    var cases=(v.violations||[]).filter(function(vc){return lienOnly||!st||vc.status===st;});
+  var tf=_violTypeFilter;
+  var totalCases=0,verifiedCases=0,lienCount=0,violCount=0; data.forEach(function(v){if(v._lien)lienCount++;if(_isOpenViol(v))violCount++;(v.violations||[]).forEach(function(c){totalCases++;if(v._verified)verifiedCases++;});});
+  // type chips with live counts
+  var tc=document.getElementById('violTypeChips');
+  if(tc){var chips=[{k:'',l:'All Records',n:data.length,c:'var(--gold)'},{k:'viol',l:'Open Violations',n:violCount,c:'var(--gold)'},{k:'lien',l:'Recorded Liens',n:lienCount,c:'#e0664a'}];
+    tc.innerHTML=chips.map(function(ch){var on=(tf===ch.k);return '<button type="button" onclick="setViolType(\''+ch.k+'\')" style="cursor:pointer;font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:1px solid '+(on?ch.c:'var(--border)')+';background:'+(on?ch.c:'transparent')+';color:'+(on?'#0d0c0a':'var(--muted)')+';">'+ch.l+' <span style="font-weight:800;">'+ch.n+'</span></button>';}).join('');}
+  // sort
+  var sortBy=(document.getElementById('violSort')||{}).value||'cases-desc';
+  var rows=data.slice();
+  rows.sort(function(a,b){var ca=(a.violations||[]).length,cb=(b.violations||[]).length;
+    if(sortBy==='cases-asc')return ca-cb;
+    if(sortBy==='newest')return (b._latest||0)-(a._latest||0);
+    if(sortBy==='lien'){var d=(b._lien?1:0)-(a._lien?1:0);return d||(cb-ca);}
+    return cb-ca;});
+  var shownProps=0, shownCases=0;
+  var html=rows.map(function(v){
+    var cases=(v.violations||[]);
     var matchText=!q||(v.address||'').toLowerCase().indexOf(q)>=0||(v.owner||'').toLowerCase().indexOf(q)>=0||cases.some(function(vc){return (vc.desc||'').toLowerCase().indexOf(q)>=0;});
     var matchNb=!nb||v.neighborhood===nb;
-    var matchStatus=lienOnly?!!v._lien:true;
-    if(!matchText||!matchNb||!matchStatus||!cases.length)return '';
+    var matchType=tf===''?true:(tf==='lien'?!!v._lien:_isOpenViol(v));
+    if(!matchText||!matchNb||!matchType||!cases.length)return '';
     shownProps++; shownCases+=cases.length;
     var tagTxt=v._verified?(v._live?'Live · Verified':'Verified'):'Sample';
     var tag='<span style="background:'+(v._verified?'rgba(74,154,107,.18);color:var(--green)':'rgba(232,133,74,.18);color:#e8854a')+';font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">'+tagTxt+'</span>';
