@@ -392,6 +392,14 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 #propTbody tr:hover td{background:rgba(184,153,104,.04)}
 
 
+/* ===== Underwriter modal ===== */
+.uw-modal{display:none;position:fixed;inset:0;z-index:8000;background:rgba(0,0,0,.72);align-items:flex-start;justify-content:center;padding:28px 16px;overflow-y:auto}
+.uw-modal.open{display:flex}
+.uw-modal-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:26px 24px;max-width:1040px;width:100%;position:relative;margin:auto}
+.uw-modal-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;line-height:1;cursor:pointer;color:var(--muted);z-index:2}
+.uw-modal-close:hover{color:var(--gold)}
+.uw-modal .uw-left{position:static!important}
+
 /* ===== Icons ===== */
 .tabs button{display:inline-flex;align-items:center;gap:7px}
 .tabs .ico{flex-shrink:0;opacity:.8}
@@ -618,10 +626,8 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <button class="active" data-tab="overview" onclick="showTab(this)">Overview</button>
     <button data-tab="deals" onclick="showTab(this)">Top 10 Deals</button>
     <button data-tab="all" onclick="showTab(this)">All Properties</button>
-    <button data-tab="underwriter" onclick="showTab(this)">Underwriter</button>
     <button data-tab="market" onclick="showTab(this)">Market Intel</button>
     <button data-tab="construction" onclick="showTab(this)">Construction</button>
-    <button data-tab="sales" onclick="showTab(this)">Recent Sales</button>
     <button data-tab="violations" onclick="showTab(this)">Violations</button>
     <button data-tab="field" onclick="showTab(this)" style="color:#e8854a;">Field Intel</button>
   </nav>
@@ -669,13 +675,6 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 </div>
     </div>
 
-    <!-- Deal Map on Overview -->
-    <div style="margin-top:20px">
-      <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Deal Map <span class="badge" id="mapPinsBadge">10</span></div>
-      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-        <div id="map-overview" style="height:340px;width:100%;"></div>
-      </div>
-    </div>
   </div>
 
   <!-- TOP 10 DEALS -->
@@ -685,53 +684,84 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <span>ARV is comp-based (recent neighborhood $/sqft &times; living area), <strong>not</strong> PA assessed value. Est. Net Profit assumes a 6-month hard-money flip with all closing, holding &amp; selling costs. Always verify with current MLS comps before making offers.</span>
     </div>
     <div class="deal-grid" id="dealGrid"></div>
+    <div style="margin-top:24px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:16px 20px;">
+      <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:8px;">How the Distress Score Works</div>
+      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.7;">Each property is scored (typically <strong>0&ndash;20+</strong>) by summing <strong>weighted distress &amp; motivation signals</strong> from county records &mdash; a higher score means the owner is more likely to sell below market. Signals include: long ownership &amp; high equity (15&ndash;30y+ held), absentee / out-of-state owner, no homestead exemption, older construction, open code violations, open or expired permits, trust / LLC (estate or inherited) ownership, and Save-Our-Homes assessed-vs-market value gaps. The score is a <strong>triage tool to rank outreach</strong> &mdash; always verify condition and live comps before making an offer.</div>
+    </div>
   </div>
 
   <!-- ALL PROPERTIES -->
   <div id="tab-all" class="tab-content">
-    <div class="section-title">All Scored Properties <span class="badge" id="allBadge">2,387</span></div>
-    <div class="arv-callout">
-      <span style="font-size:18px;">&#128202;</span>
-      <span>Every scored lead from the Miami-Dade pull. ARV is comp-based; <strong>Est. Net Profit</strong> assumes buying at ~65% of ARV on a 6-month hard-money flip (all closing, holding &amp; selling costs included). Click any column header to sort.</span>
+    <div class="section-title">All Properties <span class="badge" id="allBadge">2,387</span></div>
+    <div class="uw-seg" style="max-width:440px;margin-bottom:18px;">
+      <button class="uw-seg-on" data-allview="leads" onclick="setAllView('leads')">Scored Leads</button>
+      <button data-allview="sales" onclick="setAllView('sales')">Recent Sales (176)</button>
     </div>
-    <div class="table-wrap">
-      <div class="table-controls">
-        <input type="text" class="search-input" id="propSearch" placeholder="Search address, owner, or neighborhood&hellip;" oninput="filterTable()">
-        <select class="filter-sel" id="neighborFilter" onchange="filterTable()"><option value="">All Neighborhoods</option></select>
-        <select class="filter-sel" id="rehabFilter" onchange="filterTable()"><option value="">All Conditions</option></select>
-        <select class="filter-sel" id="bedsFilter" onchange="filterTable()"><option value="">Any Beds</option><option value="3">3+ BR</option><option value="4">4+ BR</option><option value="5">5+ BR</option></select>
-        <select class="filter-sel" id="scoreFilter" onchange="filterTable()"><option value="">Any Score</option><option value="8">Score 8+</option><option value="12">Score 12+</option><option value="16">Score 16+</option></select>
-        <select class="filter-sel" id="arvFilter" onchange="filterTable()"><option value="">Any ARV</option><option value="0-500000">Under $500K</option><option value="500000-750000">$500&ndash;750K</option><option value="750000-1000000">$750K&ndash;1M</option><option value="1000000-99999999">$1M+</option></select>
-        <select class="filter-sel" id="sqftFilter" onchange="filterTable()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
-        <label class="filter-sel" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="hideSoldFilter" onchange="filterTable()" style="margin:0;width:auto;">Hide recently sold</label>
-        <span class="tbl-count" id="tableCount"></span>
+
+    <div id="allLeadsView">
+      <div class="arv-callout">
+        <span style="font-size:18px;">&#128202;</span>
+        <span>Every scored lead from the Miami-Dade pull. ARV is comp-based; <strong>Est. Net Profit</strong> assumes buying at ~65% of ARV on a 6-month hard-money flip. Sort by any column, or hit <strong>Underwrite</strong> on a row to model the deal &amp; change terms.</span>
       </div>
-      <div style="overflow-x:auto;">
-        <table id="propTable">
-          <thead><tr>
-            <th data-col="0" onclick="sortTable(this)">#</th>
-            <th data-col="1" onclick="sortTable(this)">Address</th>
-            <th data-col="2" onclick="sortTable(this)">Neighborhood</th>
-            <th data-col="3" onclick="sortTable(this)">Owner</th>
-            <th data-col="5" onclick="sortTable(this)">Score</th>
-            <th data-col="6" onclick="sortTable(this)">Beds</th>
-            <th data-col="18" onclick="sortTable(this)">Sqft</th>
-            <th data-col="12" onclick="sortTable(this)">Yr Built</th>
-            <th data-col="8" onclick="sortTable(this)">ARV</th>
-            <th data-col="9" onclick="sortTable(this)">Repair Est</th>
-            <th data-col="17" onclick="sortTable(this)">Condition</th>
-            <th data-col="profit" onclick="sortTable(this)">Est. Net Profit</th>
-            <th data-col="20" onclick="sortTable(this)">Outreach</th>
-            <th>Status</th>
-          </tr></thead>
-          <tbody id="propTbody"></tbody>
-        </table>
+      <div class="table-wrap">
+        <div class="table-controls">
+          <input type="text" class="search-input" id="propSearch" placeholder="Search address, owner, or neighborhood&hellip;" oninput="filterTable()">
+          <select class="filter-sel" id="neighborFilter" onchange="filterTable()"><option value="">All Neighborhoods</option></select>
+          <select class="filter-sel" id="rehabFilter" onchange="filterTable()"><option value="">All Conditions</option></select>
+          <select class="filter-sel" id="bedsFilter" onchange="filterTable()"><option value="">Any Beds</option><option value="3">3+ BR</option><option value="4">4+ BR</option><option value="5">5+ BR</option></select>
+          <select class="filter-sel" id="scoreFilter" onchange="filterTable()"><option value="">Any Score</option><option value="8">Score 8+</option><option value="12">Score 12+</option><option value="16">Score 16+</option></select>
+          <select class="filter-sel" id="arvFilter" onchange="filterTable()"><option value="">Any ARV</option><option value="0-500000">Under $500K</option><option value="500000-750000">$500&ndash;750K</option><option value="750000-1000000">$750K&ndash;1M</option><option value="1000000-99999999">$1M+</option></select>
+          <select class="filter-sel" id="sqftFilter" onchange="filterTable()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
+          <label class="filter-sel" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="hideSoldFilter" onchange="filterTable()" style="margin:0;width:auto;">Hide recently sold</label>
+          <span class="tbl-count" id="tableCount"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table id="propTable">
+            <thead><tr>
+              <th data-col="0" onclick="sortTable(this)">#</th>
+              <th data-col="1" onclick="sortTable(this)">Address</th>
+              <th data-col="2" onclick="sortTable(this)">Neighborhood</th>
+              <th data-col="3" onclick="sortTable(this)">Owner</th>
+              <th data-col="5" onclick="sortTable(this)">Score</th>
+              <th data-col="6" onclick="sortTable(this)">Beds</th>
+              <th data-col="18" onclick="sortTable(this)">Sqft</th>
+              <th data-col="12" onclick="sortTable(this)">Yr Built</th>
+              <th data-col="8" onclick="sortTable(this)">ARV</th>
+              <th data-col="9" onclick="sortTable(this)">Repair Est</th>
+              <th data-col="17" onclick="sortTable(this)">Condition</th>
+              <th data-col="profit" onclick="sortTable(this)">Est. Net Profit</th>
+              <th data-col="20" onclick="sortTable(this)">Outreach</th>
+              <th>Status</th>
+              <th>Underwrite</th>
+            </tr></thead>
+            <tbody id="propTbody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
       </div>
-      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <div id="allSalesView" style="display:none;">
+      <div class="arv-callout">
+        <span style="font-size:18px;">&#128202;</span>
+        <span>Closed comparable sales from the latest data pull (Kendall ZIPs). Use these to sanity-check ARV before you underwrite a lead.</span>
+      </div>
+      <div class="filter-bar">
+        <input type="text" class="filter-sel" id="salesSearch" placeholder="Search address / neighborhood" style="min-width:200px;padding:7px 12px" oninput="filterSales()">
+        <select class="filter-sel" id="salesZipFilter" onchange="filterSales()"><option value="">All ZIPs</option></select>
+        <select class="filter-sel" id="salesBedsFilter" onchange="filterSales()"><option value="">Any Beds</option><option value="2">2+ BR</option><option value="3">3+ BR</option><option value="4">4+ BR</option><option value="5">5+ BR</option></select>
+        <select class="filter-sel" id="salesPriceFilter" onchange="filterSales()"><option value="">Any Price</option><option value="0-400000">Under $400K</option><option value="400000-600000">$400&ndash;600K</option><option value="600000-800000">$600&ndash;800K</option><option value="800000-99999999">$800K+</option></select>
+        <select class="filter-sel" id="salesSqftFilter" onchange="filterSales()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
+        <select class="filter-sel" id="salesSortFilter" onchange="filterSales()"><option value="date">Newest first</option><option value="price_desc">Price (high&ndash;low)</option><option value="price_asc">Price (low&ndash;high)</option><option value="ppsf_desc">$/sf (high&ndash;low)</option></select>
+        <span style="font-size:12px;color:var(--muted);margin-left:auto" id="salesCount"></span>
+      </div>
+      <div class="comps-grid" id="compsGrid"></div>
     </div>
   </div>
 
-  <div id="tab-underwriter" class="tab-content">
+  <div id="tab-underwriter" class="uw-modal" onclick="if(event.target===this)closeUnderwriter()">
+  <div class="uw-modal-card">
+  <button class="uw-modal-close" onclick="closeUnderwriter()" title="Close">&#10005;</button>
   <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8" y2="18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="16" y1="14" x2="16" y2="18"/></svg> Underwriter <span class="badge">Flip / Hold P&amp;L</span></div>
   <div class="uw-hint">Every number below is a Miami-reality estimate from <em>your</em> inputs. Flip margins here are tight &mdash; negative profit shows in red on purpose. Costs use: buying 3%, selling 8% (6% comm + 2% close), 10% reno contingency, taxes 1.8%/yr, insurance $250/mo, utilities $350/mo, hard money 13.5% / 2pts / 70% LTV.</div>
   <div class="uw-grid">
@@ -795,6 +825,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <div class="uw-right">
       <div id="uw-output"></div>
     </div>
+  </div>
   </div>
 </div>
 
@@ -895,20 +926,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 </div>
   </div>
 
-  <!-- SALES COMPS -->
-  <div id="tab-sales" class="tab-content">
-    <div class="section-title">Recent Sales Comps <span class="badge" id="salesBadge">176</span></div>
-    <div class="filter-bar">
-      <input type="text" class="filter-sel" id="salesSearch" placeholder="Search address / neighborhood" style="min-width:200px;padding:7px 12px" oninput="filterSales()">
-      <select class="filter-sel" id="salesZipFilter" onchange="filterSales()"><option value="">All ZIPs</option></select>
-      <select class="filter-sel" id="salesBedsFilter" onchange="filterSales()"><option value="">Any Beds</option><option value="2">2+ BR</option><option value="3">3+ BR</option><option value="4">4+ BR</option><option value="5">5+ BR</option></select>
-      <select class="filter-sel" id="salesPriceFilter" onchange="filterSales()"><option value="">Any Price</option><option value="0-400000">Under $400K</option><option value="400000-600000">$400&ndash;600K</option><option value="600000-800000">$600&ndash;800K</option><option value="800000-99999999">$800K+</option></select>
-      <select class="filter-sel" id="salesSqftFilter" onchange="filterSales()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
-      <select class="filter-sel" id="salesSortFilter" onchange="filterSales()"><option value="date">Newest first</option><option value="price_desc">Price (high&ndash;low)</option><option value="price_asc">Price (low&ndash;high)</option><option value="ppsf_desc">$/sf (high&ndash;low)</option></select>
-      <span style="font-size:12px;color:var(--muted);margin-left:auto" id="salesCount"></span>
-    </div>
-    <div class="comps-grid" id="compsGrid"></div>
-  </div>
+  <!-- Recent Sales moved into the All Properties tab (Scored Leads / Recent Sales toggle) -->
 
   <!-- VIOLATIONS -->
   <div id="tab-violations" class="tab-content">
@@ -1673,7 +1691,6 @@ function showTab(btn){
   document.querySelectorAll('nav.tabs button').forEach(function(b){b.classList.remove('active')});
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='overview'){try{renderMapOverview();}catch(e){console.error('renderMapOverview',e);}}
   if(id==='market'){try{initMarketCharts();}catch(e){console.error('initMarketCharts',e);}try{initMarketExtras();}catch(e){console.error('initMarketExtras',e);}}
   if(id==='construction'){try{calcConstruction();buildPermits();}catch(e){console.error('construction',e);}}
 }
@@ -1693,7 +1710,7 @@ function initApp(){
   // Feature modules self-initialize at end of script (renderRateCenter, calcUnderwriter);
   // market extras render lazily via showTab('market'). Re-run guarded in case auth path ran initApp early.
   setTimeout(function(){
-    ['decorateNav','renderRateCenter','calcUnderwriter','initMarketExtras','renderMapOverview'].forEach(function(fn){ if(typeof window[fn]==='function'){try{window[fn]();}catch(e){}} });
+    ['decorateNav','renderRateCenter','calcUnderwriter','initMarketExtras'].forEach(function(fn){ if(typeof window[fn]==='function'){try{window[fn]();}catch(e){}} });
   },0);
   document.addEventListener('click',function(e){
     if(openDropdown&&!openDropdown.contains(e.target)){
@@ -1915,6 +1932,14 @@ function filterTable(){
   currentPage=1;renderTablePage();
 }
 
+function setAllView(v){
+  var lv=document.getElementById('allLeadsView'), sv=document.getElementById('allSalesView');
+  if(lv)lv.style.display=(v==='sales')?'none':'';
+  if(sv)sv.style.display=(v==='sales')?'':'none';
+  document.querySelectorAll('#tab-all .uw-seg button').forEach(function(b){b.classList.toggle('uw-seg-on',b.dataset.allview===v);});
+  if(v==='sales'){try{filterSales();}catch(e){}}
+}
+
 function sortTable(th){
   var col=th.dataset.col;
   if(sortColIdx===col)sortDir*=-1;else{sortColIdx=col;sortDir=1}
@@ -1960,6 +1985,7 @@ function renderTablePage(){
       '<td style="text-align:right;">'+profitCell+'</td>'+
       '<td style="font-size:10px;color:var(--muted);">'+(r[20]||'')+'</td>'+
       '<td data-addr="'+addrEsc+'"><span class="status-pill" style="background:'+statusBg(st)+';color:'+statusFg(st)+';cursor:pointer;" onclick="cycleTblStatus(this)" data-addr2="'+addrEsc+'">'+statusLabel(st)+'</span></td>'+
+      '<td><button class="btn btn-gold" style="padding:4px 9px;font-size:10px;white-space:nowrap;" onclick="runUnderwriter({address:&quot;'+addrEsc+'&quot;,arv:'+r[8]+',repair:'+r[9]+'})">'+ICON('underwriter',11)+' UW</button></td>'+
     '</tr>';
   }).join('');
   var tc=document.getElementById('tableCount');
@@ -2979,9 +3005,10 @@ function runUnderwriter(d){
   uwToggleFin();
   uwSetMode('flip');
   calcUnderwriter();
-  var b = document.querySelector('#tabBar button[data-tab="underwriter"]');
-  if(b){ b.click(); }
+  var m=document.getElementById('tab-underwriter');
+  if(m){ m.classList.add('open'); document.body.style.overflow='hidden'; }
 }
+function closeUnderwriter(){ var m=document.getElementById('tab-underwriter'); if(m){ m.classList.remove('open'); } document.body.style.overflow=''; }
 
 /* initial render so the tab isn't empty */
 if(document.getElementById('uw-output')){ uwToggleFin(); calcUnderwriter(); }
