@@ -242,13 +242,13 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 .filter-sel{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-card);cursor:pointer;outline:none}
 .filter-sel:focus{border-color:var(--gold)}
 .tbl-count{font-size:12px;color:var(--muted);margin-left:auto}
-#propTable{width:100%;border-collapse:collapse;font-size:12px}
-#propTable thead tr{background:var(--black);color:#fff}
-#propTable th{padding:10px 12px;text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;white-space:nowrap;user-select:none}
-#propTable th:hover{color:var(--gold)}
-#propTable td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-#propTable tr:nth-child(even) td{background:#fafaf9}
-#propTable tbody tr:hover td{background:var(--bg-card)ef5}
+#propTable{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-variant-numeric:tabular-nums;color:var(--ivory-soft)}
+#propTable thead tr{background:#000;color:var(--ivory)}
+#propTable th{padding:11px 12px;text-align:left;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;cursor:pointer;white-space:nowrap;user-select:none;color:var(--muted);font-weight:600}
+#propTable thead th:hover{color:var(--gold)}
+#propTable td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--ivory-soft)}
+#propTable tbody tr:nth-child(even) td{background:rgba(255,255,255,.025)}
+#propTable tbody tr:hover td{background:rgba(184,153,104,.10)}
 #propTable a{color:var(--gold);text-decoration:none}
 #propTable a:hover{text-decoration:underline}
 .rehab-badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px}
@@ -278,7 +278,7 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 .comp-details{display:flex;gap:12px;flex-wrap:wrap}
 .comp-detail{font-size:11px;color:var(--muted)}
 .comp-detail strong{color:var(--ivory)}
-.comp-ppsf{display:inline-block;background:var(--bg-card)beb;color:#92400e;font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:8px}
+.comp-ppsf{display:inline-block;background:rgba(184,153,104,.15);color:var(--gold);font-size:11px;font-weight:700;padding:2px 8px;border-radius:4px;margin-top:8px}
 
 /* VIOLATIONS */
 .viol-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
@@ -392,20 +392,36 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 #propTbody tr:hover td{background:rgba(184,153,104,.04)}
 
 
+/* ===== Icons ===== */
+.tabs button{display:inline-flex;align-items:center;gap:7px}
+.tabs .ico{flex-shrink:0;opacity:.8}
+.tabs button.active .ico,.tabs button:hover .ico{opacity:1}
+.stat-card .stat-icon{color:var(--gold);opacity:.45}
+.stat-card .stat-icon svg{display:block}
+.section-title .ico{color:var(--gold);vertical-align:-2px}
+.btn .ico{vertical-align:-2px}
+
 /* ===== Responsive (tablet / mobile) ===== */
 @media(max-width:820px){
   .tab-content{padding:14px}
   header{flex-wrap:wrap;gap:8px;height:auto;padding:10px 5vw}
   nav.tabs{overflow-x:auto;white-space:nowrap;-webkit-overflow-scrolling:touch}
   .deal-grid{grid-template-columns:1fr}
+  .dossier-grid{grid-template-columns:1fr!important}
   #tab-construction > div[style*="grid-template-columns:320px"]{grid-template-columns:1fr!important}
   #tab-market [style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr 1fr!important}
+  #tab-market [style*="repeat(4,1fr)"]{grid-template-columns:1fr 1fr!important}
+  #tab-overview [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  #tab-market table{display:block;overflow-x:auto;white-space:nowrap;max-width:100%;-webkit-overflow-scrolling:touch}
 }
 @media(max-width:560px){
   .stats-grid{grid-template-columns:1fr 1fr}
   .comps-grid,.viol-grid{grid-template-columns:1fr}
   #tab-market [style*="grid-template-columns:1fr 1fr 1fr"]{grid-template-columns:1fr!important}
+  #tab-market [style*="repeat(4,1fr)"]{grid-template-columns:1fr!important}
+  .metrics-row{grid-template-columns:1fr 1fr 1fr}
   .hdr-back,#dataVintage{display:none}
+  .tabs button{font-size:12px;padding:8px 10px}
 }
 
 /* ===== FEATURE MODULES (injected) ===== */
@@ -602,13 +618,12 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <button class="active" data-tab="overview" onclick="showTab(this)">Overview</button>
     <button data-tab="deals" onclick="showTab(this)">Top 10 Deals</button>
     <button data-tab="all" onclick="showTab(this)">All Properties</button>
-    <button data-tab="underwriter" onclick="showTab(this)">🧮 Underwriter</button>
-    <button data-tab="market" onclick="showTab(this)">📊 Market Intel</button>
-    <button data-tab="construction" onclick="showTab(this)">🔨 Construction</button>
+    <button data-tab="underwriter" onclick="showTab(this)">Underwriter</button>
+    <button data-tab="market" onclick="showTab(this)">Market Intel</button>
+    <button data-tab="construction" onclick="showTab(this)">Construction</button>
     <button data-tab="sales" onclick="showTab(this)">Recent Sales</button>
     <button data-tab="violations" onclick="showTab(this)">Violations</button>
-    <button data-tab="pipeline" onclick="showTab(this)">🎯 Pipeline</button>
-    <button data-tab="field" onclick="showTab(this)" style="color:#e8854a;border-bottom:2px solid transparent;">📍 Field Intel</button>
+    <button data-tab="field" onclick="showTab(this)" style="color:#e8854a;">Field Intel</button>
   </nav>
 
   <!-- Settings/MAO bar removed — wholesale MAO is no longer used -->
@@ -621,8 +636,8 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <div id="statsGrid" class="stats-grid"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
       <div>
-        <div class="section-title">Top 5 by Score <span class="badge" id="t5badge">5</span></div>
-        <div id="overviewTop5"></div>
+        <div class="section-title">Market Snapshot <span class="badge">Kendall comps</span></div>
+        <div id="overviewMarket"></div>
       </div>
       <div>
         <div class="section-title">Neighborhood Breakdown</div>
@@ -656,7 +671,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
     <!-- Deal Map on Overview -->
     <div style="margin-top:20px">
-      <div class="section-title">📍 Deal Map <span class="badge" id="mapPinsBadge">10</span></div>
+      <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Deal Map <span class="badge" id="mapPinsBadge">10</span></div>
       <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden">
         <div id="map-overview" style="height:340px;width:100%;"></div>
       </div>
@@ -684,6 +699,11 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
         <input type="text" class="search-input" id="propSearch" placeholder="Search address, owner, or neighborhood&hellip;" oninput="filterTable()">
         <select class="filter-sel" id="neighborFilter" onchange="filterTable()"><option value="">All Neighborhoods</option></select>
         <select class="filter-sel" id="rehabFilter" onchange="filterTable()"><option value="">All Conditions</option></select>
+        <select class="filter-sel" id="bedsFilter" onchange="filterTable()"><option value="">Any Beds</option><option value="3">3+ BR</option><option value="4">4+ BR</option><option value="5">5+ BR</option></select>
+        <select class="filter-sel" id="scoreFilter" onchange="filterTable()"><option value="">Any Score</option><option value="8">Score 8+</option><option value="12">Score 12+</option><option value="16">Score 16+</option></select>
+        <select class="filter-sel" id="arvFilter" onchange="filterTable()"><option value="">Any ARV</option><option value="0-500000">Under $500K</option><option value="500000-750000">$500&ndash;750K</option><option value="750000-1000000">$750K&ndash;1M</option><option value="1000000-99999999">$1M+</option></select>
+        <select class="filter-sel" id="sqftFilter" onchange="filterTable()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
+        <label class="filter-sel" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="hideSoldFilter" onchange="filterTable()" style="margin:0;width:auto;">Hide recently sold</label>
         <span class="tbl-count" id="tableCount"></span>
       </div>
       <div style="overflow-x:auto;">
@@ -699,6 +719,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
             <th data-col="12" onclick="sortTable(this)">Yr Built</th>
             <th data-col="8" onclick="sortTable(this)">ARV</th>
             <th data-col="9" onclick="sortTable(this)">Repair Est</th>
+            <th data-col="17" onclick="sortTable(this)">Condition</th>
             <th data-col="profit" onclick="sortTable(this)">Est. Net Profit</th>
             <th data-col="20" onclick="sortTable(this)">Outreach</th>
             <th>Status</th>
@@ -711,7 +732,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   </div>
 
   <div id="tab-underwriter" class="tab-content">
-  <div class="section-title">🧮 Underwriter <span class="badge">Flip / Hold P&amp;L</span></div>
+  <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8" y2="18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="16" y1="14" x2="16" y2="18"/></svg> Underwriter <span class="badge">Flip / Hold P&amp;L</span></div>
   <div class="uw-hint">Every number below is a Miami-reality estimate from <em>your</em> inputs. Flip margins here are tight &mdash; negative profit shows in red on purpose. Costs use: buying 3%, selling 8% (6% comm + 2% close), 10% reno contingency, taxes 1.8%/yr, insurance $250/mo, utilities $350/mo, hard money 13.5% / 2pts / 70% LTV.</div>
   <div class="uw-grid">
     <!-- LEFT INPUTS -->
@@ -779,30 +800,30 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
   <!-- MARKET INTEL -->
   <div id="tab-market" class="tab-content">
-    <div class="section-title">📊 Market Intelligence <span class="badge">South Miami-Dade · 90-Day Comps</span></div>
+    <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg> Market Intelligence <span class="badge">South Miami-Dade · 90-Day Comps</span></div>
 
     <!-- Hot Segments -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px">
       <div style="background:linear-gradient(135deg,#1a2a1a,#1e3a1e);border:1px solid #2d5a2d;border-radius:12px;padding:16px">
-        <div style="font-size:11px;color:#4ade80;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">🔥 Most Active Segment</div>
+        <div style="font-size:11px;color:#4ade80;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/></svg> Most Active Segment</div>
         <div style="font-size:28px;font-weight:800;color:#fff">3BR</div>
         <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px">105 of 176 sales (60%)</div>
         <div style="font-size:12px;color:#4ade80;margin-top:6px">Median $440K</div>
       </div>
       <div style="background:linear-gradient(135deg,#1a1f2e,#1e263a);border:1px solid #2d3d5a;border-radius:12px;padding:16px">
-        <div style="font-size:11px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">💰 Best ROI Segment</div>
+        <div style="font-size:11px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Best ROI Segment</div>
         <div style="font-size:28px;font-weight:800;color:#fff">4BR</div>
         <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px">54 sales · $/sf avg $275</div>
         <div style="font-size:12px;color:#60a5fa;margin-top:6px">Median $597K</div>
       </div>
       <div style="background:linear-gradient(135deg,#2a1a1a,#3a1e1e);border:1px solid #5a2d2d;border-radius:12px;padding:16px">
-        <div style="font-size:11px;color:#f87171;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📐 Large Homes (1500sf+)</div>
+        <div style="font-size:11px;color:#f87171;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg> Large Homes (1500sf+)</div>
         <div style="font-size:28px;font-weight:800;color:#fff">81%</div>
         <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px">143 of 176 sales</div>
         <div style="font-size:12px;color:#f87171;margin-top:6px">Buyers want space</div>
       </div>
       <div style="background:linear-gradient(135deg,#1e1a2a,#261e3a);border:1px solid #3d2d5a;border-radius:12px;padding:16px">
-        <div style="font-size:11px;color:#c084fc;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">📍 Hottest Market</div>
+        <div style="font-size:11px;color:#c084fc;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Hottest Market</div>
         <div style="font-size:28px;font-weight:800;color:#fff">33173</div>
         <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px">Kendall West · 37 sales</div>
         <div style="font-size:12px;color:#c084fc;margin-top:6px">Median $625K · $315/sf</div>
@@ -878,8 +899,12 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   <div id="tab-sales" class="tab-content">
     <div class="section-title">Recent Sales Comps <span class="badge" id="salesBadge">176</span></div>
     <div class="filter-bar">
-      <input type="text" class="filter-sel" id="salesSearch" placeholder="Search address / neighborhood" style="min-width:220px;padding:7px 12px" oninput="filterSales()">
-      <select class="filter-sel" id="salesNeighFilter" onchange="filterSales()"><option value="">All Neighborhoods</option></select>
+      <input type="text" class="filter-sel" id="salesSearch" placeholder="Search address / neighborhood" style="min-width:200px;padding:7px 12px" oninput="filterSales()">
+      <select class="filter-sel" id="salesZipFilter" onchange="filterSales()"><option value="">All ZIPs</option></select>
+      <select class="filter-sel" id="salesBedsFilter" onchange="filterSales()"><option value="">Any Beds</option><option value="2">2+ BR</option><option value="3">3+ BR</option><option value="4">4+ BR</option><option value="5">5+ BR</option></select>
+      <select class="filter-sel" id="salesPriceFilter" onchange="filterSales()"><option value="">Any Price</option><option value="0-400000">Under $400K</option><option value="400000-600000">$400&ndash;600K</option><option value="600000-800000">$600&ndash;800K</option><option value="800000-99999999">$800K+</option></select>
+      <select class="filter-sel" id="salesSqftFilter" onchange="filterSales()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
+      <select class="filter-sel" id="salesSortFilter" onchange="filterSales()"><option value="date">Newest first</option><option value="price_desc">Price (high&ndash;low)</option><option value="price_asc">Price (low&ndash;high)</option><option value="ppsf_desc">$/sf (high&ndash;low)</option></select>
       <span style="font-size:12px;color:var(--muted);margin-left:auto" id="salesCount"></span>
     </div>
     <div class="comps-grid" id="compsGrid"></div>
@@ -887,7 +912,14 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
   <!-- VIOLATIONS -->
   <div id="tab-violations" class="tab-content">
-    <div class="section-title">Active Violations Detail <span class="badge" id="violBadge"></span></div>
+    <div class="section-title">Active Code Violations <span class="badge" id="violBadge"></span></div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;max-width:820px;">Open code-enforcement cases from the current distressed-lead scrape (Miami-Dade farm area). Violations are strong distress &amp; motivation signals. This reflects the latest data pull &mdash; a full county sweep surfaces more; refresh the feed to expand coverage.</div>
+    <div class="filter-bar">
+      <input type="text" class="filter-sel" id="violSearch" placeholder="Search address, owner, or violation type" style="min-width:240px;padding:7px 12px" oninput="buildViolations()">
+      <select class="filter-sel" id="violNeighFilter" onchange="buildViolations()"><option value="">All Neighborhoods</option></select>
+      <select class="filter-sel" id="violStatusFilter" onchange="buildViolations()"><option value="">All Statuses</option><option value="Open">Open</option></select>
+      <span style="font-size:12px;color:var(--muted);margin-left:auto" id="violCount"></span>
+    </div>
     <div class="viol-grid" id="violGrid"></div>
   </div>
 
@@ -1307,7 +1339,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
   </div>
   <div id="tab-construction" class="tab-content">
-    <div class="section-title">🔨 Construction Cost Estimator <span class="badge">Miami Market Rates</span></div>
+    <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg> Construction Cost Estimator <span class="badge">Miami Market Rates</span></div>
     <div style="display:grid;grid-template-columns:320px 1fr;gap:20px;align-items:start">
 
       <!-- Left: Inputs -->
@@ -1337,7 +1369,6 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
           <div id="cst-ppsf" style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">$0 / sq ft</div>
         </div>
 
-        <button onclick="saveConstructionToDeal()" class="btn btn-gold" style="width:100%;margin-bottom:12px;padding:9px;">&#128190; Save Estimate to Pipeline Deal</button>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center">
@@ -1358,10 +1389,11 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <!-- Right: Line Items -->
       <div>
         <div id="cst-line-items" style="display:flex;flex-direction:column;gap:10px"></div>
+        <div id="cst-permits" style="margin-top:22px"></div>
 
         <!-- Miami Notes -->
         <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:16px">
-          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">📋 Miami Market Notes</div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-2px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Miami Market Notes</div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;color:var(--muted)">
             <div>• Impact windows required for permits (add $8K–20K)</div>
             <div>• Wind mitigation upgrades → lower insurance</div>
@@ -1481,6 +1513,77 @@ function rentalBreakdownHtml(d){
   '</div>';
 }
 function toggleHold(idx){var el=document.getElementById('hold-'+idx);if(el)el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';}
+function toggleDossier(idx){var el=document.getElementById('dossier-'+idx);if(el)el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';}
+// Field-Intel-style off-market dossier generated from a TOP10 deal
+function dealDossierHtml(d,idx){
+  function row(l,v){return '<tr><td style="color:var(--muted);padding:5px 0;width:42%;vertical-align:top;">'+l+'</td><td style="color:var(--ivory);font-weight:500;">'+(v||'&mdash;')+'</td></tr>';}
+  function tile(lbl,val,sub,color){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;"><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">'+lbl+'</div><div style="font-size:1.3rem;font-weight:700;color:'+(color||'var(--ivory)')+';">'+val+'</div><div style="font-size:10px;color:var(--muted);margin-top:2px;">'+(sub||'')+'</div></div>';}
+  var rs=isRecentSaleTop(d);
+  var profit=getProfit(d.arv,d.repair);
+  var repPsf=d.sqft?Math.round(d.repair/d.sqft):0;
+  var flags=(d.flags||'').split(' | ').filter(Boolean);
+  var viols=(d.violations||[]);
+  var svUrl='https://www.google.com/maps/@'+d.lat+','+d.lng+',3a,75y,90t/data=!3m6!1e1!3m4!1s0!2e0!7i16384!8i8192';
+  return '<div style="border-top:1px solid var(--border);background:var(--bg);padding:18px 16px;">'+
+    '<div style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:14px;">Field Report &middot; Off-Market Dossier</div>'+
+    '<div class="dossier-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'+
+      '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">'+
+        '<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:10px;">Property Details</div>'+
+        '<table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+          row('Owner',d.owner+(d.owner_state?' ('+d.owner_state+')':''))+
+          row('Mailing',[d.mail_city,d.mail_state,d.mail_zip].filter(Boolean).join(', '))+
+          row('Built',d.year_built?d.year_built+' ('+(2026-d.year_built)+' yrs)':'')+
+          row('Size',(d.beds_baths||'')+' &middot; '+((d.sqft||0).toLocaleString())+' sqft')+
+          row('Held',d.held_years?d.held_years+' years':'')+
+          row('Homestead',d.has_homestead?'Yes':'No')+
+          row('Neighborhood',d.neighborhood)+
+          row('Folio',d.folio_fmt||d.folio||'')+
+        '</table>'+
+      '</div>'+
+      '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">'+
+        '<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:10px;">Deal Analysis</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
+          tile('Comp ARV',fmtK(d.arv),(d.comp_ppsf?'$'+d.comp_ppsf+'/sf comps':''),'var(--bronze)')+
+          tile('Repair Est',fmtK(d.repair),(repPsf?'$'+repPsf+'/sf':(d.rehab_condition||'')),'#c97a6a')+
+          (rs?tile('Status','Recently Sold',(d.last_sale_price?fmt$(d.last_sale_price):''),'#e8854a')
+             :tile('Est. Net Profit',fmtK(profit),'6-mo flip',profit>0?'var(--green)':'var(--red)'))+
+          tile('Target Buy',fmtK(d.arv*0.65),'~65% ARV','var(--ivory)')+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">'+
+          tile('Rent Est',d.rent_est?'$'+d.rent_est.toLocaleString():'N/A','per month')+
+          tile('GRM',(d.grm||'N/A')+'x','gross rent mult')+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    (flags.length?'<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:10px;">Distress Signals</div><div style="line-height:2;">'+flags.map(function(f){return '<span class="flag-badge">'+f+'</span>';}).join(' ')+'</div></div>':'')+
+    '<div class="dossier-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">'+
+      '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:'+(viols.length?'#e8854a':'var(--bronze)')+';margin-bottom:10px;">Code Violations'+(viols.length?' ('+viols.length+')':'')+'</div>'+
+        (viols.length?'<ul style="margin:0;padding-left:16px;font-size:12px;color:var(--ivory-soft);line-height:1.8;">'+viols.map(function(v){return '<li>'+v+'</li>';}).join('')+'</ul>':'<div style="font-size:12px;color:var(--muted);">No open code violations on record.</div>')+
+      '</div>'+
+      '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:10px;">Permits &amp; Status</div>'+
+        '<div style="font-size:12px;color:var(--ivory-soft);">'+((d.open_permit_count||0)>0?(d.open_permit_count+' open permit(s) on file'):'No open permits on file')+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.6;">Verify permit history at miamidade.gov/building before closing. Title &amp; lien search recommended.</div>'+
+      '</div>'+
+    '</div>'+
+    '<div style="background:var(--bg-card);border:1px solid #e8854a44;border-radius:10px;padding:16px;margin-top:14px;">'+
+      '<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#e8854a;margin-bottom:10px;">Outreach &amp; Contact Plan</div>'+
+      '<table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+        row('Strategy',d.outreach_type)+
+        row('Priority Action',d.priority_action)+
+        row('Contact',d.contact_confirmed)+
+        row('Phone',d.contact_phone)+
+        row('Note',d.contact_note)+
+      '</table>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">'+
+      '<button class="btn btn-gold" onclick="runUnderwriter(TOP10['+idx+'])">Run Underwriter</button>'+
+      '<a class="btn btn-outline" href="'+svUrl+'" target="_blank">Street View</a>'+
+      '<a class="btn btn-outline" href="'+(d.pa_url||'#')+'" target="_blank">PA Record</a>'+
+      (d.tax_url?'<a class="btn btn-outline" href="'+d.tax_url+'" target="_blank">Tax Collector</a>':'')+
+      '<button class="btn btn-outline" onclick="openPrint('+idx+')">Print Deal Sheet</button>'+
+    '</div>'+
+  '</div>';
+}
 function rehabClass(r){
   if(!r)return'';
   var rr=r.toLowerCase();
@@ -1493,7 +1596,37 @@ function rehabClass(r){
 
 
 // ── STAT ICONS (enhanced overview) ──
-var STAT_ICONS=['🏠','📊','💰','📈','🎯','🔑'];
+// ── ICONS (inline SVG, bronze line style) ──
+var ICON_PATHS={
+  overview:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  deals:'<polygon points="12 2 15 9 22 9 16 14 18 22 12 17 6 22 8 14 2 9 9 9"/>',
+  all:'<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3.6" cy="6" r="1"/><circle cx="3.6" cy="12" r="1"/><circle cx="3.6" cy="18" r="1"/>',
+  underwriter:'<rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="11" r="1"/><circle cx="16" cy="11" r="1"/><circle cx="8" cy="15" r="1"/><circle cx="12" cy="15" r="1"/><circle cx="16" cy="15.5" r="1"/>',
+  market:'<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+  construction:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+  sales:'<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><circle cx="7" cy="7" r="1.2"/>',
+  violations:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><circle cx="12" cy="17" r="0.6"/>',
+  field:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  building:'<rect x="4" y="2" width="16" height="20" rx="1"/><line x1="9" y1="6" x2="9.01" y2="6"/><line x1="15" y1="6" x2="15.01" y2="6"/><line x1="9" y1="10" x2="9.01" y2="10"/><line x1="15" y1="10" x2="15.01" y2="10"/><line x1="9" y1="18" x2="15" y2="18"/>',
+  gauge:'<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
+  dollar:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+  bars:'<line x1="6" y1="20" x2="6" y2="14"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="10"/>',
+  ruler:'<path d="M16 3l5 5L8 21l-5-5z"/><line x1="9" y1="9" x2="11" y2="11"/><line x1="12" y1="6" x2="14" y2="8"/><line x1="6" y1="12" x2="8" y2="14"/>',
+  doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+  camera:'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>'
+};
+function ICON(name,size){var s=size||15;return '<svg class="ico" viewBox="0 0 24 24" width="'+s+'" height="'+s+'" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(ICON_PATHS[name]||'')+'</svg>';}
+function decorateNav(){
+  var nav=document.getElementById('tabBar'); if(!nav)return;
+  nav.querySelectorAll('button').forEach(function(b){
+    if(b.querySelector('svg'))return;
+    var t=b.dataset.tab;
+    if(ICON_PATHS[t]) b.insertAdjacentHTML('afterbegin', ICON(t,15));
+  });
+}
+var STAT_ICON_NAMES=['building','gauge','home','dollar','bars','sales'];
 
 // ── LOGIN ──
 (function(){
@@ -1540,8 +1673,9 @@ function showTab(btn){
   document.querySelectorAll('nav.tabs button').forEach(function(b){b.classList.remove('active')});
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
-  if(id==='map'&&!mapInitialized){initMap();mapInitialized=true}
+  if(id==='overview'){try{renderMapOverview();}catch(e){console.error('renderMapOverview',e);}}
   if(id==='market'){try{initMarketCharts();}catch(e){console.error('initMarketCharts',e);}try{initMarketExtras();}catch(e){console.error('initMarketExtras',e);}}
+  if(id==='construction'){try{calcConstruction();buildPermits();}catch(e){console.error('construction',e);}}
 }
 
 // ── SETTINGS (MAO slider removed — wholesale MAO no longer used) ──
@@ -1559,7 +1693,7 @@ function initApp(){
   // Feature modules self-initialize at end of script (renderRateCenter, calcUnderwriter);
   // market extras render lazily via showTab('market'). Re-run guarded in case auth path ran initApp early.
   setTimeout(function(){
-    ['renderRateCenter','calcUnderwriter','initMarketExtras'].forEach(function(fn){ if(typeof window[fn]==='function'){try{window[fn]();}catch(e){}} });
+    ['decorateNav','renderRateCenter','calcUnderwriter','initMarketExtras','renderMapOverview'].forEach(function(fn){ if(typeof window[fn]==='function'){try{window[fn]();}catch(e){}} });
   },0);
   document.addEventListener('click',function(e){
     if(openDropdown&&!openDropdown.contains(e.target)){
@@ -1572,39 +1706,25 @@ function initApp(){
 
 // ── OVERVIEW ──
 function buildOverview(){
-  var statuses=loadStatuses();
-  var pipeline=0;
-  var activeVals=['researching','contacted','negotiating','pursuing'];
-  Object.values(statuses).forEach(function(v){if(activeVals.indexOf(v)>=0)pipeline++});
   var topProfit=getProfit(TOP10[0].arv,TOP10[0].repair);
+  var prices=SALES.map(function(s){return s.price;}).filter(Boolean).sort(function(a,b){return a-b;});
+  var ppsfs=SALES.map(function(s){return s.ppsf;}).filter(Boolean).sort(function(a,b){return a-b;});
+  function med(a){return a.length?(a.length%2?a[(a.length-1)/2]:Math.round((a[a.length/2-1]+a[a.length/2])/2)):0;}
+  var medPrice=med(prices), medPpsf=med(ppsfs);
 
   var cards=[
-    {label:'Properties Analyzed',value:OV_STATS.total.toLocaleString(),sub:'Miami-Dade SFR Universe'},
-    {label:'Avg Distress Score',value:OV_STATS.avg_score,sub:'Out of 20+ possible points'},
-    {label:'Top Deal Comp ARV',value:fmtK(TOP10[0].arv),sub:TOP10[0].address+' (comps)'},
-    {label:'Top Deal Est. Profit',value:fmtK(topProfit),sub:'6-mo flip, net of all costs'},
-    {label:'Active Pipeline',value:pipeline,sub:'Deals in progress'},
-    {label:'Recent Sales Comps',value:SALES.length.toLocaleString(),sub:'Neighborhood comps loaded'}
+    {name:'building',label:'Properties Analyzed',value:OV_STATS.total.toLocaleString(),sub:'Miami-Dade SFR universe'},
+    {name:'gauge',label:'Avg Distress Score',value:OV_STATS.avg_score,sub:'Out of 20+ possible points'},
+    {name:'home',label:'Top Deal Comp ARV',value:fmtK(TOP10[0].arv),sub:TOP10[0].address+' (comps)'},
+    {name:'dollar',label:'Top Deal Est. Profit',value:fmtK(topProfit),sub:'6-mo flip, net of all costs'},
+    {name:'bars',label:'Median Comp Price',value:fmtK(medPrice),sub:'Across '+SALES.length+' Kendall sales'},
+    {name:'sales',label:'Recent Sales Comps',value:SALES.length.toLocaleString(),sub:'$'+medPpsf+'/sqft median'}
   ];
-  document.getElementById('statsGrid').innerHTML=cards.map(function(c,i){
-    return '<div class="stat-card"><div class="stat-icon">'+STAT_ICONS[i]+'</div><div class="stat-lbl">'+c.label+'</div><div class="stat-val">'+c.value+'</div><div class="stat-sub">'+c.sub+'</div></div>';
+  document.getElementById('statsGrid').innerHTML=cards.map(function(c){
+    return '<div class="stat-card"><div class="stat-icon">'+ICON(c.name,22)+'</div><div class="stat-lbl">'+c.label+'</div><div class="stat-val">'+c.value+'</div><div class="stat-sub">'+c.sub+'</div></div>';
   }).join('');
 
-  document.getElementById('overviewTop5').innerHTML=TOP10.slice(0,5).map(function(d,i){
-    var rs=isRecentSaleTop(d);var p=getProfit(d.arv,d.repair);
-    var svUrl='https://www.google.com/maps/@'+d.lat+','+d.lng+',3a,75y,90t/data=!3m6!1e1!3m4!1s0!2e0!7i16384!8i8192';
-    var thumbUrl='https://geo0.ggpht.com/cbk?output=thumbnail&cb_client=apiv3&thumbfov=100&w=800&h=400&panoid='+(d.pano||'')+'';
-    return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;display:flex;align-items:center;overflow:hidden;">'+
-      '<div style="width:110px;height:78px;flex-shrink:0;position:relative;background:#1a1a1a;overflow:hidden;cursor:pointer;" onclick="window.open(\''+svUrl+'\',\'_blank\')">'+
-        '<img src="'+thumbUrl+'" style="width:110px;height:78px;object-fit:cover;object-position:center;display:block;" loading="eager" onerror="this.style.display=\'none\'" />'+
-        '<div style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;z-index:1;box-shadow:0 2px 5px rgba(0,0,0,.6);">'+(i+1)+'</div>'+
-        '<div style="position:absolute;inset:0;background:linear-gradient(to right,transparent 60%,var(--bg-card) 100%);pointer-events:none;"></div>'+
-      '</div>'+
-      '<div style="flex:1;min-width:0;padding:10px 14px;"><div style="font-weight:700;font-size:13px;">'+d.address+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+d.neighborhood+' &middot; Score '+d.score+'</div></div>'+
-      '<div style="text-align:right;padding:10px 14px;flex-shrink:0;"><div style="font-weight:700;color:'+(rs?'#e8854a':(p>0?'var(--green)':'var(--red)'))+';font-size:15px;">'+(rs?'Sold':fmtK(p))+'</div>'+
-      '<div style="font-size:10px;color:var(--muted);">'+(rs?'recently sold':'est. net profit')+'</div></div></div>';
-  }).join('');
+  buildOverviewMarket(medPrice, medPpsf);
 
   var nbCounts={};
   ALL_ROWS.forEach(function(r){nbCounts[r[2]]=(nbCounts[r[2]]||0)+1});
@@ -1620,6 +1740,34 @@ function buildOverview(){
   }).join('');
 }
 
+function miniStat(label,val){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+label+'</div><div style="font-size:18px;font-weight:800;color:var(--ivory);margin-top:2px;">'+val+'</div></div>';}
+function buildOverviewMarket(medPrice,medPpsf){
+  var el=document.getElementById('overviewMarket'); if(!el)return;
+  var byZip={};
+  SALES.forEach(function(s){ if(!s.zip)return; (byZip[s.zip]=byZip[s.zip]||[]).push(s.price); });
+  var zipRows=Object.keys(byZip).map(function(z){
+    var arr=byZip[z].slice().sort(function(a,b){return a-b;});
+    return {zip:z,med:arr[Math.floor(arr.length/2)],n:byZip[z].length};
+  }).sort(function(a,b){return b.med-a.med;});
+  var maxMed=Math.max.apply(null,zipRows.map(function(r){return r.med;}))||1;
+  var bb=SALES.filter(function(s){return (s.beds===3||s.beds===4)&&s.sqft>=1500&&s.price>=400000&&s.price<=800000;}).length;
+  var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">'+
+    miniStat('Median Sale',fmtK(medPrice))+
+    miniStat('Median $/sqft','$'+medPpsf)+
+    miniStat('Buy-Box Comps',bb+' / '+SALES.length)+
+    miniStat('Active ZIPs',zipRows.length)+
+  '</div>';
+  html+='<div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Median Price by ZIP</div>';
+  html+=zipRows.map(function(r){
+    var pct=Math.round(r.med/maxMed*100);
+    return '<div style="margin-bottom:9px;">'+
+      '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:600;">'+r.zip+' <span style="color:var(--muted);font-weight:400;">('+r.n+' sales)</span></span><span style="color:var(--bronze);font-weight:700;">'+fmtK(r.med)+'</span></div>'+
+      '<div style="height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--gold),#b8962e);border-radius:3px;"></div></div></div>';
+  }).join('');
+  html+='<button class="btn btn-outline" style="margin-top:10px;width:100%;" onclick="document.querySelector(\'#tabBar button[data-tab=&quot;market&quot;]\').click()">Full Market Intel &rarr;</button>';
+  el.innerHTML=html;
+}
+
 // ── STREET VIEW PHOTO HELPER ──
 function svPhoto(d,idx){
   var svUrl='https://www.google.com/maps/@'+d.lat+','+d.lng+',3a,75y,90t/data=!3m6!1e1!3m4!1s0!2e0!7i16384!8i8192';
@@ -1630,7 +1778,7 @@ function svPhoto(d,idx){
     +'<div style="position:absolute;bottom:0;left:0;right:0;padding:7px 12px;display:flex;justify-content:space-between;align-items:flex-end;">'
       +'<div><div style="font-size:11px;font-weight:700;color:#fff;line-height:1.2;">'+d.address+'</div>'
       +'<div style="font-size:9px;color:rgba(255,255,255,.6);">'+d.neighborhood+'</div></div>'
-      +'<span style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);border-radius:5px;padding:4px 8px;font-size:9px;color:#fff;white-space:nowrap;">📷 Street View</span>'
+      +'<span style="background:rgba(255,255,255,.15);backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.25);border-radius:5px;padding:4px 8px;font-size:9px;color:#fff;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;">'+ICON('camera',10)+' Street View</span>'
     +'</div>'
   +'</div>';
 }
@@ -1686,17 +1834,19 @@ function buildDeals(){
       '<div id="hold-'+idx+'" style="display:none;">'+rentalBreakdownHtml(d)+'</div>'+
       '<div class="deal-flags">'+flags+'</div>'+
       '<div class="deal-actions">'+
-        '<button class="btn btn-gold" onclick="runUnderwriter(TOP10['+idx+'])">&#129518; Underwriter</button>'+
-        '<button class="btn btn-outline" onclick="toggleHold('+idx+')">&#128202; Hold Analysis</button>'+
-        '<a class="btn btn-dark" href="'+d.pa_url+'" target="_blank">&#127963; PA Record</a>'+
-        '<a class="btn btn-dark" href="'+d.maps_url+'" target="_blank">&#128205; Maps</a>'+
-        (d.zillow_url?'<a class="btn btn-outline" href="'+d.zillow_url+'" target="_blank" style="border-color:#006AFF;color:#006AFF;">&#127968; Zillow</a>':'')+
-        '<button class="btn btn-outline" data-printidx="'+idx+'" onclick="openPrint(this.dataset.printidx)">&#128196; Deal Sheet</button>'+
-        '<a class="btn btn-outline" href="'+(d.sunbiz_url||'#')+'" target="_blank">&#128269; SunBiz</a>'+
-        '<div style="grid-column:1/-1;background:#f8f6f0;border-radius:6px;padding:8px 10px;font-size:11px;color:var(--muted);">'+
-          '<strong style="color:var(--ivory);">Outreach:</strong> '+(d.outreach_type||'')+' &middot; '+(d.priority_action||'')+
+        '<button class="btn btn-gold" onclick="toggleDossier('+idx+')">'+ICON('field',13)+' Field Report</button>'+
+        '<button class="btn btn-gold" onclick="runUnderwriter(TOP10['+idx+'])">'+ICON('underwriter',13)+' Underwriter</button>'+
+        '<button class="btn btn-outline" onclick="toggleHold('+idx+')">'+ICON('home',13)+' Hold Analysis</button>'+
+        '<button class="btn btn-outline" data-printidx="'+idx+'" onclick="openPrint(this.dataset.printidx)">'+ICON('doc',13)+' Deal Sheet</button>'+
+        '<a class="btn btn-dark" href="'+d.pa_url+'" target="_blank">PA Record</a>'+
+        '<a class="btn btn-dark" href="'+d.maps_url+'" target="_blank">Maps</a>'+
+        (d.zillow_url?'<a class="btn btn-outline" href="'+d.zillow_url+'" target="_blank" style="border-color:#006AFF;color:#006AFF;">Zillow</a>':'')+
+        (d.sunbiz_url?'<a class="btn btn-outline" href="'+d.sunbiz_url+'" target="_blank">SunBiz</a>':'')+
+        '<div style="grid-column:1/-1;background:var(--bg-soft);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:11px;color:var(--muted);">'+
+          '<strong style="color:var(--bronze);">Outreach:</strong> '+(d.outreach_type||'')+' &middot; '+(d.priority_action||'')+
         '</div>'+
       '</div>'+
+      '<div id="dossier-'+idx+'" style="display:none;">'+dealDossierHtml(d,idx)+'</div>'+
       violHtml+
     '</div>';
   }).join('');
@@ -1745,11 +1895,22 @@ function filterTable(){
   var q=document.getElementById('propSearch').value.toLowerCase();
   var nb=document.getElementById('neighborFilter').value;
   var rh=document.getElementById('rehabFilter').value;
+  var bd=parseInt((document.getElementById('bedsFilter')||{}).value)||0;
+  var sc=parseInt((document.getElementById('scoreFilter')||{}).value)||0;
+  var sf=parseInt((document.getElementById('sqftFilter')||{}).value)||0;
+  var ar=(((document.getElementById('arvFilter')||{}).value)||'').split('-');
+  var arvMin=ar[0]?parseInt(ar[0]):0, arvMax=ar[1]?parseInt(ar[1]):Infinity;
+  var hideSold=!!(document.getElementById('hideSoldFilter')||{}).checked;
   filteredRows=tableData.filter(function(r){
     var mq=!q||(r[1]+'').toLowerCase().includes(q)||(r[3]+'').toLowerCase().includes(q)||(r[2]+'').toLowerCase().includes(q);
     var mn=!nb||r[2]===nb;
     var mr=!rh||r[17]===rh;
-    return mq&&mn&&mr;
+    var mb=!bd||(r[6]||0)>=bd;
+    var ms=!sc||(r[5]||0)>=sc;
+    var mz=!sf||(r[18]||0)>=sf;
+    var ma=(r[8]||0)>=arvMin&&(r[8]||0)<=arvMax;
+    var msold=!hideSold||!isRecentSaleRow(r);
+    return mq&&mn&&mr&&mb&&ms&&mz&&ma&&msold;
   });
   currentPage=1;renderTablePage();
 }
@@ -1794,7 +1955,8 @@ function renderTablePage(){
       '<td style="text-align:right;">'+(r[18]?r[18].toLocaleString():'&mdash;')+'</td>'+
       '<td style="text-align:center;">'+(r[12]||'&mdash;')+'</td>'+
       '<td style="text-align:right;">'+fmtK(r[8])+'</td>'+
-      '<td style="text-align:right;white-space:nowrap;">'+fmtK(r[9])+' <span class="rehab-badge '+rc+'" style="font-size:8px;">'+((r[17]||'').split(' ')[0])+'</span></td>'+
+      '<td style="text-align:right;white-space:nowrap;">'+fmtK(r[9])+'</td>'+
+      '<td><span class="rehab-badge '+rc+'">'+(r[17]||'&mdash;')+'</span></td>'+
       '<td style="text-align:right;">'+profitCell+'</td>'+
       '<td style="font-size:10px;color:var(--muted);">'+(r[20]||'')+'</td>'+
       '<td data-addr="'+addrEsc+'"><span class="status-pill" style="background:'+statusBg(st)+';color:'+statusFg(st)+';cursor:pointer;" onclick="cycleTblStatus(this)" data-addr2="'+addrEsc+'">'+statusLabel(st)+'</span></td>'+
@@ -1887,24 +2049,67 @@ function renderMap(){
   });
 }
 
+// ── OVERVIEW DEAL MAP ──
+var mapOverviewDone=false;
+function renderMapOverview(){
+  var el=document.getElementById('map-overview');
+  if(!el)return;
+  if(typeof L==='undefined'){
+    if(!document.getElementById('leaflet-css')){var c=document.createElement('link');c.id='leaflet-css';c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);}
+    if(!window._leafletLoading){window._leafletLoading=true;var s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=function(){renderMapOverview();};s.onerror=function(){el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;">Map unavailable (offline)</div>';};document.head.appendChild(s);}
+    if(!el.innerHTML)el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;">Loading map&hellip;</div>';
+    return;
+  }
+  if(mapOverviewDone||el._leaflet_id)return;
+  el.innerHTML='';
+  var map=L.map(el,{scrollWheelZoom:false}).setView([25.66,-80.37],11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
+  var colors={red:'#ef4444',orange:'#f97316',yellow:'#eab308',green:'#22c55e'};
+  var bounds=[];
+  MAP_PINS.forEach(function(pin){
+    if(!pin.lat||!pin.lng)return;
+    bounds.push([pin.lat,pin.lng]);
+    var deal=null; TOP10.forEach(function(d){if(d.address===pin.address)deal=d;});
+    var prof=deal?getProfit(deal.arv,deal.repair):null;
+    var m=L.circleMarker([pin.lat,pin.lng],{radius:11,fillColor:colors[pin.color]||colors.green,color:'#fff',weight:2,opacity:1,fillOpacity:.9}).addTo(map);
+    m.bindPopup('<div style="min-width:170px;font-family:Inter,sans-serif;"><strong>'+pin.address+'</strong><br>Score '+pin.score+' &middot; ARV '+fmtK(pin.arv)+(prof!=null?'<br>Est. Net Profit '+fmtK(prof):'')+(pin.rank?'<br><span style="color:#b89968;font-weight:700;">Rank #'+pin.rank+'</span>':'')+'</div>');
+  });
+  if(bounds.length){try{map.fitBounds(bounds,{padding:[30,30]});}catch(e){}}
+  mapOverviewDone=true;
+  setTimeout(function(){try{map.invalidateSize();}catch(e){}},200);
+}
+
 // ── SALES ──
 function buildSales(){
-  var nbs={};SALES.forEach(function(s){if(s.neighborhood)nbs[s.neighborhood]=1});
-  var snf=document.getElementById('salesNeighFilter');
-  Object.keys(nbs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;snf.appendChild(o)});
+  var zf=document.getElementById('salesZipFilter');
+  if(zf&&zf.options.length<=1){var zips={};SALES.forEach(function(s){if(s.zip)zips[s.zip]=1});Object.keys(zips).sort().forEach(function(z){var o=document.createElement('option');o.value=z;o.textContent=z;zf.appendChild(o);});}
   filterSales();
 }
 
 function filterSales(){
-  var q=document.getElementById('salesSearch').value.toLowerCase();
-  var nb=document.getElementById('salesNeighFilter').value;
+  var q=((document.getElementById('salesSearch')||{}).value||'').toLowerCase();
+  var zip=(document.getElementById('salesZipFilter')||{}).value||'';
+  var bd=parseInt((document.getElementById('salesBedsFilter')||{}).value)||0;
+  var pr=(((document.getElementById('salesPriceFilter')||{}).value)||'').split('-');
+  var pMin=pr[0]?parseInt(pr[0]):0, pMax=pr[1]?parseInt(pr[1]):Infinity;
+  var sf=parseInt((document.getElementById('salesSqftFilter')||{}).value)||0;
+  var sort=(document.getElementById('salesSortFilter')||{}).value||'date';
   var filtered=SALES.filter(function(s){
     var mq=!q||(s.address||'').toLowerCase().includes(q)||(s.neighborhood||'').toLowerCase().includes(q);
-    var mn=!nb||s.neighborhood===nb;
-    return mq&&mn;
+    var mz=!zip||s.zip===zip;
+    var mb=!bd||(s.beds||0)>=bd;
+    var mp=(s.price||0)>=pMin&&(s.price||0)<=pMax;
+    var ms=!sf||(s.sqft||0)>=sf;
+    return mq&&mz&&mb&&mp&&ms;
   });
-  document.getElementById('salesCount').textContent=filtered.length+' sales';
-  document.getElementById('compsGrid').innerHTML=filtered.slice(0,120).map(function(s){
+  filtered.sort(function(a,b){
+    if(sort==='price_desc')return (b.price||0)-(a.price||0);
+    if(sort==='price_asc')return (a.price||0)-(b.price||0);
+    if(sort==='ppsf_desc')return (b.ppsf||0)-(a.ppsf||0);
+    return (''+(b.date||'')).localeCompare(''+(a.date||''));
+  });
+  document.getElementById('salesCount').textContent=filtered.length+' of '+SALES.length+' sales';
+  document.getElementById('compsGrid').innerHTML=filtered.slice(0,150).map(function(s){
     return '<div class="comp-card">'+
       '<div class="comp-price">'+fmt$(s.price)+'</div>'+
       '<div class="comp-addr">'+s.address+'</div>'+
@@ -1913,7 +2118,7 @@ function filterSales(){
         '<span class="comp-detail"><strong>'+(s.baths||'?')+'</strong> ba</span>'+
         '<span class="comp-detail"><strong>'+((s.sqft||0).toLocaleString())+'</strong> sqft</span>'+
         '<span class="comp-detail">Built <strong>'+(s.year_built||'?')+'</strong></span>'+
-        '<span class="comp-detail">'+(s.neighborhood||'')+'</span>'+
+        '<span class="comp-detail">ZIP <strong>'+(s.zip||'?')+'</strong></span>'+
       '</div>'+
       '<div><span class="comp-ppsf">$'+(s.ppsf||'?')+'/sqft</span>'+
       '<span style="font-size:10px;color:var(--muted);margin-left:8px;">'+(s.date||'')+'</span></div>'+
@@ -1927,13 +2132,23 @@ function filterSales(){
 
 // ── VIOLATIONS ──
 function buildViolations(){
-  var totalV=0;VIOL_DETAIL.forEach(function(v){totalV+=(v.violations||[]).length});
-  document.getElementById('violBadge').textContent=totalV+' violations';
-  document.getElementById('violGrid').innerHTML=VIOL_DETAIL.map(function(v){
+  var nf=document.getElementById('violNeighFilter');
+  if(nf&&nf.options.length<=1){var nbs={};VIOL_DETAIL.forEach(function(v){if(v.neighborhood)nbs[v.neighborhood]=1});Object.keys(nbs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;nf.appendChild(o);});}
+  var q=((document.getElementById('violSearch')||{}).value||'').toLowerCase();
+  var nb=(document.getElementById('violNeighFilter')||{}).value||'';
+  var st=(document.getElementById('violStatusFilter')||{}).value||'';
+  var totalCases=0; VIOL_DETAIL.forEach(function(v){totalCases+=(v.violations||[]).length;});
+  var shownProps=0, shownCases=0;
+  var html=VIOL_DETAIL.map(function(v){
+    var cases=(v.violations||[]).filter(function(vc){return !st||vc.status===st;});
+    var matchText=!q||(v.address||'').toLowerCase().indexOf(q)>=0||(v.owner||'').toLowerCase().indexOf(q)>=0||cases.some(function(vc){return (vc.desc||'').toLowerCase().indexOf(q)>=0;});
+    var matchNb=!nb||v.neighborhood===nb;
+    if(!matchText||!matchNb||!cases.length)return '';
+    shownProps++; shownCases+=cases.length;
     return '<div class="viol-card">'+
-      '<div class="viol-addr">'+v.address+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">'+v.owner+' &middot; Score '+v.score+'</div>'+
-      (v.violations||[]).map(function(vc){
+      '<div class="viol-addr">'+(v.address||'').replace(/\s+/g,' ').trim()+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">'+(v.owner||'')+' &middot; '+(v.neighborhood||'')+' &middot; Score '+v.score+' &middot; '+cases.length+' case'+(cases.length>1?'s':'')+'</div>'+
+      cases.map(function(vc){
         return '<div class="viol-case"><div><div style="font-size:12px;">'+vc.desc+'</div><div class="viol-case-num">Case '+vc.case+'</div></div><span class="case-open">'+vc.status+'</span></div>';
       }).join('')+
       '<div style="margin-top:8px;display:flex;gap:6px;">'+
@@ -1942,6 +2157,9 @@ function buildViolations(){
       '</div>'+
     '</div>';
   }).join('');
+  var vb=document.getElementById('violBadge'); if(vb)vb.textContent=totalCases+' open cases';
+  var vcEl=document.getElementById('violCount'); if(vcEl)vcEl.textContent=shownProps+' properties · '+shownCases+' cases shown';
+  document.getElementById('violGrid').innerHTML=html||'<div style="color:var(--muted);font-size:13px;padding:24px;">No violations match your filters.</div>';
 }
 
 // ── PRINT / DEAL SHEET ──
@@ -2387,6 +2605,7 @@ function calcConstruction(){
       + '<div style="text-align:right;min-width:120px">'
         + '<div style="font-size:13px;font-weight:700;color:var(--text)">$'+Math.round(mid).toLocaleString()+'</div>'
         + '<div style="font-size:10px;color:var(--muted)">$'+Math.round(lo).toLocaleString()+' – $'+Math.round(hi).toLocaleString()+'</div>'
+        + '<div style="font-size:10px;color:var(--bronze);font-weight:600">$'+(mid/sqft).toFixed(1)+'/sf</div>'
       + '</div>'
       + '</div>';
   });
@@ -2397,6 +2616,32 @@ function calcConstruction(){
   document.getElementById('cst-ppsf').textContent = '$' + Math.round(totalMid/sqft).toLocaleString() + ' / sq ft';
   document.getElementById('cst-low').textContent = '$' + Math.round(totalLo).toLocaleString();
   document.getElementById('cst-high').textContent = '$' + Math.round(totalHi).toLocaleString();
+}
+
+// ── PERMIT ACTIVITY (farm-area building permits) ──
+function buildPermits(){
+  var el=document.getElementById('cst-permits'); if(!el)return;
+  if(typeof PERM_DETAIL==='undefined'||!PERM_DETAIL.length){el.innerHTML='';return;}
+  var sorted=PERM_DETAIL.slice().sort(function(a,b){return (b.permit_count||0)-(a.permit_count||0);});
+  var totalPermits=0; PERM_DETAIL.forEach(function(p){totalPermits+=(p.permit_count||0);});
+  var cards=sorted.map(function(p){
+    var permits=(p.permits||[]).slice(0,4).map(function(pm){
+      var val=pm.value?'$'+parseInt(pm.value).toLocaleString():'';
+      return '<div style="display:flex;justify-content:space-between;gap:8px;font-size:11px;padding:4px 0;border-top:1px solid var(--border);"><span style="color:var(--ivory-soft);">'+(pm.type||'Permit')+' &middot; '+(pm.issued||'')+'</span><span style="color:var(--bronze);font-weight:600;white-space:nowrap;">'+val+'</span></div>';
+    }).join('');
+    return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">'+
+        '<div style="min-width:0;"><div style="font-size:13px;font-weight:700;color:var(--ivory);">'+(p.address||'').replace(/\s+/g,' ').trim()+'</div>'+
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+(p.owner||'')+' &middot; '+(p.neighborhood||'')+'</div></div>'+
+        '<span class="badge" style="white-space:nowrap;">'+(p.permit_count||0)+'</span>'+
+      '</div>'+
+      permits+
+      '<a href="'+(p.pa_url||'#')+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;margin-top:8px;display:inline-block;">PA Record</a>'+
+    '</div>';
+  }).join('');
+  el.innerHTML='<div class="section-title" style="font-size:16px;margin-bottom:6px;"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> Active Permit Activity <span class="badge">'+PERM_DETAIL.length+' props &middot; '+totalPermits+' permits</span></div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Recent building-permit pulls across the farm area (Miami-Dade + Palmetto Bay Eden). High permit counts flag active renovations &mdash; useful for spotting fresh comps and competition. Verify any property at miamidade.gov/building before closing.</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">'+cards+'</div>';
 }
 
 
