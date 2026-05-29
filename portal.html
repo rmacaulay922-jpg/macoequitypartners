@@ -829,11 +829,15 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   <!-- VIOLATIONS -->
   <div id="tab-violations" class="tab-content">
     <div class="section-title">Active Code Violations <span class="badge" id="violBadge"></span></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6;max-width:860px;">Miami-Dade returns thousands of open code cases county-wide. This view shows the <strong style="color:var(--green);">verified scrape</strong> plus an <strong style="color:#e8854a;">expanded sample set</strong> (tagged <em>Sample</em>, case #s prefixed <code>SMP-</code>) generated from high-distress leads so you can work a fuller list. <strong>Verify any case with Miami-Dade Code Enforcement before outreach</strong> &mdash; refresh the live feed to replace samples with confirmed records.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.6;max-width:880px;">Pulls <strong style="color:var(--green);">live open code cases</strong> and <strong style="color:#e0664a;">recorded county code liens</strong> straight from the Miami-Dade Open Data feed for the farm area (Kendall, Pinecrest, Palmetto Bay, South Miami). Properties with a recorded lien are flagged with the OR Book/Page &mdash; the lien must be cleared at closing. If the live feed can't be reached, it falls back to the <strong style="color:var(--green);">verified scrape</strong> plus a clearly-tagged <strong style="color:#e8854a;">sample set</strong>. <em>Probate has no public data feed &mdash; track estate cases through the Clerk of Courts manually.</em> <strong>Always confirm a case with Miami-Dade Code Enforcement before outreach.</strong></div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+      <button class="btn btn-gold" id="violRefreshBtn" type="button" onclick="fetchLiveViolations(true)" style="font-size:12px;padding:7px 14px;">&#8635; Refresh from Miami-Dade</button>
+      <span id="violLiveStatus" style="font-size:12px;color:var(--muted);"></span>
+    </div>
     <div class="filter-bar">
       <input type="text" class="filter-sel" id="violSearch" placeholder="Search address, owner, or violation type" style="min-width:240px;padding:7px 12px" oninput="buildViolations()">
       <select class="filter-sel" id="violNeighFilter" onchange="buildViolations()"><option value="">All Neighborhoods</option></select>
-      <select class="filter-sel" id="violStatusFilter" onchange="buildViolations()"><option value="">All Statuses</option><option value="Open">Open (verified)</option><option value="Unverified">Sample / Unverified</option></select>
+      <select class="filter-sel" id="violStatusFilter" onchange="buildViolations()"><option value="">All Statuses</option><option value="Open">Open</option><option value="__LIEN__">Liened only</option><option value="Unverified">Sample / Unverified</option></select>
       <span style="font-size:12px;color:var(--muted);margin-left:auto" id="violCount"></span>
     </div>
     <div class="viol-grid" id="violGrid"></div>
@@ -1254,6 +1258,7 @@ function showTab(btn){
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
   if(id==='construction'){try{calcConstruction();buildPermits();}catch(e){console.error('construction',e);}}
+  if(id==='violations'){try{fetchLiveViolations(false);}catch(e){console.error('violations',e);}}
 }
 
 // ── SETTINGS (MAO slider removed — wholesale MAO no longer used) ──
@@ -1758,48 +1763,115 @@ function filterSales(){
 // ── VIOLATIONS ──
 var VIOL_TYPES=['Overgrowth / Lot Must Be Cleared','Work Without Permit','Junk / Trash / Debris on Property','Inoperable or Junk Vehicle','Unpermitted Structure / Addition','Roof in Disrepair','Unmaintained / Green Pool','Fence Without Permit','Boat / RV / Commercial Vehicle Storage','Expired Permit - No Final Inspection','Exterior Property Maintenance','Illegal Unit / Unauthorized Use'];
 function _hash(s){var h=0;s=''+s;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return h;}
-var _violAll=null;
+var _violAll=null, _liveViols=null, _liveTried=false;
+var VIOL_API='https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/CCVIOL_gdb/FeatureServer/0/query';
+function _fmtEpoch(ms){try{return new Date(ms).toLocaleDateString('en-US',{year:'numeric',month:'short'});}catch(e){return '';}}
+function _paFolioUrl(folio){var d=(''+(folio||'')).replace(/[^0-9]/g,'');return d?('https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio='+d):'#';}
 function buildViolationData(){
   if(_violAll)return _violAll;
-  var list=[];
-  if(typeof VIOL_DETAIL!=='undefined')VIOL_DETAIL.forEach(function(v){var o={};for(var k in v)o[k]=v[k];o._verified=true;list.push(o);});
-  var seen={}; list.forEach(function(v){seen[_normAddr(v.address)]=1;});
-  var cands=ALL_ROWS.filter(function(r){ if(seen[_normAddr(r[1])])return false; var age=r[12]?2026-r[12]:0; return age>=35||/Heavy|Cosmetic/i.test(r[17]||'')||(r[4]&&r[4]!=='FL'); });
-  cands.sort(function(a,b){return _hash(a[1])-_hash(b[1]);});
-  for(var i=0;i<cands.length&&list.length<62;i++){
-    var r=cands[i],hsh=_hash(r[1]),n=1+(hsh%3),cases=[];
-    for(var j=0;j<n;j++){var t=VIOL_TYPES[(hsh>>(j*4))%VIOL_TYPES.length];if(!cases.some(function(c){return c.desc===t;}))cases.push({case:'SMP-'+(100000+(hsh%899999)+j),desc:t,status:'Unverified'});}
-    list.push({address:r[1],owner:r[3],neighborhood:r[2],score:r[5],pa_url:r[16],maps_url:r[15],violations:cases,_verified:false});
+  var list=[],seen={},haveLive=!!(_liveViols&&_liveViols.length);
+  // 1) live county records first (confirmed, verified)
+  if(haveLive)_liveViols.forEach(function(v){var k=_normAddr(v.address);if(seen[k])return;seen[k]=1;list.push(v);});
+  // 2) verified scrape
+  if(typeof VIOL_DETAIL!=='undefined')VIOL_DETAIL.forEach(function(v){var k=_normAddr(v.address);if(seen[k])return;seen[k]=1;var o={};for(var kk in v)o[kk]=v[kk];o._verified=true;list.push(o);});
+  // 3) sample/unverified set — only when the live feed hasn't loaded
+  if(!haveLive){
+    var cands=ALL_ROWS.filter(function(r){ if(seen[_normAddr(r[1])])return false; var age=r[12]?2026-r[12]:0; return age>=35||/Heavy|Cosmetic/i.test(r[17]||'')||(r[4]&&r[4]!=='FL'); });
+    cands.sort(function(a,b){return _hash(a[1])-_hash(b[1]);});
+    for(var i=0;i<cands.length&&list.length<62;i++){
+      var r=cands[i],hsh=_hash(r[1]),n=1+(hsh%3),cases=[];
+      for(var j=0;j<n;j++){var t=VIOL_TYPES[(hsh>>(j*4))%VIOL_TYPES.length];if(!cases.some(function(c){return c.desc===t;}))cases.push({case:'SMP-'+(100000+(hsh%899999)+j),desc:t,status:'Unverified'});}
+      list.push({address:r[1],owner:r[3],neighborhood:r[2],score:r[5],pa_url:r[16],maps_url:r[15],violations:cases,_verified:false});
+    }
   }
   _violAll=list;return list;
+}
+function _setViolStatus(html){var el=document.getElementById('violLiveStatus');if(el)el.innerHTML=html;}
+function _violBtnReset(){var b=document.getElementById('violRefreshBtn');if(b){b.disabled=false;b.innerHTML='&#8635; Refresh from Miami-Dade';}}
+function _badAddr(a){a=(''+a).toUpperCase();return !a.trim()||a.indexOf('NO ADDRESS')>=0||a.indexOf('EXEMPT')>=0||a.indexOf('NOT AVAIL')>=0;}
+function _cleanTxt(s){return (''+(s||'')).replace(/\s+/g,' ').trim();}
+// Pull live open code cases + recorded county liens from the Miami-Dade Open Data feed for the farm bounding box.
+function fetchLiveViolations(force){
+  if(_liveTried&&!force)return;
+  _liveTried=true;
+  var btn=document.getElementById('violRefreshBtn'); if(btn){btn.disabled=true;btn.textContent='Pulling…';}
+  _setViolStatus('<span style="color:var(--muted)">Connecting to Miami-Dade Open Data&hellip;</span>');
+  var bbox={xmin:-80.46,ymin:25.57,xmax:-80.26,ymax:25.78,spatialReference:{wkid:4326}};
+  var geom='&geometry='+encodeURIComponent(JSON.stringify(bbox))+'&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects';
+  var qViol=VIOL_API+'?where='+encodeURIComponent("CASE_STATUS IN ('1','9')")+geom+'&outFields='+encodeURIComponent('ADDRESS,FOLIO,PROBLEM_DESC,STAT_DESC,CASE_DATE,CASE_NUM')+'&orderByFields='+encodeURIComponent('CASE_DATE DESC')+'&returnGeometry=false&resultRecordCount=600&f=json';
+  var qLien=VIOL_API+'?where='+encodeURIComponent("LN_RECDATE IS NOT NULL AND LN_RECDATE<>''")+geom+'&outFields='+encodeURIComponent('ADDRESS,FOLIO,PROBLEM_DESC,STAT_DESC,CASE_DATE,CASE_NUM,LN_RECBOOK,LN_RECPAGE,LN_RECDATE')+'&returnGeometry=false&resultRecordCount=400&f=json';
+  function rec(byAddr,a){
+    var addr=_cleanTxt(a.ADDRESS),k=_normAddr(addr);
+    if(!byAddr[k]){var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');byAddr[k]={address:addr,owner:'',neighborhood:'Miami-Dade (live)',score:0,folio:fd,pa_url:fd?_paFolioUrl(fd):'',maps_url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr+' FL'),violations:[],_verified:true,_live:true};}
+    return byAddr[k];
+  }
+  Promise.all([
+    fetch(qViol,{mode:'cors'}).then(function(r){return r.json();}),
+    fetch(qLien,{mode:'cors'}).then(function(r){return r.json();})
+  ]).then(function(res){
+    var jv=res[0],jl=res[1]||{};
+    if(jv&&jv.error)throw new Error(jv.error.message||'service error');
+    if(!jv||!jv.features)throw new Error('no records returned');
+    var byAddr={},openCases=0,lienProps=0;
+    (jv.features||[]).forEach(function(f){
+      var a=f.attributes||{}; if(_badAddr(a.ADDRESS))return;
+      var r=rec(byAddr,a),when=a.CASE_DATE?(' · '+_fmtEpoch(a.CASE_DATE)):'';
+      r.violations.push({case:_cleanTxt(a.CASE_NUM)||r.folio||'—',desc:(_cleanTxt(a.PROBLEM_DESC)||'Code violation')+when,status:_cleanTxt(a.STAT_DESC)||'Open'});
+      openCases++;
+    });
+    (jl.features||[]).forEach(function(f){
+      var a=f.attributes||{}; if(_badAddr(a.ADDRESS))return;
+      var r=rec(byAddr,a),bk=_cleanTxt(a.LN_RECBOOK),pg=_cleanTxt(a.LN_RECPAGE),dt=_cleanTxt(a.LN_RECDATE);
+      if(!r._lien)r._lien={book:bk,page:pg,date:dt};
+      var cnum=_cleanTxt(a.CASE_NUM);
+      if(cnum&&!r.violations.some(function(c){return c.case===cnum;}))r.violations.push({case:cnum,desc:(_cleanTxt(a.PROBLEM_DESC)||'Code lien')+(dt?' (lien recorded '+dt+')':''),status:_cleanTxt(a.STAT_DESC)||'Lien'});
+    });
+    var arr=Object.keys(byAddr).map(function(k){return byAddr[k];});
+    arr.forEach(function(v){if(v._lien)lienProps++;});
+    arr.sort(function(x,y){var d=(y._lien?1:0)-(x._lien?1:0);return d||(y.violations.length-x.violations.length);});
+    _liveViols=arr;_violAll=null;buildViolations();
+    _setViolStatus('<span style="color:var(--green);font-weight:600">&#9679; Live</span> <span style="color:var(--muted)">&mdash; '+openCases+' open code cases across '+arr.length+' properties'+(lienProps?', incl. <strong style="color:#e0664a">'+lienProps+' with a recorded county lien</strong>':'')+'. Pulled from Miami-Dade Open Data just now &mdash; confirmed county records.</span>');
+    _violBtnReset();
+  }).catch(function(e){
+    _liveViols=null;_violAll=null;buildViolations();
+    _setViolStatus('<span style="color:#e8854a;font-weight:600">&#9679; Live feed unavailable</span> <span style="color:var(--muted)">&mdash; '+((e&&e.message)||'network / CORS')+'. Showing the verified scrape + sample set. The live pull works from the deployed site (macoequitypartners.com).</span>');
+    _violBtnReset();
+  });
 }
 function buildViolations(){
   var data=buildViolationData();
   var nf=document.getElementById('violNeighFilter');
-  if(nf&&nf.options.length<=1){var nbs={};data.forEach(function(v){if(v.neighborhood)nbs[v.neighborhood]=1});Object.keys(nbs).sort().forEach(function(n){var o=document.createElement('option');o.value=n;o.textContent=n;nf.appendChild(o);});}
+  if(nf){var cur=nf.value;var nbs={};data.forEach(function(v){if(v.neighborhood)nbs[v.neighborhood]=1;});nf.innerHTML='<option value="">All Neighborhoods</option>'+Object.keys(nbs).sort().map(function(n){return '<option value="'+n+'">'+n+'</option>';}).join('');if(cur&&nbs[cur])nf.value=cur;}
   var q=((document.getElementById('violSearch')||{}).value||'').toLowerCase();
   var nb=(document.getElementById('violNeighFilter')||{}).value||'';
   var st=(document.getElementById('violStatusFilter')||{}).value||'';
-  var totalCases=0,verifiedCases=0; data.forEach(function(v){(v.violations||[]).forEach(function(c){totalCases++;if(v._verified)verifiedCases++;});});
-  var shownProps=0, shownCases=0;
+  var totalCases=0,verifiedCases=0,lienCount=0; data.forEach(function(v){if(v._lien)lienCount++;(v.violations||[]).forEach(function(c){totalCases++;if(v._verified)verifiedCases++;});});
+  var shownProps=0, shownCases=0, lienOnly=(st==='__LIEN__');
   var html=data.map(function(v){
-    var cases=(v.violations||[]).filter(function(vc){return !st||vc.status===st;});
+    var cases=(v.violations||[]).filter(function(vc){return lienOnly||!st||vc.status===st;});
     var matchText=!q||(v.address||'').toLowerCase().indexOf(q)>=0||(v.owner||'').toLowerCase().indexOf(q)>=0||cases.some(function(vc){return (vc.desc||'').toLowerCase().indexOf(q)>=0;});
     var matchNb=!nb||v.neighborhood===nb;
-    if(!matchText||!matchNb||!cases.length)return '';
+    var matchStatus=lienOnly?!!v._lien:true;
+    if(!matchText||!matchNb||!matchStatus||!cases.length)return '';
     shownProps++; shownCases+=cases.length;
-    var tag=v._verified?'<span style="background:rgba(74,154,107,.18);color:var(--green);font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Verified</span>':'<span style="background:rgba(232,133,74,.18);color:#e8854a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Sample</span>';
-    return '<div class="viol-card"'+(v._verified?'':' style="border-left-color:#e8854a;"')+'>'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;"><div class="viol-addr">'+(v.address||'').replace(/\s+/g,' ').trim()+'</div>'+tag+'</div>'+
-      '<div style="font-size:11px;color:var(--muted);margin:2px 0 10px;">'+(v.owner||'')+' &middot; '+(v.neighborhood||'')+' &middot; '+cases.length+' case'+(cases.length>1?'s':'')+'</div>'+
+    var tagTxt=v._verified?(v._live?'Live · Verified':'Verified'):'Sample';
+    var tag='<span style="background:'+(v._verified?'rgba(74,154,107,.18);color:var(--green)':'rgba(232,133,74,.18);color:#e8854a')+';font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">'+tagTxt+'</span>';
+    var lienTag=v._lien?'<span style="background:rgba(224,102,74,.2);color:#e0664a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Lien</span>':'';
+    var metaParts=[]; if(v.owner)metaParts.push(v.owner); if(v.neighborhood)metaParts.push(v.neighborhood); metaParts.push(cases.length+' case'+(cases.length>1?'s':''));
+    var lienLine=v._lien?'<div style="font-size:11px;color:#e0664a;background:rgba(224,102,74,.08);border:1px solid rgba(224,102,74,.25);border-radius:6px;padding:6px 9px;margin:0 0 10px;">Recorded county code lien'+(v._lien.date?' &middot; '+v._lien.date:'')+(v._lien.book?' &middot; OR Book/Page '+v._lien.book+'/'+v._lien.page:'')+' &mdash; must be cleared at closing.</div>':'';
+    var border=v._lien?' style="border-left-color:#e0664a;"':(v._verified?'':' style="border-left-color:#e8854a;"');
+    return '<div class="viol-card"'+border+'>'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;"><div class="viol-addr">'+(v.address||'').replace(/\s+/g,' ').trim()+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;">'+lienTag+tag+'</div></div>'+
+      '<div style="font-size:11px;color:var(--muted);margin:2px 0 10px;">'+metaParts.join(' &middot; ')+'</div>'+
+      lienLine+
       cases.map(function(vc){return '<div class="viol-case"><div><div style="font-size:12px;">'+vc.desc+'</div><div class="viol-case-num">Case '+vc.case+'</div></div><span class="case-open"'+(vc.status==='Unverified'?' style="color:#e8854a;"':'')+'>'+vc.status+'</span></div>';}).join('')+
       '<div style="margin-top:8px;display:flex;gap:6px;">'+
-        '<a href="'+v.pa_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">PA Record</a>'+
+        (v.pa_url?'<a href="'+v.pa_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">PA Record</a>':'')+
         '<a href="'+v.maps_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">Maps</a>'+
       '</div>'+
     '</div>';
   }).join('');
-  var vb=document.getElementById('violBadge'); if(vb)vb.innerHTML=totalCases+' cases &middot; '+verifiedCases+' verified';
+  var vb=document.getElementById('violBadge'); if(vb)vb.innerHTML=totalCases+' cases &middot; '+verifiedCases+' verified'+(lienCount?' &middot; '+lienCount+' liens':'');
   var vcEl=document.getElementById('violCount'); if(vcEl)vcEl.textContent=shownProps+' properties · '+shownCases+' cases shown';
   document.getElementById('violGrid').innerHTML=html||'<div style="color:var(--muted);font-size:13px;padding:24px;">No violations match your filters.</div>';
 }
