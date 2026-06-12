@@ -642,7 +642,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   <div id="tab-overview" class="tab-content active">
     <div id="followupsDue"></div>
     <div id="statsGrid" class="stats-grid"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 18px;flex-wrap:wrap;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span><select class="filter-sel" id="ovMarket" onchange="onMarketChange()"><option value="">All Markets</option><option>Kendall</option><option>Palmetto Bay</option><option>Pinecrest</option><option>South Miami</option><option>Westchester</option><option>West Little River</option><option>Brownsville</option><option>Three Lakes</option></select></div>
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 18px;flex-wrap:wrap;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span><select class="filter-sel" id="ovMarket" onchange="onMarketChange()"><option value="">All Markets</option><option>Kendall</option><option>Palmetto Bay</option><option>Pinecrest</option><option>South Miami</option><option>Westchester</option><option>West Little River</option><option>Brownsville</option><option>Three Lakes</option><option>Princeton-Naranja</option><option>Homestead</option><option>Redland</option><option>Hialeah</option><option>Doral</option></select></div>
     <div class="section-title">Market Intelligence <span class="badge" id="ovMarketBadge">all markets</span></div>
     <div id="overviewMarket"></div>
 
@@ -1017,7 +1017,26 @@ var openDropdown=null;
 
 // ── STATUS STORAGE ──
 function loadStatuses(){try{return JSON.parse(localStorage.getItem('mep_status')||'{}')}catch(e){return {}}}
-function saveStatus(addr,val){var s=loadStatuses();s[addr]=val;localStorage.setItem('mep_status',JSON.stringify(s))}
+function saveStatus(addr,val){var s=loadStatuses();s[addr]=val;try{localStorage.setItem('mep_status',JSON.stringify(s));}catch(e){alert('Could not save — browser storage is full. Use Backup CRM, then clear this site’s stored data and restore.');}}
+// Small confirmation toast — actions like Add to Pipeline must visibly DO something.
+function toast(msg){
+  var t=document.getElementById('mepToast');
+  if(!t){t=document.createElement('div');t.id='mepToast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1c1a14;color:#f4f1ea;border:1px solid #b89968;border-radius:8px;padding:10px 18px;font-size:13px;z-index:9999;box-shadow:0 4px 24px rgba(0,0,0,.5);transition:opacity .3s;opacity:0;pointer-events:none;max-width:90vw;';document.body.appendChild(t);}
+  t.textContent=msg;t.style.opacity='1';
+  clearTimeout(t._h);t._h=setTimeout(function(){t.style.opacity='0';},2600);
+}
+// Async county feeds each used to rebuild the deal grid the moment they landed — several rebuilds in the
+// first seconds after load. A rebuild mid-click destroys the button under the cursor, so clicks were eaten.
+// Coalesce all feed-driven rebuilds into one debounced pass instead.
+var _rbT=null;
+function _rebuildSoon(){
+  if(_rbT)clearTimeout(_rbT);
+  _rbT=setTimeout(function(){_rbT=null;
+    try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
+    try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
+    try{buildOverview();}catch(e){}
+  },700);
+}
 function getStatus(addr){return loadStatuses()[addr]||'unreviewed'}
 function statusBg(st){return STATUS_BG[st]||STATUS_BG.unreviewed}
 function statusFg(st){return STATUS_FG[st]||STATUS_FG.unreviewed}
@@ -1607,7 +1626,9 @@ function countyDealCard(d,idx){
       '<a class="btn btn-dark" href="'+(d.maps_url||'#')+'" target="_blank">Maps</a>'+
       '<a class="btn btn-dark" href="'+(d.pa_url||'#')+'" target="_blank">PA Record</a>'+
       skipTraceLinks(d)+
-      '<button class="btn btn-dark" style="grid-column:1/-1;" onclick="addToPipeline(DEALS50['+idx+']);this.textContent=\'\\u2713 In Pipeline\';this.disabled=true;">+ Add to Pipeline</button>'+
+      ((window._pipSnap&&_pipSnap[d.address])
+        ?'<button class="btn btn-dark" style="grid-column:1/-1;" disabled>&#10003; In Pipeline</button>'
+        :'<button class="btn btn-dark" style="grid-column:1/-1;" onclick="addToPipeline(DEALS50['+idx+']);this.textContent=\'\\u2713 In Pipeline\';this.disabled=true;">+ Add to Pipeline</button>')+
     '</div>'+
   '</div>';
 }
@@ -1627,6 +1648,7 @@ function buildDeals(){
     return b._score-a._score;
   });
   window._dealList=deals;
+  window._pipSnap=getPipeline(); // so a rebuild re-renders "In Pipeline" state instead of wiping it
   var badge=document.getElementById('dealsBadge'); if(badge)badge.textContent=deals.length;
   document.getElementById('dealGrid').innerHTML=deals.map(function(d,idx){
     if(d._countySourced&&!d.arv)return countyDealCard(d,idx); // enriched county leads render as full cards
@@ -1669,7 +1691,9 @@ function buildDeals(){
         '<button class="btn btn-gold" onclick="runUnderwriter(DEALS50['+idx+'])">'+ICON('underwriter',13)+' Underwriter</button>'+
         '<a class="btn btn-dark" href="'+(d.maps_url||'#')+'" target="_blank">Maps</a>'+
         '<a class="btn btn-dark" href="'+(d.pa_url||'#')+'" target="_blank">PA Record</a>'+
-        '<button class="btn btn-dark" style="grid-column:1/-1;" onclick="addToPipeline(DEALS50['+idx+']);this.textContent=\'\\u2713 In Pipeline\';this.disabled=true;">+ Add to Pipeline</button>'+
+        ((window._pipSnap&&_pipSnap[d.address])
+          ?'<button class="btn btn-dark" style="grid-column:1/-1;" disabled>&#10003; In Pipeline</button>'
+          :'<button class="btn btn-dark" style="grid-column:1/-1;" onclick="addToPipeline(DEALS50['+idx+']);this.textContent=\'\\u2713 In Pipeline\';this.disabled=true;">+ Add to Pipeline</button>')+
       '</div>'+
       '<div id="dossier-'+idx+'" style="display:none;">'+dealDossierHtml(d,idx)+'</div>'+
     '</div>';
@@ -1791,6 +1815,7 @@ function renderTablePage(){
   var start=(currentPage-1)*PAGE_SIZE;
   var end=Math.min(start+PAGE_SIZE,total);
   var statuses=loadStatuses();
+  var pipSnapTbl=getPipeline();
   tbody.innerHTML=filteredRows.slice(start,end).map(function(r){
     var rs=isRecentSaleRow(r);
     var profit=getProfit(r[8],r[9]);
@@ -1822,7 +1847,7 @@ function renderTablePage(){
       '<td style="text-align:right;">'+profitCell+'</td>'+
       '<td style="font-size:10px;color:var(--muted);">'+(r[20]||'')+'</td>'+
       '<td data-addr="'+addrEsc+'"><span class="status-pill" style="background:'+statusBg(st)+';color:'+statusFg(st)+';cursor:pointer;" onclick="cycleTblStatus(this)" data-addr2="'+addrEsc+'">'+statusLabel(st)+'</span></td>'+
-      '<td style="white-space:nowrap;"><button class="btn btn-gold" style="padding:4px 9px;font-size:10px;white-space:nowrap;" onclick="runUnderwriter({address:&quot;'+addrEsc+'&quot;,arv:'+r[8]+',repair:'+r[9]+'})">'+ICON('underwriter',11)+' UW</button> <button class="btn btn-dark" style="padding:4px 8px;font-size:10px;" title="Add to Pipeline" data-addr3="'+addrEsc+'" onclick="addRowToPipeline(this)">+</button></td>'+
+      '<td style="white-space:nowrap;"><button class="btn btn-gold" style="padding:4px 9px;font-size:10px;white-space:nowrap;" onclick="runUnderwriter({address:&quot;'+addrEsc+'&quot;,arv:'+r[8]+',repair:'+r[9]+'})">'+ICON('underwriter',11)+' UW</button> '+(pipSnapTbl[r[1]]?'<button class="btn btn-dark" style="padding:4px 8px;font-size:10px;" title="Already in Pipeline" disabled>&#10003;</button>':'<button class="btn btn-dark" style="padding:4px 8px;font-size:10px;" title="Add to Pipeline" data-addr3="'+addrEsc+'" onclick="addRowToPipeline(this)">+</button>')+'</td>'+
     '</tr>';
   }).join('');
   var tc=document.getElementById('tableCount');
@@ -1999,11 +2024,15 @@ function filterSales(){
 var COMPS_API='https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/PaGISView_gdb/FeatureServer/0/query';
 // Tier-1 expansion (Jun 2026): Westchester/Olympia Heights (33155/33165), West Little River (33147),
 // Brownsville (33142), Three Lakes (33177) — all unincorporated, so every county feed works there.
-var NB_ZIPS={'Kendall':['33173','33175','33176','33183','33186','33196'],'Palmetto Bay':['33157','33158'],'Pinecrest':['33156'],'South Miami':['33143'],'Westchester':['33155','33165'],'West Little River':['33147'],'Brownsville':['33142'],'Three Lakes':['33177']};
-var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Kendall','33186':'Kendall','33196':'Kendall','33157':'Palmetto Bay','33158':'Palmetto Bay','33156':'Pinecrest','33143':'South Miami','33155':'Westchester','33165':'Westchester','33147':'West Little River','33142':'Brownsville','33177':'Three Lakes'};
-// One farm bounding box shared by every county feed — Kendall/Palmetto Bay up through Westchester,
-// Brownsville and West Little River (city-jurisdiction parcels inside the box simply return no county cases).
-var FARM_BBOX={xmin:-80.46,ymin:25.57,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}};
+// Round 10.1: Princeton-Naranja (33032/33033, unincorporated = full distress coverage), Homestead
+// (33030/34/35), Redland (33031), Hialeah (33010-18) and Doral (33166/72/78). Homestead city, Hialeah
+// and Doral run their OWN code enforcement with no public feed — those ZIPs get live comps, market
+// stats and underwriting, but county violation/lien leads only appear for unincorporated parcels.
+var NB_ZIPS={'Kendall':['33173','33175','33176','33183','33186','33196'],'Palmetto Bay':['33157','33158'],'Pinecrest':['33156'],'South Miami':['33143'],'Westchester':['33155','33165'],'West Little River':['33147'],'Brownsville':['33142'],'Three Lakes':['33177'],'Princeton-Naranja':['33032','33033'],'Homestead':['33030','33034','33035'],'Redland':['33031'],'Hialeah':['33010','33012','33013','33014','33016','33018'],'Doral':['33166','33172','33178']};
+var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Kendall','33186':'Kendall','33196':'Kendall','33157':'Palmetto Bay','33158':'Palmetto Bay','33156':'Pinecrest','33143':'South Miami','33155':'Westchester','33165':'Westchester','33147':'West Little River','33142':'Brownsville','33177':'Three Lakes','33032':'Princeton-Naranja','33033':'Princeton-Naranja','33030':'Homestead','33034':'Homestead','33035':'Homestead','33031':'Redland','33010':'Hialeah','33012':'Hialeah','33013':'Hialeah','33014':'Hialeah','33016':'Hialeah','33018':'Hialeah','33166':'Doral','33172':'Doral','33178':'Doral'};
+// One farm bounding box shared by every county feed — Homestead/Princeton up through Hialeah/WLR
+// (city-jurisdiction parcels inside the box simply return no county cases).
+var FARM_BBOX={xmin:-80.46,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}};
 var SALES_BAKED=null, LIVE_COMPS=null, _compsTried=false, _compsInFlight=false;
 var COMPS_KEY='mep_comps_v1', COMPS_TTL=6*24*3600*1000; // county layer refreshes weekly (Sat)
 var _vinCounty='', _vinComps='';
@@ -2047,8 +2076,9 @@ function fetchLiveComps(force){
     }catch(e){}
   }
   _compsInFlight=true;
-  _arcFetchAll(_compsQuery(),3)
+  _arcFetchAll(_compsQuery(),4)
     .then(function(res){
+      if(res.truncated)console.warn('comps pull truncated at',res.features.length);
       var rows=(res.features||[]).map(function(f){return _conformComp(f.attributes||{});}).filter(Boolean);
       if(!rows.length)throw new Error('no sales returned');
       try{localStorage.setItem(COMPS_KEY,JSON.stringify({t:Date.now(),zipKey:_compZipList().join(','),rows:rows}));}catch(e){}
@@ -2067,9 +2097,7 @@ function applyLiveComps(rows,asOf){
   applyLiveArvs();
   DEALS50=null;
   try{enrichCountyLeads();}catch(e){} // re-run: county leads need comps loaded before they can be ARV'd (race-safe, cached)
-  try{buildOverview();}catch(e){}
-  try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
-  try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
+  _rebuildSoon();
   var zf=document.getElementById('salesZipFilter');
   if(zf){zf.innerHTML='<option value="">All ZIPs</option>';try{buildSales();}catch(e){}}
   var lb=document.getElementById('compSrcBadge'); if(lb)lb.textContent=rows.length.toLocaleString()+' live county sales · 12 mo';
@@ -2198,8 +2226,7 @@ function enrichCountyLeads(){
     });
     if(changed){
       DEALS50=null;
-      try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
-      try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
+      _rebuildSoon();
     }
   }
   if(!need.length){apply();return;}
@@ -2239,8 +2266,7 @@ function fetchBuildingViolations(force){
     });
     _bviolByFolio=bf;_bviolByAddr=ba;
     DEALS50=null;
-    try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
-    try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
+    _rebuildSoon();
   }).catch(function(e){});
 }
 function bldgViolInfo(d){
@@ -2262,7 +2288,7 @@ function fetchWasteJudgements(){
     if(c&&Date.now()-c.t<7*24*3600*1000){
       _wasteIndex=c.idx;
       // cached index still changes scores/badges — rebuild so cached days aren't missing the +10
-      if(Object.keys(c.idx||{}).length){DEALS50=null;try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}}
+      if(Object.keys(c.idx||{}).length){DEALS50=null;_rebuildSoon();}
       return;
     }}catch(e){}
   var folios={};
@@ -2276,7 +2302,7 @@ function fetchWasteJudgements(){
     if(!batch.length){
       _wasteIndex=idx;
       try{localStorage.setItem(WASTE_KEY,JSON.stringify({t:Date.now(),idx:idx}));}catch(e){}
-      if(Object.keys(idx).length){DEALS50=null;try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}}
+      if(Object.keys(idx).length){DEALS50=null;_rebuildSoon();}
       return;
     }
     var w="FOLIO_NUMBER IN ("+batch.join(',')+")"; // numeric field — no quotes
@@ -2366,7 +2392,7 @@ function _applyOwnersToCounty(cache){
   var changed=false;
   (_countyLeads||[]).forEach(function(d){var f=_folioOf(d);var oc=f&&cache[f];
     if(oc&&oc.o&&(d.owner||'').indexOf('pull via')>=0){d.owner=oc.o;d.mail_city=oc.mc;d.mail_state=oc.ms;d.mail_zip=oc.mz;changed=true;}});
-  if(changed){DEALS50=null;try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}}
+  if(changed){DEALS50=null;_rebuildSoon();}
 }
 function exportPipelineCsv(){
   var data=getPipeline();
@@ -2529,7 +2555,7 @@ function fetchLiveViolations(force){
   }
   Promise.all([
     _arcFetchAll(qViol,4),
-    _arcFetchAll(qLien,8) // LN_RECDATE is a TEXT field (MM/DD/YYYY) so "newest first" can't be trusted — pull everything (~13.6k today)
+    _arcFetchAll(qLien,9) // LN_RECDATE is a TEXT field (MM/DD/YYYY) so "newest first" can't be trusted — pull everything (~15.6k today)
   ]).then(function(res){
     var jv=res[0]||{features:[]},jl=res[1]||{features:[]};
     if(!jv.features.length)throw new Error('no records returned');
@@ -2570,13 +2596,17 @@ function fetchLiveViolations(force){
       }
     });
     window._newSince={cases:newCases,liens:newLienProps};
-    seen._ts=_today_;
-    try{localStorage.setItem('mep_seen_cases',JSON.stringify(seen));}catch(_e){}
+    // Prune to keys still present in the live feed — otherwise this grows forever and eats the storage quota.
+    var pruned={_ts:_today_};
+    arr.forEach(function(v){
+      (v.violations||[]).forEach(function(c){var k='C:'+(c.case||'');if(k!=='C:'&&seen[k]!=null)pruned[k]=seen[k];});
+      if(v._lien){var lk='L:'+_normAddr(v.address);if(seen[lk]!=null)pruned[lk]=seen[lk];}
+    });
+    try{localStorage.setItem('mep_seen_cases',JSON.stringify(pruned));}catch(_e){}
     var newTxt=(newCases||newLienProps)?' <strong style="color:var(--gold)">'+newCases+' case'+(newCases!==1?'s':'')+' new today'+(newLienProps?', '+newLienProps+' newly liened':'')+'.</strong>':'';
     arr.sort(function(x,y){var d=(y._lien?1:0)-(x._lien?1:0);return d||(y.violations.length-x.violations.length);});
     _liveViols=arr;_violAll=null;_violIndex=null;_countyLeads=null;DEALS50=null;buildViolations();
-    try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
-    _pendingAllRefresh=false;try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
+    _pendingAllRefresh=false;_rebuildSoon();
     _setViolStatus('<span style="color:var(--green);font-weight:600">&#9679; Live</span> <span style="color:var(--muted)">&mdash; '+openCases.toLocaleString()+' open code cases across '+arr.length.toLocaleString()+' properties'+(lienProps?', incl. <strong style="color:#e0664a">'+lienProps.toLocaleString()+' with a recorded county lien</strong>':'')+'. Pulled from Miami-Dade Open Data just now &mdash; confirmed county records.'+newTxt+truncNote+'</span>');
     var _now=new Date();
     _setRefreshStatus('<span style="color:var(--green);">&#10003;</span> Updated '+_now.toLocaleTimeString()+' &mdash; live county data');
@@ -2589,8 +2619,7 @@ function fetchLiveViolations(force){
     _violBtnReset();
   }).catch(function(e){
     _liveViols=null;_violAll=null;_violIndex=null;_countyLeads=null;DEALS50=null;buildViolations();
-    try{if(document.getElementById('dealGrid'))buildDeals();}catch(_e){}
-    _pendingAllRefresh=false;try{if(document.getElementById('propTbody'))buildAllTable();}catch(_e){}
+    _pendingAllRefresh=false;_rebuildSoon();
     _setViolStatus('<span style="color:#e8854a;font-weight:600">&#9679; Live feed unavailable</span> <span style="color:var(--muted)">&mdash; '+((e&&e.message)||'network / CORS')+'. Showing the verified scrape + sample set. The live pull works from the deployed site (macoequitypartners.com).</span>');
     _setRefreshStatus('<span style="color:#e8854a;">&#9888;</span> County feed unavailable &mdash; showing last-known data, not a fresh pull');
     _violInFlight=false;
@@ -2736,7 +2765,7 @@ var STAGE_MIGRATE={lead:'lead',researching:'lead',contacted:'contacted',negotiat
 var dragCard=null;
 
 function getPipeline(){ try{return JSON.parse(localStorage.getItem(PIPELINE_KEY)||'{}')}catch(e){return{}} }
-function savePipeline(data){localStorage.setItem(PIPELINE_KEY,JSON.stringify(data))}
+function savePipeline(data){try{localStorage.setItem(PIPELINE_KEY,JSON.stringify(data));}catch(e){alert('Could not save your pipeline — browser storage is full. Use Backup CRM, then clear this site’s stored data and restore.');}}
 function pcEsc(s){return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function pcJs(s){return (''+s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
 function cssId(s){return (''+s).replace(/[^a-zA-Z0-9]/g,'_');}
@@ -2834,7 +2863,7 @@ function pcAddLog(addr){
 
 function addToPipeline(deal){
   var data=getPipeline();
-  if(data[deal.address])return; // already there
+  if(data[deal.address]){try{toast(deal.address+' is already in your Pipeline');}catch(e){}return;}
   data[deal.address]={
     address:deal.address, neighborhood:deal.neighborhood, arv:deal.arv,
     repair:deal.repair||deal.repair_low||0, purchase:Math.round((deal.arv||0)*0.65),
@@ -2842,6 +2871,7 @@ function addToPipeline(deal){
   };
   savePipeline(data);
   buildPipeline();
+  try{toast('✓ Added '+deal.address+' to Pipeline ('+Object.keys(data).length+' deals) — see the Pipeline tab');}catch(e){}
 }
 // Add an All-Properties row to the pipeline by address (rows are arrays, not deal objects).
 function addRowToPipeline(btn){
