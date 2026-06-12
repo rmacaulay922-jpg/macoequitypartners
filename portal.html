@@ -681,6 +681,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <button class="btn btn-gold" type="button" onclick="refreshDeals()" style="font-size:12px;padding:7px 14px;">&#8635; Refresh county data</button>
       <select class="filter-sel" id="dealSort" onchange="buildDeals()">
         <option value="score">Sort: Deal score (high &rarr; low)</option>
+        <option value="grade">Best buy grade (A &rarr; D)</option>
         <option value="roi-desc">Best ROI % (high &rarr; low)</option>
         <option value="profit-desc">Est. net profit (high &rarr; low)</option>
         <option value="arv-desc">ARV / value (high &rarr; low)</option>
@@ -1452,7 +1453,7 @@ function svPhoto(d,idx){
     +'<div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.05) 45%,rgba(0,0,0,.82));pointer-events:none;"></div>'
     +'<div style="position:absolute;bottom:0;left:0;right:0;padding:8px 12px;">'
       +'<div style="font-size:12px;font-weight:700;color:#fff;line-height:1.2;">'+d.address+'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,.7);">'+(d.neighborhood||'')+' &middot; live aerial</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,.7);">'+(d.neighborhood||'')+'</div>'
     +'</div>'
   +'</div>';
 }
@@ -1475,6 +1476,25 @@ function dealFlags(d){var vi=violInfo(d.address);if(!vi)return '';var p=[];
   if(vi.n)p.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">'+vi.n+' OPEN CODE CASE'+(vi.n!==1?'S':'')+'</span>');
   if(vi.lien)p.push('<span style="background:rgba(224,102,74,.2);color:#e0664a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">LIEN'+(vi.lien.date?' &middot; '+vi.lien.date:' RECORDED')+'</span>');
   return p.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">'+p.join('')+'</div>':'';}
+// Plain-English BUY VERDICT: margin first (does it actually make money?), motivation as the "can you get it" modifier.
+function buyGrade(d){
+  if(d._countySourced||d._needsComp)return {g:'?',t:'Comp it',c:'var(--muted)',bg:'rgba(138,132,120,.14)',why:'County-flagged lead with no comps yet — underwrite it to grade the margin.'};
+  if(typeof isRecentDeal==='function'&&isRecentDeal(d))return {g:'—',t:'Sold',c:'var(--muted)',bg:'rgba(138,132,120,.14)',why:'Recently sold or owner-occupied — not actionable.'};
+  var profit=getProfit(d.arv,d.repair);
+  if(profit==null||!d.arv)return {g:'?',t:'No comps',c:'var(--muted)',bg:'rgba(138,132,120,.14)',why:'Missing ARV/repair to score.'};
+  var margin=profit/d.arv*100; // net profit as % of ARV — the flip-quality gauge
+  var mot=Math.round((d._score||0)-roiBonus(d.arv,d.repair));
+  var motTag=mot>=55?' &middot; seller looks motivated':(mot<32?' &middot; seller shows little distress (harder to win)':'');
+  if(profit<=0||margin<4)return {g:'D',t:'Pass',c:'#e0664a',bg:'rgba(224,102,74,.15)',why:'Only ~'+Math.round(margin)+'% of ARV ('+fmtK(profit)+') at a 65%-of-ARV buy &mdash; too thin to risk'+(mot>=55?' unless you steal it well under that.':'.')};
+  if(margin<8.5)return {g:'C',t:'Thin',c:'#e8a14a',bg:'rgba(232,161,74,.15)',why:'Slim spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+') &mdash; needs a real discount'+(mot>=55?', and this seller may give one.':'.')};
+  if(margin<13)return {g:'B',t:'Solid',c:'#b89968',bg:'rgba(184,153,104,.18)',why:'Healthy flip spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+')'+motTag+'.'};
+  return {g:'A',t:'Strong',c:'#4a9a6b',bg:'rgba(74,154,107,.18)',why:'Fat spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+')'+motTag+'.'};
+}
+function buyGradeBar(d){var v=buyGrade(d);return '<div style="display:flex;align-items:center;gap:9px;padding:8px 14px;background:'+v.bg+';border-top:1px solid var(--border);border-bottom:1px solid var(--border);">'
+  +'<span style="flex-shrink:0;width:24px;height:24px;border-radius:6px;background:'+v.c+';color:#14120d;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;">'+v.g+'</span>'
+  +'<div style="min-width:0;"><div style="font-size:11px;font-weight:700;color:'+v.c+';text-transform:uppercase;letter-spacing:.4px;">'+v.t+' buy</div>'
+  +'<div style="font-size:10.5px;color:var(--ivory-soft);line-height:1.35;">'+v.why+'</div></div>'
++'</div>';}
 // Weighted distress/motivation signals -> 0-~100 score. Higher = more likely to sell below market.
 function computeScore(d){
   var s=0,why=[];function add(p,t){s+=p;why.push({p:p,t:t});}
@@ -1557,6 +1577,7 @@ function countyDealCard(d,idx){
       '<div class="metric-cell"><div class="metric-lbl">Recorded Lien</div><div class="metric-val" style="font-size:15px;color:'+(d._lien?'#e0664a':'var(--muted)')+';">'+(d._lien?'Yes':'None')+'</div><div class="metric-sub">'+(d._lien&&d._lien.date?d._lien.date:'&mdash;')+'</div></div>'+
       '<div class="metric-cell"><div class="metric-lbl">Financials</div><div class="metric-val" style="font-size:13px;color:var(--muted);">Needs comp</div><div class="metric-sub">skip-trace owner</div></div>'+
     '</div>'+
+    buyGradeBar(d)+
     '<div class="deal-actions">'+
       '<button class="btn btn-gold" onclick="runUnderwriter(DEALS50['+idx+'])">'+ICON('underwriter',13)+' Underwrite</button>'+
       '<a class="btn btn-dark" href="'+zillowUrl(d)+'" target="_blank">Zillow</a>'+
@@ -1570,6 +1591,7 @@ function buildDeals(){
   var deals=getTop50();
   var sortBy=(document.getElementById('dealSort')||{}).value||'score';
   deals.sort(function(a,b){
+    if(sortBy==='grade'){var gm={A:4,B:3,C:2,D:1};var ga=gm[buyGrade(a).g]||0,gb=gm[buyGrade(b).g]||0;return (gb-ga)||(b._score-a._score);}
     if(sortBy==='roi-desc'){var ra=dealROIpct(a.arv,a.repair),rb=dealROIpct(b.arv,b.repair);return (rb==null?-999:rb)-(ra==null?-999:ra);}
     if(sortBy==='arv-desc')return (b.arv||0)-(a.arv||0);
     if(sortBy==='arv-asc')return (a.arv||0)-(b.arv||0);
@@ -1613,6 +1635,7 @@ function buildDeals(){
           ? '<div class="metric-cell"><div class="metric-lbl">Status</div><div class="metric-val" style="font-size:13px;color:#e8854a;">Recently Sold</div><div class="metric-sub">'+(d.last_sale_price?fmt$(d.last_sale_price):'owner-occ')+'</div></div>'
           : '<div class="metric-cell"><div class="metric-lbl">Est. Net Profit</div><div class="metric-val" style="font-size:18px;font-weight:700;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</div><div class="metric-sub">'+(function(){var r=dealROIpct(d.arv,d.repair);return (r!=null?'<strong style="color:'+(r>0?'var(--green)':'var(--red)')+'">'+Math.round(r)+'% ROI</strong> &middot; ':'')+'6-mo flip';})()+'</div></div>')+
       '</div>'+
+      buyGradeBar(d)+
       '<div class="deal-actions">'+
         '<button class="btn btn-gold" onclick="toggleDossier('+idx+')">'+ICON('field',13)+' Field Report</button>'+
         '<button class="btn btn-gold" onclick="runUnderwriter(DEALS50['+idx+'])">'+ICON('underwriter',13)+' Underwriter</button>'+
