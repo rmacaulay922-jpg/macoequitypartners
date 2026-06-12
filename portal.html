@@ -621,6 +621,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.2</div>
     </div>
   </header>
 
@@ -642,7 +643,11 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   <div id="tab-overview" class="tab-content active">
     <div id="followupsDue"></div>
     <div id="statsGrid" class="stats-grid"></div>
-    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 18px;flex-wrap:wrap;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span><select class="filter-sel" id="ovMarket" onchange="onMarketChange()"><option value="">All Markets</option><option>Kendall</option><option>Palmetto Bay</option><option>Pinecrest</option><option>South Miami</option><option>Westchester</option><option>West Little River</option><option>Brownsville</option><option>Three Lakes</option><option>Princeton-Naranja</option><option>Homestead</option><option>Redland</option><option>Hialeah</option><option>Doral</option></select></div>
+    <details id="dealMapWrap" style="margin:0 0 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;" ontoggle="if(this.open)renderMapOverview();">
+      <summary style="cursor:pointer;padding:12px 18px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;">Deal Map <span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;">&mdash; top deals &amp; county leads, colored by buy grade &middot; click to expand</span> <button class="btn btn-dark" type="button" style="font-size:10px;padding:3px 9px;margin-left:8px;" onclick="event.preventDefault();refreshDealMap();">&#8635; pins</button></summary>
+      <div id="map-overview" style="height:420px;border-radius:0 0 12px 12px;overflow:hidden;"></div>
+    </details>
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 18px;flex-wrap:wrap;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span><select class="filter-sel" id="ovMarket" onchange="onMarketChange()"><option value="">All Markets</option><option>Kendall</option><option>Palmetto Bay</option><option>Pinecrest</option><option>South Miami</option><option>Westchester</option><option>West Little River</option><option>Brownsville</option><option>Three Lakes</option><option>Princeton-Naranja</option><option>Homestead</option><option>Redland</option><option>Hialeah</option><option>Doral</option><option>Miami Gardens</option><option>North Miami</option><option>N Miami Beach</option><option>Cutler Bay</option></select></div>
     <div class="section-title">Market Intelligence <span class="badge" id="ovMarketBadge">all markets</span></div>
     <div id="overviewMarket"></div>
 
@@ -729,6 +734,8 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="exportTableCsv()">&#8681; Export CSV</button>
           <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="buildMailList()" title="Pulls owner names + mailing addresses from the county roll for the current filter, then downloads a direct-mail CSV">&#9993; Mail List CSV</button>
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="openDriveList()" title="Printable driving-for-dollars checklist of the current filter, grouped by neighborhood">&#9112; Drive List</button>
+          <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="printLetters()" title="Mail-merge a letter to every owner in the current filter (uses your saved template), one per page, print or save as PDF">&#128396; Print Letters</button>
+          <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="openLetterEditor()" title="Edit the letter template — add your phone number once">Edit Letter</button>
           <span id="mailListStatus" style="font-size:11px;color:var(--muted);"></span>
           <span class="tbl-count" id="tableCount"></span>
         </div>
@@ -1295,6 +1302,7 @@ function initApp(){
   document.getElementById('headerDate').textContent=ds;
   document.getElementById('printDateLbl').textContent=ds;
   try{applyRepairReality();}catch(e){console.error('repair tiers',e);}
+  try{window._ownerSnap=_ownerCache();}catch(e){} // cached owner mailing data powers absentee scoring from the first paint
   // Build every section defensively so one failure can't abort the rest.
   ['buildOverview','buildDeals','buildAllTable','buildSales','buildViolations','buildPipeline'].forEach(function(fn){
     try{window[fn]();}catch(e){console.error('init '+fn,e);}
@@ -1359,10 +1367,33 @@ function renderFollowups(){
 function miniStat(label,val){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+label+'</div><div style="font-size:18px;font-weight:800;color:var(--ivory);margin-top:2px;">'+val+'</div></div>';}
 function onMarketChange(){ buildOverviewMarket(); }
 function mxTile(l,v,sub){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px 14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+l+'</div><div style="font-size:21px;font-weight:800;color:var(--ivory);margin-top:3px;line-height:1;">'+v+'</div>'+(sub?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+sub+'</div>':'')+'</div>';}
-function mxBars(title,items,fmt){
+var _mxExpand={};
+function mxBars(title,items,fmt,key){
+  // With 28 farmed ZIPs the bar lists got huge — collapse to the top 8 with a show-all toggle.
+  var cap=8, exp=key&&_mxExpand[key];
+  var shown=(key&&items.length>cap&&!exp)?items.slice(0,cap):items;
   var max=Math.max.apply(null,items.map(function(i){return i.val;}))||1;
+  var toggle=(key&&items.length>cap)
+    ?'<button type="button" onclick="_mxExpand[\''+key+'\']='+(exp?'false':'true')+';buildOverviewMarket();" style="margin-top:4px;background:none;border:none;color:var(--bronze);font-size:11px;cursor:pointer;text-decoration:underline dotted;padding:0;">'+(exp?'Show top '+cap+' only':'Show all '+items.length)+'</button>'
+    :'';
   return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--bronze);margin-bottom:14px;">'+title+'</div>'+
-    items.map(function(i){var pct=Math.max(3,Math.round(i.val/max*100));return '<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:600;color:var(--ivory-soft);">'+i.label+'</span><span style="color:var(--bronze);font-weight:700;">'+fmt(i.val)+'</span></div><div style="height:7px;background:var(--bg-soft);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--gold),#b8962e);border-radius:4px;"></div></div></div>';}).join('')+'</div>';
+    shown.map(function(i){var pct=Math.max(3,Math.round(i.val/max*100));return '<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:600;color:var(--ivory-soft);">'+i.label+'</span><span style="color:var(--bronze);font-weight:700;">'+fmt(i.val)+'</span></div><div style="height:7px;background:var(--bg-soft);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--gold),#b8962e);border-radius:4px;"></div></div></div>';}).join('')+toggle+'</div>';
+}
+// 12-month $/sqft trend sparkline from whatever comp set is active (dependency-free inline SVG).
+function mxTrendCard(sales){
+  var by={}; sales.forEach(function(s){var m=(''+(s.date||'')).slice(0,7);if(m&&s.ppsf)( by[m]=by[m]||[] ).push(s.ppsf);});
+  var months=Object.keys(by).sort();
+  if(months.length<4)return '';
+  var pts=months.map(function(m){return {m:m,v:_med(by[m])};});
+  var vals=pts.map(function(p){return p.v;});
+  var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
+  var W=600,H=110,PAD=8;
+  var poly=pts.map(function(p,i){var x=PAD+i/(pts.length-1)*(W-2*PAD);var y=(H-PAD)-((p.v-mn)/((mx-mn)||1))*(H-2*PAD);return Math.round(x)+','+Math.round(y);}).join(' ');
+  var chg=Math.round((pts[pts.length-1].v-pts[0].v)/pts[0].v*100);
+  var cCol=chg>=0?'var(--green)':'var(--red)';
+  return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--bronze);margin-bottom:10px;">$/sqft Trend &middot; trailing 12 months</div>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;"><polyline points="'+poly+'" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
+    +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px;"><span style="color:var(--muted);">'+pts[0].m+' &middot; $'+pts[0].v+'/sf</span><span style="font-weight:700;color:'+cCol+';">'+(chg>0?'+':'')+chg+'%</span><span style="color:var(--muted);">'+pts[pts.length-1].m+' &middot; $'+pts[pts.length-1].v+'/sf</span></div></div>';
 }
 function buildOverviewMarket(market){
   var el=document.getElementById('overviewMarket'); if(!el)return;
@@ -1400,8 +1431,9 @@ function buildOverviewMarket(market){
       mxTile('Median Comp',fmtK(medP),(market||'all farm ZIPs')+' &middot; $'+medSf+'/sf')+
       mxTile('Buy-Box Comps',bb+'/'+mSales.length,'3-4BR &middot; 1500sf+')+
     '</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:14px;">'+
-      mxBars('Median Price by ZIP &middot; '+(market||'All Farm ZIPs'),zipItems,function(v){return fmtK(v);})+
+    mxTrendCard(mSales)+
+    '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:14px;margin-top:14px;">'+
+      mxBars('Median Price by ZIP &middot; '+(market||'All Farm ZIPs'),zipItems,function(v){return fmtK(v);},'zips')+
       mxBars("What's Selling &middot; Bedroom Mix",bedItems,function(v){return v+' sales';})+
       mxBars('Price Band Distribution',bandItems,function(v){return v+' sales';})+
     '</div>'+
@@ -1500,6 +1532,8 @@ function dealFlags(d){var vi=violInfo(d.address);var p=[];
   }
   var wj=(typeof wasteJudgementOf==='function')?wasteJudgementOf(d):null;
   if(wj)p.push('<span style="background:rgba(184,153,104,.2);color:var(--bronze);font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">WASTE-FEE JUDGEMENT'+(wj.fees>0?' &middot; '+fmtK(wj.fees):'')+'</span>');
+  var _aoc=window._ownerSnap&&_ownerSnap[_folioOf(d)];
+  if(_aoc&&_aoc.ma&&d.address&&_normAddr(_aoc.ma)!==_normAddr(d.address))p.push('<span style="background:rgba(124,118,255,.16);color:#9d97ff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">ABSENTEE &middot; '+_escHtml((_aoc.mc||'')+(_aoc.ms&&_aoc.ms!=='FL'?', '+_aoc.ms:''))+'</span>');
   return p.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">'+p.join('')+'</div>':'';}
 // Plain-English BUY VERDICT: margin first (does it actually make money?), motivation as the "can you get it" modifier.
 function buyGrade(d){
@@ -1539,6 +1573,9 @@ function computeScore(d){
   var c=(d.rehab_condition||'').toLowerCase();
   if(c.indexOf('gut')>=0)add(14,'Full-gut condition');else if(c.indexOf('heavy')>=0)add(11,'Heavy rehab needed');else if(c.indexOf('moderate')>=0)add(7,'Moderate rehab');else if(c.indexOf('light')>=0||c.indexOf('cosmetic')>=0)add(4,'Cosmetic / light rehab');
   if(d.last_sale_price>0&&d.market_value>0&&d.last_sale_price<d.market_value*0.45)add(10,'High equity (low cost basis)');
+  // In-state absentee: county roll mailing differs from the site address (only known after a Mail List pull).
+  var _oc=window._ownerSnap&&_ownerSnap[_folioOf(d)];
+  if(_oc&&_oc.ma&&d.address&&_normAddr(_oc.ma)!==_normAddr(d.address)&&(!d.owner_state||d.owner_state==='FL'))add(12,'Absentee owner (mailing differs from property)');
   // County distress feeds (code cases, liens, building dept, waste judgements) are CORRELATED — one derelict
   // house fires all of them. They accumulate separately and cap at +50 so a quadruple-dip can't bury better deals.
   var _feed=0,_feedWhy=[];function fadd(p,t){_feed+=p;_feedWhy.push({p:p,t:t});}
@@ -1950,21 +1987,37 @@ function renderMapOverview(){
   }
   if(mapOverviewDone||el._leaflet_id)return;
   el.innerHTML='';
-  var map=L.map(el,{scrollWheelZoom:false}).setView([25.66,-80.37],11);
+  var map=L.map(el,{scrollWheelZoom:false}).setView([25.66,-80.33],11);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors',maxZoom:19}).addTo(map);
-  var colors={red:'#ef4444',orange:'#f97316',yellow:'#eab308',green:'#22c55e'};
-  var bounds=[];
-  MAP_PINS.forEach(function(pin){
-    if(!pin.lat||!pin.lng)return;
-    bounds.push([pin.lat,pin.lng]);
-    var deal=null; TOP10.forEach(function(d){if(d.address===pin.address)deal=d;});
-    var prof=deal?getProfit(deal.arv,deal.repair):null;
-    var m=L.circleMarker([pin.lat,pin.lng],{radius:11,fillColor:colors[pin.color]||colors.green,color:'#fff',weight:2,opacity:1,fillOpacity:.9}).addTo(map);
-    m.bindPopup('<div style="min-width:170px;font-family:Inter,sans-serif;"><strong>'+pin.address+'</strong><br>Score '+pin.score+' &middot; ARV '+fmtK(pin.arv)+(prof!=null?'<br>Est. Net Profit '+fmtK(prof):'')+(pin.rank?'<br><span style="color:#b89968;font-weight:700;">Rank #'+pin.rank+'</span>':'')+'</div>');
+  // Live pins from the current deal list (coords come from deal lat/lng or the parcel-centroid geo cache).
+  var deals=(window._dealList&&_dealList.length)?_dealList:getTop50();
+  var geo=_loadGeo();
+  var gradeColor={A:'#4a9a6b',B:'#b89968',C:'#e8a14a',D:'#e0664a'};
+  var bounds=[],plotted=0;
+  deals.forEach(function(d){
+    var lat=d.lat,lng=d.lng;
+    if(lat==null||lng==null){var f=_folioOf(d);var g=geo[f||('a:'+_normAddr(d.address))];if(g){lng=g[0];lat=g[1];}}
+    if(lat==null||lng==null)return;
+    var gr=buyGrade(d);
+    bounds.push([lat,lng]);plotted++;
+    var prof=(d._countySourced&&!d.arv)?null:getProfit(d.arv,d.repair);
+    var m=L.circleMarker([lat,lng],{radius:10,fillColor:gradeColor[gr.g]||'#8a8478',color:'#fff',weight:2,opacity:1,fillOpacity:.9}).addTo(map);
+    m.bindPopup('<div style="min-width:185px;font-family:Inter,sans-serif;"><strong>'+d.address+'</strong><br>'+(d.neighborhood||'')+'<br>Grade <strong>'+gr.g+'</strong> &middot; Score '+(d._score||'&mdash;')+(d.arv?'<br>ARV '+fmtK(d.arv)+(prof!=null?' &middot; Profit '+fmtK(prof):''):'<br>Needs comp &middot; '+(d._caseN||0)+' code cases')+'<br><a href="'+zillowUrl(d)+'" target="_blank">Zillow</a> &middot; <a href="'+(d.maps_url||'#')+'" target="_blank">Maps</a> &middot; <a href="'+(d.pa_url||'#')+'" target="_blank">PA</a></div>');
   });
+  if(!plotted){
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;text-align:center;padding:20px;">No pins yet &mdash; open the Top 50 Deals tab once so parcels geocode, then hit &#8635; pins.</div>';
+    mapOverviewDone=false;return;
+  }
   if(bounds.length){try{map.fitBounds(bounds,{padding:[30,30]});}catch(e){}}
   mapOverviewDone=true;
   setTimeout(function(){try{map.invalidateSize();}catch(e){}},200);
+}
+// Tear down and rebuild the overview map (Leaflet ids stick to the node, so swap in a fresh one).
+function refreshDealMap(){
+  var el=document.getElementById('map-overview');
+  if(el){var n=el.cloneNode(false);n.removeAttribute('class');el.parentNode.replaceChild(n,el);}
+  mapOverviewDone=false;
+  renderMapOverview();
 }
 
 // ── SALES ──
@@ -2028,8 +2081,8 @@ var COMPS_API='https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services
 // (33030/34/35), Redland (33031), Hialeah (33010-18) and Doral (33166/72/78). Homestead city, Hialeah
 // and Doral run their OWN code enforcement with no public feed — those ZIPs get live comps, market
 // stats and underwriting, but county violation/lien leads only appear for unincorporated parcels.
-var NB_ZIPS={'Kendall':['33173','33175','33176','33183','33186','33196'],'Palmetto Bay':['33157','33158'],'Pinecrest':['33156'],'South Miami':['33143'],'Westchester':['33155','33165'],'West Little River':['33147'],'Brownsville':['33142'],'Three Lakes':['33177'],'Princeton-Naranja':['33032','33033'],'Homestead':['33030','33034','33035'],'Redland':['33031'],'Hialeah':['33010','33012','33013','33014','33016','33018'],'Doral':['33166','33172','33178']};
-var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Kendall','33186':'Kendall','33196':'Kendall','33157':'Palmetto Bay','33158':'Palmetto Bay','33156':'Pinecrest','33143':'South Miami','33155':'Westchester','33165':'Westchester','33147':'West Little River','33142':'Brownsville','33177':'Three Lakes','33032':'Princeton-Naranja','33033':'Princeton-Naranja','33030':'Homestead','33034':'Homestead','33035':'Homestead','33031':'Redland','33010':'Hialeah','33012':'Hialeah','33013':'Hialeah','33014':'Hialeah','33016':'Hialeah','33018':'Hialeah','33166':'Doral','33172':'Doral','33178':'Doral'};
+var NB_ZIPS={'Kendall':['33173','33175','33176','33183','33186','33196'],'Palmetto Bay':['33157','33158'],'Pinecrest':['33156'],'South Miami':['33143'],'Westchester':['33155','33165'],'West Little River':['33147'],'Brownsville':['33142'],'Three Lakes':['33177'],'Princeton-Naranja':['33032','33033'],'Homestead':['33030','33034','33035'],'Redland':['33031'],'Hialeah':['33010','33012','33013','33014','33016','33018'],'Doral':['33166','33172','33178'],'Miami Gardens':['33054','33055','33056','33169'],'North Miami':['33161','33167','33168'],'N Miami Beach':['33162'],'Cutler Bay':['33189','33190']};
+var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Kendall','33186':'Kendall','33196':'Kendall','33157':'Palmetto Bay','33158':'Palmetto Bay','33156':'Pinecrest','33143':'South Miami','33155':'Westchester','33165':'Westchester','33147':'West Little River','33142':'Brownsville','33177':'Three Lakes','33032':'Princeton-Naranja','33033':'Princeton-Naranja','33030':'Homestead','33034':'Homestead','33035':'Homestead','33031':'Redland','33010':'Hialeah','33012':'Hialeah','33013':'Hialeah','33014':'Hialeah','33016':'Hialeah','33018':'Hialeah','33166':'Doral','33172':'Doral','33178':'Doral','33054':'Miami Gardens','33055':'Miami Gardens','33056':'Miami Gardens','33169':'Miami Gardens','33161':'North Miami','33167':'North Miami','33168':'North Miami','33162':'N Miami Beach','33189':'Cutler Bay','33190':'Cutler Bay'};
 // One farm bounding box shared by every county feed — Homestead/Princeton up through Hialeah/WLR
 // (city-jurisdiction parcels inside the box simply return no county cases).
 var FARM_BBOX={xmin:-80.46,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}};
@@ -2342,8 +2395,9 @@ function enrichOwners(folios,done,progress){
           var a=ft.attributes||{};var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');
           if(fd)cache[fd]={o:_cleanTxt(a.TRUE_OWNER1),o2:_cleanTxt(a.TRUE_OWNER2),ma:_cleanTxt(a.TRUE_MAILING_ADDR1),mc:_cleanTxt(a.TRUE_MAILING_CITY),ms:_cleanTxt(a.TRUE_MAILING_STATE),mz:_cleanTxt(a.TRUE_MAILING_ZIP_CODE)};
         });
+        window._ownerSnap=cache; // absentee scoring/badges read this snapshot
         i++;next();
-      }).catch(function(){_ownerSave(cache);done(cache,true);});
+      }).catch(function(){_ownerSave(cache);window._ownerSnap=cache;done(cache,true);});
   }
   next();
 }
@@ -2469,6 +2523,68 @@ function maxOfferRow(d){
     +'<span style="color:var(--muted);">Max offer to clear <a href="javascript:void(0)" onclick="setTargetProfit()" style="color:var(--bronze);text-decoration:underline dotted;" title="Click to change your target profit">'+fmtK(targetProfit())+' net</a></span>'
     +'<span style="font-weight:800;color:'+(mo?'var(--ivory)':'var(--red)')+';white-space:nowrap;">'+(mo?fmt$(mo):'No price works')+'</span></div>';
 }
+// ── DIRECT-MAIL LETTERS — mail-merge the filtered list against an editable template ──
+var LETTER_KEY='mep_letter_tpl';
+function _escHtml(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function letterTpl(){
+  return localStorage.getItem(LETTER_KEY)||(
+'Dear {{owner_first}},\n\n'+
+'My name is Ryan Macaulay with Maco Equity Partners, a local Miami real-estate investment company. I’m reaching out about your property at {{property_address}}.\n\n'+
+'We buy houses in {{neighborhood}} directly from owners — as-is, with no repairs needed, no agent commissions, and a closing date on your timeline. If the property has open code violations or liens, we take care of those too.\n\n'+
+'If you have ever thought about selling, I would welcome a brief conversation. There is no obligation — even if you simply want to know what the property is worth today.\n\n'+
+'Respectfully,\n\nRyan Macaulay\nMaco Equity Partners\n[your phone] · [your email]');
+}
+function openLetterEditor(){
+  document.getElementById('printBody').innerHTML=
+    '<div class="print-section"><h3>Direct-Mail Letter Template</h3>'
+    +'<div style="font-size:11px;color:#666;margin:6px 0 8px;">Merge fields: <code>{{owner}}</code> <code>{{owner_first}}</code> <code>{{property_address}}</code> <code>{{mailing_address}}</code> <code>{{neighborhood}}</code> <code>{{date}}</code> &mdash; edit once (add your phone), then Print Letters uses it for every owner.</div>'
+    +'<textarea id="letterTplBox" style="width:100%;height:340px;font:13px/1.55 Georgia,serif;padding:12px;box-sizing:border-box;">'+_escHtml(letterTpl())+'</textarea>'
+    +'<div style="margin-top:10px;display:flex;gap:8px;"><button class="btn btn-gold" type="button" onclick="saveLetterTpl()">Save template</button><button class="btn btn-dark" type="button" onclick="localStorage.removeItem(LETTER_KEY);openLetterEditor();">Reset to default</button></div></div>';
+  document.getElementById('printModal').classList.add('open');
+}
+function saveLetterTpl(){
+  var b=document.getElementById('letterTplBox');
+  if(b){try{localStorage.setItem(LETTER_KEY,b.value);}catch(e){}toast('Letter template saved');document.getElementById('printModal').classList.remove('open');}
+}
+function _firstName(owner){
+  if(_isEntityOwner(owner))return 'Property Owner';
+  var f=((owner||'').trim().split(/\s+/)[0])||'Neighbor';
+  return f.charAt(0)+f.slice(1).toLowerCase();
+}
+function printLetters(){
+  var st=document.getElementById('mailListStatus');
+  var rows=filteredRows.slice(0,100); // 100 letters per print run
+  var folios=rows.map(function(r){return _folioOf({pa_url:r[16]});}).filter(Boolean);
+  if(!folios.length){if(st)st.textContent='No parcels with folios in the current filter.';return;}
+  if(st)st.textContent='Preparing letters…';
+  enrichOwners(folios,function(cache){
+    window._ownerSnap=cache;
+    var tpl=_escHtml(letterTpl());
+    var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    var seen={},out=[];
+    rows.forEach(function(r){
+      var f=_folioOf({pa_url:r[16]});var oc=f&&cache[f];if(!oc||!oc.o||!oc.ma)return;
+      var key=oc.o+'|'+oc.ma;if(seen[key])return;seen[key]=1;
+      var body=tpl
+        .replace(/{{owner}}/g,_escHtml(oc.o))
+        .replace(/{{owner_first}}/g,_escHtml(_firstName(oc.o)))
+        .replace(/{{property_address}}/g,_escHtml(r[1]))
+        .replace(/{{mailing_address}}/g,_escHtml(oc.ma+', '+oc.mc+', '+oc.ms+' '+oc.mz))
+        .replace(/{{neighborhood}}/g,_escHtml(r[2]&&r[2]!=='County-flagged'?r[2]:'your neighborhood'))
+        .replace(/{{date}}/g,today)
+        .replace(/{{[^}]+}}/g,'');
+      out.push('<div style="page-break-after:always;font:13.5px/1.65 Georgia,serif;color:#111;padding:28px 8px;">'
+        +'<div style="margin-bottom:24px;">'+today+'</div>'
+        +'<div style="margin-bottom:24px;">'+_escHtml(oc.o)+'<br>'+_escHtml(oc.ma)+'<br>'+_escHtml(oc.mc+', '+oc.ms+' '+oc.mz)+'</div>'
+        +'<div style="white-space:pre-wrap;">'+body+'</div>'
+        +'</div>');
+    });
+    if(!out.length){if(st)st.textContent='No mailable owners in this filter — widen it and retry.';return;}
+    document.getElementById('printBody').innerHTML=out.join('');
+    document.getElementById('printModal').classList.add('open');
+    if(st)st.textContent=out.length+' letters ready — Print / Save PDF, one per page.';
+  },function(p,t){if(st)st.textContent='Pulling owners… batch '+p+'/'+t;});
+}
 // Skip-trace helper links: free people search for individuals, SunBiz registered-agent lookup for entities.
 function _isEntityOwner(o){return /TRUST|TRS\b|LLC|EST\b|ESTATE|INC\b|CORP\b|LP\b|LTD|COMPANY|PROPERTIES|INVEST|HOLDINGS/i.test(o||'');}
 function sunbizUrlFor(owner){return 'https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResults?inquiryType=EntityName&searchTerm='+encodeURIComponent(owner);}
@@ -2522,10 +2638,12 @@ function _violBtnReset(){var b=document.getElementById('violRefreshBtn');if(b){b
 function _badAddr(a){a=(''+a).toUpperCase();return !a.trim()||a.indexOf('NO ADDRESS')>=0||a.indexOf('EXEMPT')>=0||a.indexOf('NOT AVAIL')>=0;}
 function _cleanTxt(s){return (''+(s||'')).replace(/\s+/g,' ').trim();}
 // Page through an ArcGIS query (2,000 rows/request) until done or maxPages, so caps never silently truncate.
+// POSTs the params instead of GET: 40 farmed ZIPs push the where clause past the server's ~2KB URL limit (404s).
 function _arcFetchAll(base,maxPages){
+  var qi=base.indexOf('?'), url=base.slice(0,qi), params=base.slice(qi+1);
   var feats=[];
   function page(off,n){
-    return fetch(base+'&resultOffset='+off+'&resultRecordCount=2000&f=json',{mode:'cors'})
+    return fetch(url,{method:'POST',mode:'cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:params+'&resultOffset='+off+'&resultRecordCount=2000&f=json'})
       .then(function(r){return r.json();})
       .then(function(j){
         if(j&&j.error)throw new Error(j.error.message||'service error');
@@ -2955,6 +3073,10 @@ function updatePipelineCounts(){
   var pc=document.getElementById('pipelineCount'); if(pc)pc.textContent=total;
   PIPE_STAGES.forEach(function(s){ var el=document.getElementById('cnt-'+s.key); if(el)el.textContent=counts[s.key]; });
   var strip=document.getElementById('pipelineStrip');
+  if(strip&&total===0){
+    strip.innerHTML='<div style="background:var(--bg-card);border:1px dashed var(--border);border-radius:10px;padding:18px;margin-bottom:14px;font-size:13px;color:var(--muted);">Your pipeline is empty. Click <strong style="color:var(--ivory);">+ Add to Pipeline</strong> on any Top 50 deal card, or the <strong style="color:var(--ivory);">+</strong> button on any All Properties row &mdash; deals land here in the Lead column with follow-up dates and a call log.</div>';
+    return;
+  }
   if(strip){
     var kpis='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">'+
       psKpi('Active Deals',total)+
