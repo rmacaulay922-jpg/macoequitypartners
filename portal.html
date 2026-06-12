@@ -312,12 +312,17 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-size:11px;color:rgba(255,255,255,.3);text-align:center;letter-spacing:.5px}
 
 /* PRINT MEDIA */
+@page{margin:0} /* zero page margin = the browser has nowhere to print its URL/date header & footer */
 @media print{
   body>*:not(#printModal){display:none!important}
-  #printModal{display:flex!important;position:static;background:none}
-  #printContent{max-height:none;box-shadow:none;border-radius:0}
+  #printModal{display:flex!important;position:static;background:none;padding:0}
+  #printContent{max-height:none;box-shadow:none;border-radius:0;padding:14mm} /* re-add margins lost to @page 0 */
   .print-actions{display:none!important}
   #closePrintBtn{display:none!important}
+  .no-print{display:none!important}
+  /* Letters print as clean letterhead pages: no portal chrome, no disclaimer */
+  #printModal.letters-mode .print-hdr,#printModal.letters-mode .print-disclaimer{display:none!important}
+  #printModal.letters-mode #printContent{padding:0}
 }
 
 /* MISC */
@@ -621,7 +626,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.3</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.4</div>
     </div>
   </header>
 
@@ -946,7 +951,6 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       </div>
     </div>
   </div>
-</div>
 <div class="tab-content" id="tab-pipeline">
   <div class="section-title">Deal Pipeline <span class="badge" id="pipelineCount">0</span></div>
   <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Track your deals from lead to close. Drag cards between columns. Notes auto-save.</p>
@@ -2489,7 +2493,9 @@ function openDriveList(){
   });
   html+='</div>';
   document.getElementById('printBody').innerHTML=html;
-  document.getElementById('printModal').classList.add('open');
+  var pm=document.getElementById('printModal');
+  pm.classList.remove('letters-mode');
+  pm.classList.add('open');
 }
 // CRM state backup/restore — statuses, pipeline, notes, follow-ups, comp exclusions live ONLY in this
 // browser's localStorage; a cache clear or new laptop loses everything without these.
@@ -2644,15 +2650,21 @@ function printSelectedLetters(){
         .replace(/{{neighborhood}}/g,_escHtml(p.nb&&p.nb!=='County-flagged'?p.nb:'your neighborhood'))
         .replace(/{{date}}/g,today)
         .replace(/{{[^}]+}}/g,'');
-      out.push('<div style="page-break-after:always;font:13.5px/1.65 Georgia,serif;color:#111;padding:28px 8px;">'
-        +'<div style="margin-bottom:24px;">'+today+'</div>'
-        +'<div style="margin-bottom:24px;">'+_escHtml(oc.o)+'<br>'+_escHtml(oc.ma)+'<br>'+_escHtml(oc.mc+', '+oc.ms+' '+oc.mz)+'</div>'
+      out.push('<div style="page-break-after:always;font:13.5px/1.7 Georgia,serif;color:#111;padding:58pt 64pt;box-sizing:border-box;">'
+        +'<div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1f3a2e;padding-bottom:14px;margin-bottom:26px;">'
+          +'<img src="/logo.jpg" alt="Maco Equity Partners" style="height:52px;width:auto;">'
+          +'<div><div style="font-size:17px;font-weight:700;letter-spacing:.06em;color:#1f3a2e;">MACO EQUITY PARTNERS</div>'
+          +'<div style="font-size:10.5px;color:#666;letter-spacing:.04em;">Miami, Florida &middot; (305) 710-0733 &middot; rmac@macoequitypartners.com</div></div>'
+        +'</div>'
+        +'<div style="margin-bottom:22px;">'+today+'</div>'
+        +'<div style="margin-bottom:22px;">'+_escHtml(oc.o)+'<br>'+_escHtml(oc.ma)+'<br>'+_escHtml(oc.mc+', '+oc.ms+' '+oc.mz)+'</div>'
         +'<div style="white-space:pre-wrap;">'+body+'</div>'
         +'</div>');
     });
     if(!out.length){if(st)st.textContent='No mailing addresses found for the selected properties.';return;}
+    document.getElementById('printModal').classList.add('letters-mode'); // strips portal chrome/disclaimer at print time
     document.getElementById('printBody').innerHTML=
-      '<div style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?' ('+skipped+' skipped — no county mailing address)':'')+' &middot; one per page &middot; hit Print / Save PDF below.</div>'
+      '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?' ('+skipped+' skipped — no county mailing address)':'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
       +out.join('');
   },function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
 }
@@ -2929,11 +2941,15 @@ function openPrint(idxStr){
       '<a href="'+d.pa_url+'" target="_blank" style="color:var(--gold);">Property Appraiser Record &#8599;</a>'+
       '<a href="'+d.maps_url+'" target="_blank" style="color:var(--gold);">Google Maps &#8599;</a>'+
     '</div></div>';
-  document.getElementById('printModal').classList.add('open');
+  var _pm=document.getElementById('printModal');
+  _pm.classList.remove('letters-mode');
+  _pm.classList.add('open');
 }
 
 function closePrint(){
-  document.getElementById('printModal').classList.remove('open');
+  var pm=document.getElementById('printModal');
+  pm.classList.remove('open');
+  pm.classList.remove('letters-mode'); // deal sheets / drive lists keep the portal letterhead
 }
 
 
