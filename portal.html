@@ -327,17 +327,17 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
 /* ── CRM PIPELINE ── */
 .pipeline-board{display:flex;gap:14px;overflow-x:auto;padding:0 0 16px;min-height:400px}
-.pipeline-col{flex:0 0 200px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.pipeline-col{flex:0 0 270px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 .pipeline-col-hdr{padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-bottom:1px solid var(--border)}
 .pipeline-col-body{padding:10px;display:flex;flex-direction:column;gap:8px;min-height:200px}
 .pipeline-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;cursor:grab;transition:all .2s;position:relative}
 .pipeline-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(184,153,104,.15);transform:translateY(-1px)}
 .pipeline-card.dragging{opacity:.5;cursor:grabbing}
-.pipeline-card .pc-addr{font-size:12px;font-weight:700;color:var(--ivory);line-height:1.3;margin-bottom:4px}
-.pipeline-card .pc-nb{font-size:10px;color:var(--muted);margin-bottom:6px}
+.pipeline-card .pc-addr{font-size:14.5px;font-weight:700;color:var(--ivory);line-height:1.3;margin-bottom:4px;padding-right:38px}
+.pipeline-card .pc-nb{font-size:12px;color:var(--muted);margin-bottom:8px}
 .pipeline-card .pc-arv{font-size:12px;font-weight:700;color:var(--green)}
 .pipeline-card .pc-profit{font-size:10px;color:var(--muted)}
-.pipeline-card .pc-score{position:absolute;top:8px;right:8px;background:var(--gold);color:#000;font-size:9px;font-weight:800;padding:2px 5px;border-radius:4px}
+.pipeline-card .pc-score{position:absolute;top:8px;right:8px;background:var(--gold);color:#000;font-size:12px;font-weight:800;padding:3px 7px;border-radius:4px}
 .pipeline-card .pc-notes{font-size:10px;color:var(--muted);margin-top:6px;border-top:1px solid var(--border);padding-top:6px;font-style:italic}
 .pipeline-card .pc-note-input{width:100%;font-size:10px;border:1px solid var(--border);border-radius:4px;padding:3px 6px;margin-top:4px;font-family:inherit;resize:none;color:var(--ivory);background:#fafafa}
 .col-count{display:inline-flex;align-items:center;justify-content:center;background:var(--gold);color:#000;font-size:10px;font-weight:800;width:18px;height:18px;border-radius:50%;margin-left:6px}
@@ -621,7 +621,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.2</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.3</div>
     </div>
   </header>
 
@@ -734,7 +734,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="exportTableCsv()">&#8681; Export CSV</button>
           <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="buildMailList()" title="Pulls owner names + mailing addresses from the county roll for the current filter, then downloads a direct-mail CSV">&#9993; Mail List CSV</button>
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="openDriveList()" title="Printable driving-for-dollars checklist of the current filter, grouped by neighborhood">&#9112; Drive List</button>
-          <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="printLetters()" title="Mail-merge a letter to every owner in the current filter (uses your saved template), one per page, print or save as PDF">&#128396; Print Letters</button>
+          <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="openLetterPicker('filter')" title="Pick exactly who gets a letter from the current filter, then mail-merge — one per page, print or save as PDF">&#128396; Print Letters</button>
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="openLetterEditor()" title="Edit the letter template — add your phone number once">Edit Letter</button>
           <span id="mailListStatus" style="font-size:11px;color:var(--muted);"></span>
           <span class="tbl-count" id="tableCount"></span>
@@ -947,6 +947,27 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     </div>
   </div>
 </div>
+<div class="tab-content" id="tab-pipeline">
+  <div class="section-title">Deal Pipeline <span class="badge" id="pipelineCount">0</span></div>
+  <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Track your deals from lead to close. Drag cards between columns. Notes auto-save.</p>
+  
+  <!-- Pipeline summary strip -->
+  <div class="pipeline-strip" id="pipelineStrip"></div>
+
+  <!-- Add all top deals button -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    <button class="add-all-btn" onclick="addAllToPipeline()" style="max-width:280px;margin:0;">
+      + Add All Top 10 Deals to Pipeline
+    </button>
+    <button class="btn btn-gold" type="button" onclick="openLetterPicker('pipeline')" style="font-size:12px;" title="Send letters to your pipeline deals — pick who gets one, then print">&#128396; Letters to Pipeline</button>
+    <button class="btn btn-dark" type="button" onclick="exportPipelineCsv()" style="font-size:12px;">&#8681; Export Pipeline CSV</button>
+    <button class="btn btn-dark" type="button" onclick="exportCrmJson()" style="font-size:12px;" title="Download a JSON backup of all statuses, pipeline cards, notes, follow-ups and comp exclusions">&#128190; Backup CRM</button>
+    <label class="btn btn-dark" style="font-size:12px;cursor:pointer;" title="Restore a previously downloaded backup">&#8635; Restore CRM<input type="file" accept=".json,application/json" onchange="importCrmJson(this)" style="display:none;"></label>
+  </div>
+
+  <!-- Kanban board (columns are rendered by buildPipeline() from PIPE_STAGES) -->
+  <div class="pipeline-board" id="pipelineBoard"></div>
+</div>
   <footer>MACO EQUITY PARTNERS &middot; Deal Intelligence Portal &middot; For authorized use only &middot; Not investment advice &middot; &copy; 2025 Maco Equity Partners LLC</footer>
 </div>
 
@@ -975,26 +996,6 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 
 
 
-<div class="tab-content" id="tab-pipeline">
-  <div class="section-title">Deal Pipeline <span class="badge" id="pipelineCount">0</span></div>
-  <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Track your deals from lead to close. Drag cards between columns. Notes auto-save.</p>
-  
-  <!-- Pipeline summary strip -->
-  <div class="pipeline-strip" id="pipelineStrip"></div>
-
-  <!-- Add all top deals button -->
-  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
-    <button class="add-all-btn" onclick="addAllToPipeline()" style="max-width:280px;margin:0;">
-      + Add All Top 10 Deals to Pipeline
-    </button>
-    <button class="btn btn-dark" type="button" onclick="exportPipelineCsv()" style="font-size:12px;">&#8681; Export Pipeline CSV</button>
-    <button class="btn btn-dark" type="button" onclick="exportCrmJson()" style="font-size:12px;" title="Download a JSON backup of all statuses, pipeline cards, notes, follow-ups and comp exclusions">&#128190; Backup CRM</button>
-    <label class="btn btn-dark" style="font-size:12px;cursor:pointer;" title="Restore a previously downloaded backup">&#8635; Restore CRM<input type="file" accept=".json,application/json" onchange="importCrmJson(this)" style="display:none;"></label>
-  </div>
-
-  <!-- Kanban board (columns are rendered by buildPipeline() from PIPE_STAGES) -->
-  <div class="pipeline-board" id="pipelineBoard"></div>
-</div>
 
 <script>
 var TOP10=[{"rank":1,"address":"9201 SW 93 AVE","neighborhood":"SW Miami / Palmetto Bay","owner":"DOROTHY C HOLMES TRUSTEE","owner_state":"NC","owner_city":"ASHEVILLE","owner_zip":"28804","score":128,"flags":"30y+ Hold | Built 1956 (70y) | OOS Trust (NC) | No Homestead | SOH Frozen 26%","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1956,"sqft":2129,"beds_baths":"4bd/2ba","market_value":1345593,"assessed_value":355678,"has_homestead":false,"last_sale_date":"1994-10-01","last_sale_price":0,"held_years":32,"arv":894180,"repair":138385,"mao":487541,"profit":196720,"folio":"3050040060060","folio_fmt":"30-5004-006-0060","maps_url":"https://www.google.com/maps/search/?api=1&query=9201+SW+93+AVE+FL+33176","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3050040060060","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3050040060060","sunbiz_url":"","contact_confirmed":"Dorothy C Holmes Trustee, Asheville NC 28804","contact_phone":"Skip trace needed","contact_note":"NC trust with 32-year hold, no homestead. Estate or inherited situation. Beneficiaries often motivated to liquidate.","lat":25.661,"lng":-80.381,"pano":"btuNzNcnu1Dr7d4P1asnVA","mail_city":"ASHEVILLE","mail_state":"NC","mail_zip":"28804","outreach_type":"Skip Trace + Certified Letter","priority_action":"Skip trace trust beneficiaries \u2014 NC estate, likely flexible on price","rehab_condition":"Heavy Rehab","pct_good":-1.0,"rent_est":3200,"grm":17.0,"comp_ppsf":420,"comp_zip":"33176","zillow_url":"https://www.zillow.com/homes/9201-SW-93-Ave-Miami-FL_rb/"},{"rank":2,"address":"10044 SW 131 TER","neighborhood":"SW Miami / Palmetto Bay","owner":"MARTHA TURSO","owner_state":"NC","owner_city":"CHARLOTTE","owner_zip":"28277","score":124,"flags":"49y Hold | Built 1976 (50y) | OOS (NC) | No Homestead | SOH Frozen 32%","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1976,"sqft":2383,"beds_baths":"4bd/2ba","market_value":866336,"assessed_value":275003,"has_homestead":false,"last_sale_date":"1977-04-01","last_sale_price":95400,"held_years":49,"arv":1000860,"repair":119150,"mao":581452,"profit":220189,"folio":"3050170310180","folio_fmt":"30-5017-031-0180","maps_url":"https://www.google.com/maps/search/?api=1&query=10044+SW+131+TER+FL+33176","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3050170310180","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3050170310180","sunbiz_url":"","contact_confirmed":"Martha Turso, Charlotte NC 28277","contact_phone":"Skip trace needed","contact_note":"49-year hold, bought for $95K in 1977. Worth $1M+ today. Classic motivated OOS seller.","lat":25.645,"lng":-80.395,"pano":"-_f9nziB783y-XTfrdLrfA","mail_city":"CHARLOTTE","mail_state":"NC","mail_zip":"28277","outreach_type":"Skip Trace + Handwritten Letter","priority_action":"Handwritten yellow letter to NC address + phone skip trace","rehab_condition":"Moderate Rehab","pct_good":-1.0,"rent_est":3500,"grm":18.0,"comp_ppsf":420,"comp_zip":"33176","zillow_url":"https://www.zillow.com/homes/10044-SW-131-Ter-Miami-FL_rb/"},{"rank":3,"address":"7315 SW 140 CT","neighborhood":"Kendale Lakes","owner":"FENDALYN INC","owner_state":"PR","owner_city":"SAN JUAN","owner_zip":"00926","score":117,"flags":"50y Hold | Built 1972 (54y) | OOS Corp (Puerto Rico) | No Homestead","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1972,"sqft":2071,"beds_baths":"4bd/2ba","market_value":700000,"assessed_value":103550,"has_homestead":false,"last_sale_date":"1976-01-01","last_sale_price":53500,"held_years":50,"arv":724850,"repair":103550,"mao":403845,"profit":159467,"folio":"3049340041190","folio_fmt":"30-4934-004-1190","maps_url":"https://www.google.com/maps/search/?api=1&query=7315+SW+140+CT+FL+33183","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3049340041190","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3049340041190","sunbiz_url":"https://search.sunbiz.org/Inquiry/CorporationSearch/SearchResults?inquiryType=EntityName&inquiryDirectionType=ForwardsByName&searchNameOrder=&masterDataFile=All&entityName=FENDALYN+INC&listSize=20","contact_confirmed":"Fendalyn Inc (PR Corp), San Juan PR","contact_phone":"FL SOS lookup","contact_note":"50-year hold by Puerto Rico corporation. No homestead \u2014 pure investment asset. SunBiz lookup for principal.","lat":25.64,"lng":-80.413,"pano":"qPwHnJiaYw-tn7e9-JPg_w","mail_city":"SAN JUAN","mail_state":"PR","mail_zip":"00926","outreach_type":"FL SOS + Find Principal","priority_action":"SunBiz lookup for Fendalyn Inc \u2014 find registered agent in PR","rehab_condition":"Moderate Rehab","pct_good":-1.0,"rent_est":2800,"grm":15.0,"comp_ppsf":350,"comp_zip":"33183","zillow_url":"https://www.zillow.com/homes/7315-SW-140-Ct-Miami-FL_rb/"},{"rank":4,"address":"9930 SW 73 ST","neighborhood":"Kendall","owner":"RAUL E ALONSO &W MARILYN","owner_state":"AL","owner_city":"DAPHNE","owner_zip":"36526","score":115,"flags":"35y Hold | Built 1960 (66y) | OOS (Alabama) | No Homestead | SOH Frozen","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1960,"sqft":2170,"beds_baths":"4bd/2ba","market_value":1100000,"assessed_value":400000,"has_homestead":false,"last_sale_date":"1991-01-01","last_sale_price":0,"held_years":35,"arv":1041600,"repair":141050,"mao":588070,"profit":229152,"folio":"3040320062950","folio_fmt":"30-4032-006-2950","maps_url":"https://www.google.com/maps/search/?api=1&query=9930+SW+73+ST+FL+33173","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3040320062950","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3040320062950","sunbiz_url":"","contact_confirmed":"Raul E and Marilyn Alonso, Daphne AL 36526","contact_phone":"Skip trace needed","contact_note":"Alabama absentee owners, 35-year hold. 66-year old home, aging owners ready to divest FL rental.","lat":25.684,"lng":-80.363,"pano":"h0WqVDo-IOhAeJFXUaOORw","mail_city":"DAPHNE","mail_state":"AL","mail_zip":"36526","outreach_type":"Skip Trace + Direct Mail","priority_action":"Handwritten letter to AL address + follow-up cold call","rehab_condition":"Heavy Rehab","pct_good":-1.0,"rent_est":3400,"grm":18.0,"comp_ppsf":480,"comp_zip":"33173","zillow_url":"https://www.zillow.com/homes/9930-SW-73-St-Miami-FL_rb/"},{"rank":5,"address":"12685 SW 82 AVE","neighborhood":"Pinecrest","owner":"THOMAS J HESS &W JUDITH A","owner_state":"MN","owner_city":"MINNETONKA","owner_zip":"55345","score":115,"flags":"39y Hold | Built 1955 (71y) | OOS (Minnesota) | No Homestead | Pinecrest Location","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1955,"sqft":2240,"beds_baths":"3bd/2ba","market_value":1500000,"assessed_value":450000,"has_homestead":false,"last_sale_date":"1987-01-01","last_sale_price":0,"held_years":39,"arv":1534400,"repair":145600,"mao":928480,"profit":337568,"folio":"2050150010030","folio_fmt":"20-5015-001-0030","maps_url":"https://www.google.com/maps/search/?api=1&query=12685+SW+82+AVE+FL+33156","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=2050150010030","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=2050150010030","sunbiz_url":"","contact_confirmed":"Thomas J and Judith A Hess, Minnetonka MN 55345","contact_phone":"Skip trace needed","contact_note":"Pinecrest luxury home, 71-year old property held 39 years by Minnesota owners. Highest profit potential in dataset at $337K net.","lat":25.659,"lng":-80.329,"pano":"6e930zfdkY9urM0MkVQXkw","mail_city":"MINNETONKA","mail_state":"MN","mail_zip":"55345","outreach_type":"Skip Trace + Certified Letter","priority_action":"Certified letter to MN \u2014 Pinecrest deal, lead with cash and quick close","rehab_condition":"Heavy Rehab","pct_good":-1.0,"rent_est":5500,"grm":18.0,"comp_ppsf":685,"comp_zip":"33156","zillow_url":"https://www.zillow.com/homes/12685-SW-82-Ave-Miami-FL_rb/"},{"rank":6,"address":"15041 FILLMORE ST","neighborhood":"SW Miami / Palmetto Bay","owner":"LUCILLE SNEED","owner_state":"GA","owner_city":"LITHIA SPRINGS","owner_zip":"30122","score":112,"flags":"22y Hold | Built 1959 (67y) | OOS (Georgia) | No Homestead | SOH Frozen 26%","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1959,"sqft":1442,"beds_baths":"3bd/2ba","market_value":680000,"assessed_value":180000,"has_homestead":false,"last_sale_date":"2004-01-01","last_sale_price":0,"held_years":22,"arv":605640,"repair":93730,"mao":330218,"profit":133241,"folio":"3050190050160","folio_fmt":"30-5019-005-0160","maps_url":"https://www.google.com/maps/search/?api=1&query=15041+FILLMORE+ST+FL+33176","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3050190050160","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3050190050160","sunbiz_url":"","contact_confirmed":"Lucille Sneed, Lithia Springs GA 30122","contact_phone":"Skip trace needed","contact_note":"Georgia absentee owner, 22-year hold on 67-year old home. SOH shows deep value freeze \u2014 likely rental or inherited asset.","lat":25.635,"lng":-80.378,"pano":"nSCbT3qMjgVwCSuM8nbecg","mail_city":"LITHIA SPRINGS","mail_state":"GA","mail_zip":"30122","outreach_type":"Skip Trace + Direct Mail","priority_action":"Handwritten letter to GA address \u2014 absentee rental owner, pitch quick cash close","rehab_condition":"Heavy Rehab","pct_good":-1.0,"rent_est":2800,"grm":15.0,"comp_ppsf":420,"comp_zip":"33176","zillow_url":"https://www.zillow.com/homes/15041-Fillmore-St-Miami-FL_rb/"},{"rank":7,"address":"3941 SW 122 AVE","neighborhood":"Westchester","owner":"MIGUEL ANGEL RUFINO","owner_state":"FL","owner_city":"MIAMI","owner_zip":"33182","score":110,"flags":"37y Hold | Built 1962 (64y) | No Homestead | Absentee FL Owner | SOH Frozen 34%","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1962,"sqft":1858,"beds_baths":"4bd/2ba","market_value":900000,"assessed_value":310000,"has_homestead":false,"last_sale_date":"1989-01-01","last_sale_price":0,"held_years":37,"arv":836100,"repair":120770,"mao":464500,"profit":183942,"folio":"3049130030350","folio_fmt":"30-4913-003-0350","maps_url":"https://www.google.com/maps/search/?api=1&query=3941+SW+122+AVE+FL+33175","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3049130030350","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3049130030350","sunbiz_url":"","contact_confirmed":"Miguel Angel Rufino, Miami FL 33182","contact_phone":"Skip trace needed","contact_note":"FL absentee owner, 37-year hold, no homestead. Assessed at 34% of market value \u2014 long-term rental likely.","lat":25.748,"lng":-80.399,"pano":"x2gLVE7twXIJPNVpHEBFPw","mail_city":"MIAMI","mail_state":"FL","mail_zip":"33182","outreach_type":"Direct Mail + Cold Call","priority_action":"Direct mail + door knock \u2014 FL absentee, confirm rental status","rehab_condition":"Heavy Rehab","pct_good":-1.0,"rent_est":3000,"grm":17.0,"comp_ppsf":450,"comp_zip":"33175","zillow_url":"https://www.zillow.com/homes/3941-SW-122-Ave-Miami-FL_rb/"},{"rank":8,"address":"10769 SW 82 CT","neighborhood":"Pinecrest","owner":"ANTHONY T HADOS &W SILVIA L","owner_state":"FL","owner_city":"MIAMI","owner_zip":"33176","score":110,"flags":"32y Hold | Built 1961 (65y) | No Homestead | Absentee | SOH Frozen 31% | Pinecrest","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1961,"sqft":2056,"beds_baths":"3bd/2ba","market_value":1300000,"assessed_value":420000,"has_homestead":false,"last_sale_date":"1994-01-01","last_sale_price":0,"held_years":32,"arv":1408360,"repair":133640,"mao":852212,"profit":309839,"folio":"3050100200050","folio_fmt":"30-5010-020-0050","maps_url":"https://www.google.com/maps/search/?api=1&query=10769+SW+82+CT+FL+33156","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3050100200050","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3050100200050","sunbiz_url":"","contact_confirmed":"Anthony T and Silvia L Hados, Miami FL 33176","contact_phone":"Skip trace needed","contact_note":"Pinecrest absentee, 32-year hold, no homestead. 65-year old home assessed at 31% of market. High-value rehab at $685/sqft comps.","lat":25.663,"lng":-80.335,"pano":"CV__ga7R5ZfMrtTh5sp9gQ","mail_city":"MIAMI","mail_state":"FL","mail_zip":"33176","outreach_type":"Direct Mail + Cold Call","priority_action":"Cold call + certified mail \u2014 Pinecrest deal, speed and certainty of close","rehab_condition":"Heavy Rehab","pct_good":-1.0,"rent_est":5000,"grm":18.0,"comp_ppsf":685,"comp_zip":"33156","zillow_url":"https://www.zillow.com/homes/10769-SW-82-Ct-Miami-FL_rb/"},{"rank":9,"address":"11550 SW 81 TER","neighborhood":"Kendall","owner":"THERESA BRUNO","owner_state":"DC","owner_city":"WASHINGTON","owner_zip":"20010","score":109,"flags":"40y Hold | Built 1975 (51y) | OOS (DC) | No Homestead | Absentee","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1975,"sqft":1584,"beds_baths":"3bd/2ba","market_value":850000,"assessed_value":200000,"has_homestead":false,"last_sale_date":"1986-01-01","last_sale_price":0,"held_years":40,"arv":760320,"repair":79200,"mao":453024,"profit":167270,"folio":"3040310011620","folio_fmt":"30-4031-001-1620","maps_url":"https://www.google.com/maps/search/?api=1&query=11550+SW+81+TER+FL+33173","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3040310011620","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3040310011620","sunbiz_url":"","contact_confirmed":"Theresa Bruno, Washington DC 20010","contact_phone":"Skip trace needed","contact_note":"DC absentee, 40-year hold, no homestead. Lower repair cost (1975 build). Classic OOS inherited rental.","lat":25.677,"lng":-80.349,"pano":"PZ_eT8Ek_8xJ8G06RA67nA","mail_city":"WASHINGTON","mail_state":"DC","mail_zip":"20010","outreach_type":"Skip Trace + Direct Mail","priority_action":"Skip trace to DC \u2014 40-year hold OOS owner, top motivated candidate","rehab_condition":"Moderate Rehab","pct_good":-1.0,"rent_est":2900,"grm":17.0,"comp_ppsf":480,"comp_zip":"33173","zillow_url":"https://www.zillow.com/homes/11550-SW-81-Ter-Miami-FL_rb/"},{"rank":10,"address":"13115 SW 112 TER","neighborhood":"Kendall SE","owner":"JOSE A LORA &W DOMINGA A","owner_state":"NJ","owner_city":"UNION CITY","owner_zip":"07087","score":109,"flags":"30y+ Hold | Built 1978 (48y) | OOS (New Jersey) | No Homestead | Absentee","violations":[],"violation_count":0,"open_permit_count":0,"open_permit_flags":[],"year_built":1978,"sqft":2203,"beds_baths":"3bd/2ba","market_value":900000,"assessed_value":280000,"has_homestead":false,"last_sale_date":"1994-01-01","last_sale_price":0,"held_years":32,"arv":782065,"repair":110150,"mao":437396,"profit":172054,"folio":"3059110120050","folio_fmt":"30-5911-012-0050","maps_url":"https://www.google.com/maps/search/?api=1&query=13115+SW+112+TER+FL+33186","pa_url":"https://apps.miamidadepa.gov/PropertySearch/#/?folio=3059110120050","tax_url":"https://www.miamidade.gov/Apps/RER/TaxCollector/PropertySearch/Default.aspx?folio=3059110120050","sunbiz_url":"","contact_confirmed":"Jose A and Dominga A Lora, Union City NJ 07087","contact_phone":"Skip trace needed","contact_note":"NJ absentee, 30+ year hold. No homestead \u2014 rental or inherited asset. Older NJ owners may be ready to divest FL property.","lat":25.639,"lng":-80.39,"pano":"GP2T5qxOPybppWs7vCg9Ig","mail_city":"UNION CITY","mail_state":"NJ","mail_zip":"07087","outreach_type":"Skip Trace + Direct Mail","priority_action":"Direct mail to NJ address + cold call \u2014 cash close on rental/inherited property","rehab_condition":"Moderate Rehab","pct_good":-1.0,"rent_est":2800,"grm":16.0,"comp_ppsf":355,"comp_zip":"33186","zillow_url":"https://www.zillow.com/homes/13115-SW-112-Ter-Miami-FL_rb/"}];
@@ -1379,21 +1380,36 @@ function mxBars(title,items,fmt,key){
   return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--bronze);margin-bottom:14px;">'+title+'</div>'+
     shown.map(function(i){var pct=Math.max(3,Math.round(i.val/max*100));return '<div style="margin-bottom:11px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:600;color:var(--ivory-soft);">'+i.label+'</span><span style="color:var(--bronze);font-weight:700;">'+fmt(i.val)+'</span></div><div style="height:7px;background:var(--bg-soft);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--gold),#b8962e);border-radius:4px;"></div></div></div>';}).join('')+toggle+'</div>';
 }
-// 12-month $/sqft trend sparkline from whatever comp set is active (dependency-free inline SVG).
+// 12-month $/sqft trend with every month's median spelled out — a chart you can read numbers off,
+// not just a shape (dependency-free inline SVG: dots, $ value at each point, month labels, sales counts).
 function mxTrendCard(sales){
   var by={}; sales.forEach(function(s){var m=(''+(s.date||'')).slice(0,7);if(m&&s.ppsf)( by[m]=by[m]||[] ).push(s.ppsf);});
   var months=Object.keys(by).sort();
   if(months.length<4)return '';
-  var pts=months.map(function(m){return {m:m,v:_med(by[m])};});
+  var MO=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var pts=months.map(function(m){return {m:m,lbl:MO[(parseInt(m.slice(5,7),10)||1)-1],v:_med(by[m]),n:by[m].length};});
   var vals=pts.map(function(p){return p.v;});
   var mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
-  var W=600,H=110,PAD=8;
-  var poly=pts.map(function(p,i){var x=PAD+i/(pts.length-1)*(W-2*PAD);var y=(H-PAD)-((p.v-mn)/((mx-mn)||1))*(H-2*PAD);return Math.round(x)+','+Math.round(y);}).join(' ');
+  var W=760,H=180,L=14,R=14,T=26,B=40;
+  function X(i){return L+i/(pts.length-1)*(W-L-R);}
+  function Y(v){return (H-B)-((v-mn)/((mx-mn)||1))*(H-T-B);}
+  var poly=pts.map(function(p,i){return Math.round(X(i))+','+Math.round(Y(p.v));}).join(' ');
+  var marks=pts.map(function(p,i){
+    var x=Math.round(X(i)),y=Math.round(Y(p.v));
+    return '<circle cx="'+x+'" cy="'+y+'" r="4" fill="var(--gold)" stroke="#0d0c0a" stroke-width="1.5"><title>'+p.m+': $'+p.v+'/sqft &middot; '+p.n+' sales</title></circle>'
+      +'<text x="'+x+'" y="'+(y-9)+'" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ivory)">$'+p.v+'</text>'
+      +'<text x="'+x+'" y="'+(H-22)+'" text-anchor="middle" font-size="10.5" fill="var(--muted)">'+p.lbl+'</text>'
+      +'<text x="'+x+'" y="'+(H-9)+'" text-anchor="middle" font-size="9.5" fill="var(--muted)" opacity=".75">'+p.n+'</text>';
+  }).join('');
   var chg=Math.round((pts[pts.length-1].v-pts[0].v)/pts[0].v*100);
   var cCol=chg>=0?'var(--green)':'var(--red)';
-  return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--bronze);margin-bottom:10px;">$/sqft Trend &middot; trailing 12 months</div>'
-    +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;"><polyline points="'+poly+'" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>'
-    +'<div style="display:flex;justify-content:space-between;font-size:12px;margin-top:8px;"><span style="color:var(--muted);">'+pts[0].m+' &middot; $'+pts[0].v+'/sf</span><span style="font-weight:700;color:'+cCol+';">'+(chg>0?'+':'')+chg+'%</span><span style="color:var(--muted);">'+pts[pts.length-1].m+' &middot; $'+pts[pts.length-1].v+'/sf</span></div></div>';
+  return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:18px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--bronze);">Median $/sqft by Month &middot; trailing 12 mo</span><span style="font-size:13px;font-weight:800;color:'+cCol+';">'+(chg>0?'+':'')+chg+'% over the period</span></div>'
+    +'<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto;display:block;">'
+    +'<line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="var(--border)" stroke-width="1"/>'
+    +'<polyline points="'+poly+'" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +marks+'</svg>'
+    +'<div style="font-size:10.5px;color:var(--muted);margin-top:6px;">Dollar figure = that month\'s median closed $/sqft &middot; small number = closed sales that month. Follows the Market dropdown above.</div></div>';
 }
 function buildOverviewMarket(market){
   var el=document.getElementById('overviewMarket'); if(!el)return;
@@ -2523,16 +2539,20 @@ function maxOfferRow(d){
     +'<span style="color:var(--muted);">Max offer to clear <a href="javascript:void(0)" onclick="setTargetProfit()" style="color:var(--bronze);text-decoration:underline dotted;" title="Click to change your target profit">'+fmtK(targetProfit())+' net</a></span>'
     +'<span style="font-weight:800;color:'+(mo?'var(--ivory)':'var(--red)')+';white-space:nowrap;">'+(mo?fmt$(mo):'No price works')+'</span></div>';
 }
-// ── DIRECT-MAIL LETTERS — mail-merge the filtered list against an editable template ──
-var LETTER_KEY='mep_letter_tpl';
+// ── DIRECT-MAIL LETTERS — pick exactly who gets one, then mail-merge against an editable template ──
+var LETTER_KEY='mep_letter_tpl_v2'; // v2: new default with Ryan's real contact info + cash/quick-close language
 function _escHtml(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function letterTpl(){
   return localStorage.getItem(LETTER_KEY)||(
 'Dear {{owner_first}},\n\n'+
-'My name is Ryan Macaulay with Maco Equity Partners, a local Miami real-estate investment company. I’m reaching out about your property at {{property_address}}.\n\n'+
-'We buy houses in {{neighborhood}} directly from owners — as-is, with no repairs needed, no agent commissions, and a closing date on your timeline. If the property has open code violations or liens, we take care of those too.\n\n'+
-'If you have ever thought about selling, I would welcome a brief conversation. There is no obligation — even if you simply want to know what the property is worth today.\n\n'+
-'Respectfully,\n\nRyan Macaulay\nMaco Equity Partners\n[your phone] · [your email]');
+'My name is Ryan Macaulay. I’m a local Miami investor with Maco Equity Partners, and I’m writing to you personally about your property at {{property_address}}.\n\n'+
+'I buy houses in {{neighborhood}} directly from owners — no agents, no commissions, no repairs, and no need to clean anything out. We pay cash, we can close in as little as two weeks if you need speed, and we’re completely flexible on timing and terms if you don’t. If the property has open code violations or liens, we take care of those at closing.\n\n'+
+'If selling has ever crossed your mind — even if you just want to know what the house would bring today — call or text me at (305) 710-0733. I live and work right here in Miami, and I’m happy to meet you in person at the property or anywhere that’s convenient.\n\n'+
+'Respectfully,\n\n'+
+'Ryan Macaulay\n'+
+'Maco Equity Partners\n'+
+'(305) 710-0733\n'+
+'rmac@macoequitypartners.com');
 }
 function openLetterEditor(){
   document.getElementById('printBody').innerHTML=
@@ -2551,26 +2571,77 @@ function _firstName(owner){
   var f=((owner||'').trim().split(/\s+/)[0])||'Neighbor';
   return f.charAt(0)+f.slice(1).toLowerCase();
 }
-function printLetters(){
-  var st=document.getElementById('mailListStatus');
-  var rows=filteredRows.slice(0,100); // 100 letters per print run
-  var folios=rows.map(function(r){return _folioOf({pa_url:r[16]});}).filter(Boolean);
-  if(!folios.length){if(st)st.textContent='No parcels with folios in the current filter.';return;}
-  if(st)st.textContent='Preparing letters…';
-  enrichOwners(folios,function(cache){
+// Resolve a folio for any address the portal knows (scored rows, top deals, county leads).
+function _folioForAddr(addr){
+  var k=_normAddr(addr);
+  for(var i=0;i<ALL_ROWS.length;i++){if(_normAddr(ALL_ROWS[i][1])===k)return _folioOf({pa_url:ALL_ROWS[i][16]});}
+  for(var j=0;j<TOP10.length;j++){if(_normAddr(TOP10[j].address)===k)return _folioOf(TOP10[j]);}
+  var cl=_countyLeads||[];
+  for(var c=0;c<cl.length;c++){if(_normAddr(cl[c].address)===k)return _folioOf(cl[c]);}
+  return '';
+}
+// Step 1: pick recipients. source 'pipeline' = your pipeline deals; 'filter' = the current All-Properties filter.
+function openLetterPicker(source){
+  var cands=[];
+  if(source==='pipeline'){
+    var data=getPipeline();
+    Object.keys(data).forEach(function(a){cands.push({addr:a,nb:data[a].neighborhood||'',folio:_folioForAddr(a)});});
+    if(!cands.length){toast('Pipeline is empty — add deals first, or use Print Letters on All Properties.');return;}
+  }else{
+    filteredRows.slice(0,200).forEach(function(r){cands.push({addr:r[1],nb:r[2]||'',folio:_folioOf({pa_url:r[16]})});});
+    if(!cands.length){toast('No properties in the current filter.');return;}
+  }
+  var oc=window._ownerSnap||{};
+  var rows=cands.map(function(c,i){
+    var own=c.folio&&oc[c.folio]?oc[c.folio].o:'';
+    return '<label style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid #e5e0d5;cursor:pointer;font-size:13.5px;">'
+      +'<input type="checkbox" class="lp-check" checked data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'" data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
+      +'<span style="flex:1;"><strong>'+_escHtml(c.addr)+'</strong> <span style="color:#888;">&middot; '+_escHtml(c.nb)+(own?' &middot; '+_escHtml(own):'')+'</span></span>'
+      +'</label>';
+  }).join('');
+  document.getElementById('printBody').innerHTML=
+    '<div class="print-section"><h3>Who gets a letter?</h3>'
+    +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">'
+      +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=true});_lpCount()">Select all</button>'
+      +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=false});_lpCount()">Select none</button>'
+      +'<span id="lpCount" style="font-size:13px;font-weight:700;"></span>'
+      +'<span id="letterPickStatus" style="font-size:12px;color:#888;"></span>'
+    +'</div>'
+    +'<div style="max-height:46vh;overflow-y:auto;border:1px solid #e5e0d5;border-radius:8px;padding:4px 10px;">'+rows+'</div>'
+    +'<div style="margin-top:14px;display:flex;gap:10px;">'
+      +'<button class="btn btn-gold" type="button" onclick="printSelectedLetters()">&#128396; Generate letters for selected</button>'
+      +'<button class="btn btn-dark" type="button" onclick="openLetterEditor()">Edit template first</button>'
+    +'</div>'
+    +(source!=='pipeline'&&filteredRows.length>200?'<div style="font-size:11px;color:#888;margin-top:8px;">Showing the first 200 of your filter — tighten the filter to reach the rest.</div>':'')
+    +'</div>';
+  document.getElementById('printModal').classList.add('open');
+  _lpCount();
+}
+function _lpCount(){
+  var n=document.querySelectorAll('.lp-check:checked').length;
+  var el=document.getElementById('lpCount'); if(el)el.textContent=n+' selected';
+}
+// Step 2: pull owners for ONLY the checked addresses, merge, and lay out one letter per page.
+function printSelectedLetters(){
+  var picks=Array.prototype.slice.call(document.querySelectorAll('.lp-check:checked')).map(function(c){return {addr:c.dataset.addr,folio:c.dataset.folio,nb:c.dataset.nb};});
+  if(!picks.length){var s0=document.getElementById('letterPickStatus');if(s0)s0.textContent='Nothing selected.';return;}
+  var st=document.getElementById('letterPickStatus');
+  if(st)st.textContent='Pulling owner records…';
+  enrichOwners(picks.map(function(p){return p.folio;}).filter(Boolean),function(cache){
     window._ownerSnap=cache;
     var tpl=_escHtml(letterTpl());
     var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-    var seen={},out=[];
-    rows.forEach(function(r){
-      var f=_folioOf({pa_url:r[16]});var oc=f&&cache[f];if(!oc||!oc.o||!oc.ma)return;
+    var seen={},out=[],skipped=0;
+    picks.forEach(function(p){
+      var oc=p.folio&&cache[p.folio];
+      if(!oc||!oc.o||!oc.ma){skipped++;return;}
       var key=oc.o+'|'+oc.ma;if(seen[key])return;seen[key]=1;
       var body=tpl
         .replace(/{{owner}}/g,_escHtml(oc.o))
         .replace(/{{owner_first}}/g,_escHtml(_firstName(oc.o)))
-        .replace(/{{property_address}}/g,_escHtml(r[1]))
+        .replace(/{{property_address}}/g,_escHtml(p.addr))
         .replace(/{{mailing_address}}/g,_escHtml(oc.ma+', '+oc.mc+', '+oc.ms+' '+oc.mz))
-        .replace(/{{neighborhood}}/g,_escHtml(r[2]&&r[2]!=='County-flagged'?r[2]:'your neighborhood'))
+        .replace(/{{neighborhood}}/g,_escHtml(p.nb&&p.nb!=='County-flagged'?p.nb:'your neighborhood'))
         .replace(/{{date}}/g,today)
         .replace(/{{[^}]+}}/g,'');
       out.push('<div style="page-break-after:always;font:13.5px/1.65 Georgia,serif;color:#111;padding:28px 8px;">'
@@ -2579,11 +2650,11 @@ function printLetters(){
         +'<div style="white-space:pre-wrap;">'+body+'</div>'
         +'</div>');
     });
-    if(!out.length){if(st)st.textContent='No mailable owners in this filter — widen it and retry.';return;}
-    document.getElementById('printBody').innerHTML=out.join('');
-    document.getElementById('printModal').classList.add('open');
-    if(st)st.textContent=out.length+' letters ready — Print / Save PDF, one per page.';
-  },function(p,t){if(st)st.textContent='Pulling owners… batch '+p+'/'+t;});
+    if(!out.length){if(st)st.textContent='No mailing addresses found for the selected properties.';return;}
+    document.getElementById('printBody').innerHTML=
+      '<div style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?' ('+skipped+' skipped — no county mailing address)':'')+' &middot; one per page &middot; hit Print / Save PDF below.</div>'
+      +out.join('');
+  },function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
 }
 // Skip-trace helper links: free people search for individuals, SunBiz registered-agent lookup for entities.
 function _isEntityOwner(o){return /TRUST|TRS\b|LLC|EST\b|ESTATE|INC\b|CORP\b|LP\b|LTD|COMPANY|PROPERTIES|INVEST|HOLDINGS/i.test(o||'');}
@@ -2927,12 +2998,12 @@ function renderPipelineCard(entry, stage){
   card.draggable=true;
   card.dataset.addr=entry.address;
   function moneyInput(field,val,label){
-    return '<div><label style="display:block;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+label+'</label>'+
+    return '<div><label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+label+'</label>'+
       '<input type="number" value="'+(val||0)+'" onchange="pcUpdate(\''+a+'\',\''+field+'\',this.value)" '+
-      'style="width:100%;font-size:11px;padding:2px 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;"></div>';
+      'style="width:100%;font-size:13.5px;padding:4px 7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;"></div>';
   }
-  var logHtml=(entry.log&&entry.log.length)? '<div style="margin-top:6px;border-top:1px solid var(--border);padding-top:4px;">'+entry.log.slice(0,4).map(function(l){
-    var d=l.t? (''+l.t).slice(0,10):''; return '<div style="font-size:9px;color:var(--muted);line-height:1.4;"><span style="color:var(--gold);">'+d+'</span> '+pcEsc(l.note)+'</div>';
+  var logHtml=(entry.log&&entry.log.length)? '<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">'+entry.log.slice(0,4).map(function(l){
+    var d=l.t? (''+l.t).slice(0,10):''; return '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;"><span style="color:var(--gold);">'+d+'</span> '+pcEsc(l.note)+'</div>';
   }).join('')+'</div>' : '';
   card.innerHTML=
     '<div class="pc-score">'+entry.score+'</div>'+
@@ -2942,17 +3013,17 @@ function renderPipelineCard(entry, stage){
       moneyInput('purchase',entry.purchase,'Purchase')+
       moneyInput('arv',entry.arv,'ARV')+
       moneyInput('repair',entry.repair,'Repair')+
-      '<div><label style="display:block;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Est. Profit</label>'+
-        '<div style="font-size:14px;font-weight:800;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</div></div>'+
+      '<div><label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Est. Profit</label>'+
+        '<div style="font-size:17px;font-weight:800;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</div></div>'+
     '</div>'+
-    '<label style="display:block;font-size:8px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:6px;">Follow-up Date</label>'+
-    '<input type="date" value="'+(entry.followup||'')+'" onchange="pcUpdate(\''+a+'\',\'followup\',this.value)" style="width:100%;font-size:10px;padding:2px 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;">'+
-    '<div style="margin-top:6px;display:flex;gap:4px;">'+
-      '<input id="pclog-'+id+'" type="text" placeholder="Log a call / note…" onkeydown="if(event.key===\'Enter\')pcAddLog(\''+a+'\')" style="flex:1;min-width:0;font-size:10px;padding:3px 5px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);">'+
-      '<button onclick="pcAddLog(\''+a+'\')" style="font-size:11px;padding:2px 8px;background:var(--gold);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:700;">+</button>'+
+    '<label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:8px;">Follow-up Date</label>'+
+    '<input type="date" value="'+(entry.followup||'')+'" onchange="pcUpdate(\''+a+'\',\'followup\',this.value)" style="width:100%;font-size:13px;padding:4px 7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;">'+
+    '<div style="margin-top:8px;display:flex;gap:5px;">'+
+      '<input id="pclog-'+id+'" type="text" placeholder="Log a call / note…" onkeydown="if(event.key===\'Enter\')pcAddLog(\''+a+'\')" style="flex:1;min-width:0;font-size:12.5px;padding:5px 7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);">'+
+      '<button onclick="pcAddLog(\''+a+'\')" style="font-size:14px;padding:3px 11px;background:var(--gold);color:#000;border:none;border-radius:4px;cursor:pointer;font-weight:700;">+</button>'+
     '</div>'+
     logHtml+
-    '<button onclick="removePipelineCard(this.dataset.addr)" data-addr="'+pcEsc(entry.address)+'" style="margin-top:6px;width:100%;padding:3px;background:none;border:1px solid #fecaca;border-radius:4px;color:#ef4444;font-size:10px;cursor:pointer;">Remove</button>';
+    '<button onclick="removePipelineCard(this.dataset.addr)" data-addr="'+pcEsc(entry.address)+'" style="margin-top:8px;width:100%;padding:5px;background:none;border:1px solid #fecaca;border-radius:4px;color:#ef4444;font-size:11.5px;cursor:pointer;">Remove</button>';
 
   card.addEventListener('dragstart',function(e){ dragCard=entry.address; card.classList.add('dragging'); e.dataTransfer.setData('text/plain',entry.address); });
   card.addEventListener('dragend',function(){ card.classList.remove('dragging'); dragCard=null; });
