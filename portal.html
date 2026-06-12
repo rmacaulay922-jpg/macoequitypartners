@@ -626,7 +626,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.4</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.5</div>
     </div>
   </header>
 
@@ -2650,7 +2650,7 @@ function printSelectedLetters(){
         .replace(/{{neighborhood}}/g,_escHtml(p.nb&&p.nb!=='County-flagged'?p.nb:'your neighborhood'))
         .replace(/{{date}}/g,today)
         .replace(/{{[^}]+}}/g,'');
-      out.push('<div style="page-break-after:always;font:13.5px/1.7 Georgia,serif;color:#111;padding:58pt 64pt;box-sizing:border-box;">'
+      out.push('<div style="page-break-after:always;background:#fff;font:13.5px/1.7 Georgia,serif;color:#111;padding:58pt 64pt;margin-bottom:14px;box-sizing:border-box;">'
         +'<div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1f3a2e;padding-bottom:14px;margin-bottom:26px;">'
           +'<img src="/logo.jpg" alt="Maco Equity Partners" style="height:52px;width:auto;">'
           +'<div><div style="font-size:17px;font-weight:700;letter-spacing:.06em;color:#1f3a2e;">MACO EQUITY PARTNERS</div>'
