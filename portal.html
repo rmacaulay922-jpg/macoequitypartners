@@ -628,7 +628,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.6</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.7</div>
     </div>
   </header>
 
@@ -654,7 +654,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <summary style="cursor:pointer;padding:12px 18px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;">Deal Map <span style="color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;">&mdash; top deals &amp; county leads, colored by buy grade &middot; click to expand</span> <button class="btn btn-dark" type="button" style="font-size:10px;padding:3px 9px;margin-left:8px;" onclick="event.preventDefault();refreshDealMap();">&#8635; pins</button></summary>
       <div id="map-overview" style="height:420px;border-radius:0 0 12px 12px;overflow:hidden;"></div>
     </details>
-    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 18px;flex-wrap:wrap;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span><select class="filter-sel" id="ovMarket" onchange="onMarketChange()"><option value="">All Markets</option><option>Kendall</option><option>Palmetto Bay</option><option>Pinecrest</option><option>South Miami</option><option>Westchester</option><option>West Little River</option><option>Brownsville</option><option>Three Lakes</option><option>Princeton-Naranja</option><option>Homestead</option><option>Redland</option><option>Hialeah</option><option>Doral</option><option>Miami Gardens</option><option>North Miami</option><option>N Miami Beach</option><option>Cutler Bay</option></select></div>
+    <div style="display:flex;align-items:center;gap:10px;margin:4px 0 18px;flex-wrap:wrap;"><span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span><select class="filter-sel" id="ovMarket" onchange="onMarketChange()"><option value="">All Markets</option><option>Kendall</option><option>Palmetto Bay</option><option>Pinecrest</option><option>South Miami</option><option>Westchester</option><option>West Little River</option><option>Brownsville</option><option>Three Lakes</option><option>Princeton-Naranja</option><option>Homestead</option><option>Redland</option><option>Hialeah</option><option>Doral</option><option>Miami Gardens</option><option>North Miami</option><option>N Miami Beach</option><option>Cutler Bay</option><option>West Kendall</option><option>Tamiami</option><option>Sweetwater</option><option>Goulds</option></select></div>
     <div class="section-title">Market Intelligence <span class="badge" id="ovMarketBadge">all markets</span></div>
     <div id="overviewMarket"></div>
 
@@ -877,7 +877,8 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
     <div class="filter-bar">
       <input type="text" class="filter-sel" id="violSearch" placeholder="Search address, owner, or violation type" style="min-width:240px;padding:7px 12px" oninput="buildViolations()">
       <select class="filter-sel" id="violNeighFilter" onchange="buildViolations()"><option value="">All Neighborhoods</option></select>
-      <select class="filter-sel" id="violSort" onchange="buildViolations()"><option value="cases-desc">Most cases first</option><option value="cases-asc">Fewest cases first</option><option value="newest">Newest case first</option><option value="lien">Liens first</option></select>
+      <select class="filter-sel" id="violSort" onchange="buildViolations()"><option value="cases-desc">Most cases first</option><option value="oldest">Longest-open case first</option><option value="cases-asc">Fewest cases first</option><option value="newest">Newest case first</option><option value="lien">Liens first</option></select>
+      <button class="btn btn-gold" type="button" style="font-size:12px;padding:7px 14px;" onclick="openLetterPicker('viols')" title="Send letters to the owners of the properties currently shown below (pick exactly who)">&#128396; Letters to this list</button>
       <span style="font-size:12px;color:var(--muted);margin-left:auto" id="violCount"></span>
     </div>
     <div class="viol-grid" id="violGrid"></div>
@@ -1559,7 +1560,13 @@ function buildViolIndex(){
   _violIndex={};
   // n counts genuinely OPEN cases only — rows merged in from the lien feed are mostly closed/referred
   // cases that happen to carry a recorded lien; the lien itself scores via the separate lien adder.
-  if(_liveViols)_liveViols.forEach(function(v){var open=(v.violations||[]).filter(function(c){return !c._lienRow;}).length;_violIndex[_normAddr(v.address)]={n:open,lien:v._lien||null,live:true};});
+  if(_liveViols)_liveViols.forEach(function(v){
+    var open=(v.violations||[]).filter(function(c){return !c._lienRow;}).length;
+    var entry={n:open,lien:v._lien||null,live:true};
+    _violIndex[_normAddr(v.address)]=entry;
+    // index every address variant the county used for this parcel so badge matching never misses
+    if(v._addrKeys)Object.keys(v._addrKeys).forEach(function(k){if(!_violIndex[k])_violIndex[k]=entry;});
+  });
   if(typeof VIOL_DETAIL!=='undefined')VIOL_DETAIL.forEach(function(v){var k=_normAddr(v.address);if(!_violIndex[k])_violIndex[k]={n:(v.violations||[]).length,lien:null,live:false};});
 }
 function violInfo(a){if(!_violIndex)buildViolIndex();return _violIndex[_normAddr(a)]||null;}
@@ -2127,11 +2134,11 @@ var COMPS_API='https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services
 // (33030/34/35), Redland (33031), Hialeah (33010-18) and Doral (33166/72/78). Homestead city, Hialeah
 // and Doral run their OWN code enforcement with no public feed — those ZIPs get live comps, market
 // stats and underwriting, but county violation/lien leads only appear for unincorporated parcels.
-var NB_ZIPS={'Kendall':['33173','33175','33176','33183','33186','33196'],'Palmetto Bay':['33157','33158'],'Pinecrest':['33156'],'South Miami':['33143'],'Westchester':['33155','33165'],'West Little River':['33147'],'Brownsville':['33142'],'Three Lakes':['33177'],'Princeton-Naranja':['33032','33033'],'Homestead':['33030','33034','33035'],'Redland':['33031'],'Hialeah':['33010','33012','33013','33014','33016','33018'],'Doral':['33166','33172','33178'],'Miami Gardens':['33054','33055','33056','33169'],'North Miami':['33161','33167','33168'],'N Miami Beach':['33162'],'Cutler Bay':['33189','33190']};
-var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Kendall','33186':'Kendall','33196':'Kendall','33157':'Palmetto Bay','33158':'Palmetto Bay','33156':'Pinecrest','33143':'South Miami','33155':'Westchester','33165':'Westchester','33147':'West Little River','33142':'Brownsville','33177':'Three Lakes','33032':'Princeton-Naranja','33033':'Princeton-Naranja','33030':'Homestead','33034':'Homestead','33035':'Homestead','33031':'Redland','33010':'Hialeah','33012':'Hialeah','33013':'Hialeah','33014':'Hialeah','33016':'Hialeah','33018':'Hialeah','33166':'Doral','33172':'Doral','33178':'Doral','33054':'Miami Gardens','33055':'Miami Gardens','33056':'Miami Gardens','33169':'Miami Gardens','33161':'North Miami','33167':'North Miami','33168':'North Miami','33162':'N Miami Beach','33189':'Cutler Bay','33190':'Cutler Bay'};
+var NB_ZIPS={'Kendall':['33173','33175','33176','33183','33186','33196'],'West Kendall':['33193','33187'],'Tamiami':['33184'],'Sweetwater':['33174'],'Goulds':['33170'],'Palmetto Bay':['33157','33158'],'Pinecrest':['33156'],'South Miami':['33143'],'Westchester':['33155','33165'],'West Little River':['33147'],'Brownsville':['33142'],'Three Lakes':['33177'],'Princeton-Naranja':['33032','33033'],'Homestead':['33030','33034','33035'],'Redland':['33031'],'Hialeah':['33010','33012','33013','33014','33016','33018'],'Doral':['33166','33172','33178'],'Miami Gardens':['33054','33055','33056','33169'],'North Miami':['33161','33167','33168'],'N Miami Beach':['33162'],'Cutler Bay':['33189','33190']};
+var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Kendall','33186':'Kendall','33196':'Kendall','33193':'West Kendall','33187':'West Kendall','33184':'Tamiami','33174':'Sweetwater','33170':'Goulds','33157':'Palmetto Bay','33158':'Palmetto Bay','33156':'Pinecrest','33143':'South Miami','33155':'Westchester','33165':'Westchester','33147':'West Little River','33142':'Brownsville','33177':'Three Lakes','33032':'Princeton-Naranja','33033':'Princeton-Naranja','33030':'Homestead','33034':'Homestead','33035':'Homestead','33031':'Redland','33010':'Hialeah','33012':'Hialeah','33013':'Hialeah','33014':'Hialeah','33016':'Hialeah','33018':'Hialeah','33166':'Doral','33172':'Doral','33178':'Doral','33054':'Miami Gardens','33055':'Miami Gardens','33056':'Miami Gardens','33169':'Miami Gardens','33161':'North Miami','33167':'North Miami','33168':'North Miami','33162':'N Miami Beach','33189':'Cutler Bay','33190':'Cutler Bay'};
 // One farm bounding box shared by every county feed — Homestead/Princeton up through Hialeah/WLR
 // (city-jurisdiction parcels inside the box simply return no county cases).
-var FARM_BBOX={xmin:-80.46,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}};
+var FARM_BBOX={xmin:-80.55,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}}; // west edge covers West Kendall/Tamiami
 var SALES_BAKED=null, LIVE_COMPS=null, _compsTried=false, _compsInFlight=false;
 var COMPS_KEY='mep_comps_v1', COMPS_TTL=6*24*3600*1000; // county layer refreshes weekly (Sat)
 var _vinCounty='', _vinComps='';
@@ -2699,6 +2706,9 @@ function openLetterPicker(source){
     var data=getPipeline();
     Object.keys(data).forEach(function(a){cands.push({addr:a,nb:data[a].neighborhood||'',folio:_folioForAddr(a)});});
     if(!cands.length){toast('Pipeline is empty — add deals first, or use Print Letters on All Properties.');return;}
+  }else if(source==='viols'){
+    (window._violFiltered||[]).slice(0,200).forEach(function(v){cands.push({addr:v.address,nb:v.neighborhood||'',folio:v.folio||''});});
+    if(!cands.length){toast('No properties in the current Code & Liens filter.');return;}
   }else{
     filteredRows.slice(0,200).forEach(function(r){cands.push({addr:r[1],nb:r[2]||'',folio:_folioOf({pa_url:r[16]})});});
     if(!cands.length){toast('No properties in the current filter.');return;}
@@ -2861,9 +2871,14 @@ function fetchLiveViolations(force){
   var qViol=VIOL_API+'?where='+encodeURIComponent("CASE_STATUS IN ('1','9')")+geom+'&outFields='+encodeURIComponent('ADDRESS,FOLIO,PROBLEM_DESC,STAT_DESC,CASE_DATE,CASE_NUM')+'&orderByFields='+encodeURIComponent('CASE_DATE DESC')+'&returnGeometry=false';
   var qLien=VIOL_API+'?where='+encodeURIComponent("LN_RECDATE IS NOT NULL AND LN_RECDATE<>''")+geom+'&outFields='+encodeURIComponent('ADDRESS,FOLIO,PROBLEM_DESC,STAT_DESC,CASE_DATE,CASE_NUM,LN_RECBOOK,LN_RECPAGE,LN_RECDATE')+'&orderByFields='+encodeURIComponent('LN_RECDATE DESC')+'&returnGeometry=false';
   function rec(byAddr,a){
+    // Roll up by FOLIO when the county provides one — the same parcel shows up under address-spelling
+    // variants ("CIRCLE PL" vs "CIR PL") and corner lots carry two addresses; folio is the parcel's true key.
     var addr=_cleanTxt(a.ADDRESS),k=_normAddr(addr);
-    if(!byAddr[k]){var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');byAddr[k]={address:addr,owner:'',neighborhood:'Miami-Dade (live)',score:0,folio:fd,pa_url:fd?_paFolioUrl(fd):'',maps_url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr+' FL'),violations:[],_verified:true,_live:true};}
-    return byAddr[k];
+    var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');
+    var key=fd||('a:'+k);
+    if(!byAddr[key]){byAddr[key]={address:addr,owner:'',neighborhood:'Miami-Dade (live)',score:0,folio:fd,pa_url:fd?_paFolioUrl(fd):'',maps_url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr+' FL'),violations:[],_verified:true,_live:true,_addrKeys:{}};}
+    byAddr[key]._addrKeys[k]=1;
+    return byAddr[key];
   }
   Promise.all([
     _arcFetchAll(qViol,6),
@@ -2877,7 +2892,8 @@ function fetchLiveViolations(force){
       var a=f.attributes||{}; if(_badAddr(a.ADDRESS))return;
       var r=rec(byAddr,a),when=a.CASE_DATE?(' · '+_fmtEpoch(a.CASE_DATE)):'';
       if(a.CASE_DATE&&a.CASE_DATE>(r._latest||0))r._latest=a.CASE_DATE;
-      r.violations.push({case:_cleanTxt(a.CASE_NUM)||r.folio||'—',desc:(_cleanTxt(a.PROBLEM_DESC)||'Code violation')+when,status:_cleanTxt(a.STAT_DESC)||'Open'});
+      if(a.CASE_DATE&&(!r._oldest||a.CASE_DATE<r._oldest))r._oldest=a.CASE_DATE; // oldest OPEN case = how long the owner has ignored it
+      r.violations.push({case:_cleanTxt(a.CASE_NUM)||r.folio||'—',desc:(_cleanTxt(a.PROBLEM_DESC)||'Code violation')+when,status:_cleanTxt(a.STAT_DESC)||'Open',_d:a.CASE_DATE||0});
       openCases++;
     });
     (jl.features||[]).forEach(function(f){
@@ -2945,6 +2961,14 @@ function fetchLiveViolations(force){
   });
 }
 var _violTypeFilter='', _violShowAll=false, VIOL_RENDER_CAP=150;
+// Send a Code & Liens property to the Pipeline — uses its scored-lead data when we have it.
+function violToPipeline(folio,addr){
+  var d=null;
+  if(folio&&window._rowByFolio&&_rowByFolio[folio]){d=rowToDeal(_rowByFolio[folio]);d._score=computeScore(d).score;}
+  if(!d&&folio)(_countyLeads||[]).forEach(function(cl){if(!d&&_folioOf(cl)===folio)d=cl;});
+  if(!d)d={address:addr,neighborhood:'County-flagged',arv:0,repair:0,folio:folio,pa_url:folio?_paFolioUrl(folio):'',_score:computeScore({address:addr}).score};
+  addToPipeline(d);
+}
 function setViolType(t){_violTypeFilter=t;_violShowAll=false;buildViolations();}
 function _isOpenViol(v){return (v.violations||[]).some(function(c){return c.status==='Open'||c.status==='Active LP'||c.status==='Unverified';});}
 function buildViolations(){
@@ -2967,6 +2991,7 @@ function buildViolations(){
   rows.sort(function(a,b){var ca=(a.violations||[]).length,cb=(b.violations||[]).length;
     if(sortBy==='cases-asc')return ca-cb;
     if(sortBy==='newest')return (b._latest||0)-(a._latest||0);
+    if(sortBy==='oldest')return (a._oldest||9e15)-(b._oldest||9e15); // longest-ignored first — strongest seller signal
     if(sortBy==='lien'){var d=(b._lien?1:0)-(a._lien?1:0);return d||(cb-ca);}
     return cb-ca;});
   var shownProps=0, shownCases=0;
@@ -2978,6 +3003,9 @@ function buildViolations(){
     if(!matchText||!matchNb||!matchType||!cases.length)return false;
     shownProps++; shownCases+=cases.length; return true;
   });
+  window._violFiltered=matched; // feeds the "Letters to this list" picker
+  // Lazy folio -> scored-lead map for cross-linking violation cards to their deal context.
+  if(!window._rowByFolio){window._rowByFolio={};ALL_ROWS.forEach(function(r){var f=_folioOf({pa_url:r[16]});if(f)_rowByFolio[f]=r;});}
   // Render in batches — full live pull can be thousands of cards.
   var capped=!_violShowAll&&matched.length>VIOL_RENDER_CAP;
   var html=(capped?matched.slice(0,VIOL_RENDER_CAP):matched).map(function(v){
@@ -2985,17 +3013,33 @@ function buildViolations(){
     var tagTxt=v._verified?(v._live?'Live · Verified':'Verified'):'Sample';
     var tag='<span style="background:'+(v._verified?'rgba(74,154,107,.18);color:var(--green)':'rgba(232,133,74,.18);color:#e8854a')+';font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">'+tagTxt+'</span>';
     var lienTag=v._lien?'<span style="background:rgba(224,102,74,.2);color:#e0664a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;">Lien</span>':'';
-    var metaParts=[]; if(v.owner)metaParts.push(v.owner); if(v.neighborhood)metaParts.push(v.neighborhood); metaParts.push(cases.length+' case'+(cases.length>1?'s':''));
+    var openN=cases.filter(function(c){return !c._lienRow;}).length, lienN=cases.length-openN;
+    var metaParts=[]; if(v.owner)metaParts.push(v.owner); if(v.neighborhood)metaParts.push(v.neighborhood);
+    metaParts.push(openN+' open case'+(openN!==1?'s':'')+(lienN?' + '+lienN+' liened':''));
+    if(v._oldest){var _yrs=((Date.now()-v._oldest)/31557600000);if(_yrs>=0.5)metaParts.push('<span style="color:#e8a14a;font-weight:700;">ignored '+(_yrs>=1?_yrs.toFixed(1)+' yrs':Math.round(_yrs*12)+' mo')+'</span> (oldest open '+_fmtEpoch(v._oldest)+')');}
     var lienLine=v._lien?'<div style="font-size:11px;color:#e0664a;background:rgba(224,102,74,.08);border:1px solid rgba(224,102,74,.25);border-radius:6px;padding:6px 9px;margin:0 0 10px;">Recorded county code lien'+(v._lien.date?' &middot; '+v._lien.date:'')+(v._lien.book?' &middot; OR Book/Page '+v._lien.book+'/'+v._lien.page:'')+' &mdash; must be cleared at closing.</div>':'';
     var border=v._lien?' style="border-left-color:#e0664a;"':(v._verified?'':' style="border-left-color:#e8854a;"');
     return '<div class="viol-card"'+border+'>'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;"><div class="viol-addr">'+(v.address||'').replace(/\s+/g,' ').trim()+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;">'+lienTag+tag+'</div></div>'+
       '<div style="font-size:11px;color:var(--muted);margin:2px 0 10px;">'+metaParts.join(' &middot; ')+'</div>'+
       lienLine+
-      cases.map(function(vc){return '<div class="viol-case"><div><div style="font-size:12px;">'+(vc._new?'<span style="background:#e8c34a;color:#14120d;font-size:9px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.5px;margin-right:6px;vertical-align:1px;">NEW</span>':'')+vc.desc+'</div><div class="viol-case-num">Case '+vc.case+'</div></div><span class="case-open"'+(vc.status==='Unverified'?' style="color:#e8854a;"':'')+'>'+vc.status+'</span></div>';}).join('')+
-      '<div style="margin-top:8px;display:flex;gap:6px;">'+
+      (function(){
+        var ck=v.folio||_normAddr(v.address);
+        var exp=window._violCardExpand&&_violCardExpand[ck];
+        var shownCases=exp?cases:cases.slice(0,4);
+        var caseHtml=shownCases.map(function(vc){return '<div class="viol-case"><div><div style="font-size:12px;">'+(vc._new?'<span style="background:#e8c34a;color:#14120d;font-size:9px;font-weight:800;padding:1px 6px;border-radius:4px;letter-spacing:.5px;margin-right:6px;vertical-align:1px;">NEW</span>':'')+vc.desc+'</div><div class="viol-case-num">Case '+vc.case+'</div></div><span class="case-open"'+(vc.status==='Unverified'?' style="color:#e8854a;"':'')+'>'+vc.status+'</span></div>';}).join('');
+        if(!exp&&cases.length>4)caseHtml+='<button type="button" onclick="window._violCardExpand=window._violCardExpand||{};_violCardExpand[\''+pcJs(ck)+'\']=true;buildViolations();" style="background:none;border:none;color:var(--bronze);font-size:11px;cursor:pointer;padding:4px 0;text-decoration:underline dotted;">+ '+(cases.length-4)+' more case'+(cases.length-4!==1?'s':'')+'</button>';
+        return caseHtml;
+      })()+
+      (function(){
+        var f=v.folio,lead=f&&window._rowByFolio&&_rowByFolio[f];
+        if(lead)return '<div style="margin-top:8px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--border);padding-top:6px;">In your lead list: <span style="color:var(--gold);font-weight:700;">Score '+computeScore(rowToDeal(lead)).score+'</span>'+(lead[8]?' &middot; ARV <span style="color:var(--ivory);font-weight:700;">'+fmtK(lead[8])+'</span>':'')+(lead[18]?' &middot; '+lead[18].toLocaleString()+' sqft':'')+'</div>';
+        return '';
+      })()+
+      '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'+
         (v.pa_url?'<a href="'+v.pa_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">PA Record</a>':'')+
         '<a href="'+v.maps_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">Maps</a>'+
+        '<button type="button" class="btn btn-outline" style="font-size:10px;padding:4px 8px;" onclick="violToPipeline(\''+(v.folio||'')+'\',\''+pcJs(v.address)+'\');this.textContent=\'\\u2713 In Pipeline\';this.disabled=true;">+ Pipeline</button>'+
       '</div>'+
     '</div>';
   }).join('');
