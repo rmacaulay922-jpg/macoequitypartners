@@ -628,7 +628,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.7</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.8</div>
     </div>
   </header>
 
@@ -737,6 +737,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
           <select class="filter-sel" id="scoreFilter" onchange="filterTable()"><option value="">Any Score</option><option value="40">Score 40+</option><option value="60">Score 60+</option><option value="80">Score 80+</option></select>
           <select class="filter-sel" id="arvFilter" onchange="filterTable()"><option value="">Any ARV</option><option value="0-500000">Under $500K</option><option value="500000-750000">$500&ndash;750K</option><option value="750000-1000000">$750K&ndash;1M</option><option value="1000000-99999999">$1M+</option></select>
           <select class="filter-sel" id="sqftFilter" onchange="filterTable()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
+          <select class="filter-sel" id="ownerTypeFilter" onchange="filterTable()" title="Estates and life estates come straight from the county roll — the PA retitles a parcel when its owner dies"><option value="">All Owner Types</option><option value="estate">Estates / deceased</option><option value="le">Life estates</option><option value="entity">Trusts &amp; LLCs</option><option value="oos">Out-of-state</option></select>
           <label class="filter-sel" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="hideSoldFilter" onchange="filterTable()" style="margin:0;width:auto;">Hide recently sold</label>
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="exportTableCsv()">&#8681; Export CSV</button>
           <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="buildMailList()" title="Pulls owner names + mailing addresses from the county roll for the current filter, then downloads a direct-mail CSV">&#9993; Mail List CSV</button>
@@ -1211,6 +1212,7 @@ function dealDossierHtml(d,idx){
       (d.tax_url?'<a class="btn btn-outline" href="'+d.tax_url+'" target="_blank">Tax Collector</a>':'')+
       (d.zillow_url?'<a class="btn btn-outline" href="'+d.zillow_url+'" target="_blank" style="border-color:#006AFF;color:#006AFF;">Zillow</a>':'')+
       skipTraceLinks(d)+
+      ((typeof estateInfo==='function'&&estateInfo(_liveOwnerOf(d)))?'<a class="btn btn-outline" href="https://www2.miamidadeclerk.gov/ocs/" target="_blank" title="Estate on title — search the owner\'s name in the Clerk\'s Online Case Search for the probate case and personal representative (no API exists; copy the name from above)" style="border-color:#e08ad2;color:#e08ad2;">Probate Case (Clerk)</a>':'')+
       '<button class="btn btn-outline" onclick="openPrint('+idx+')">Print Deal Sheet</button>'+
     '</div>'+
   '</div>';
@@ -1583,6 +1585,10 @@ function dealFlags(d){var vi=violInfo(d.address);var p=[];
   if(wj)p.push('<span style="background:rgba(184,153,104,.2);color:var(--bronze);font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">WASTE-FEE JUDGEMENT'+(wj.fees>0?' &middot; '+fmtK(wj.fees):'')+'</span>');
   var _aoc=window._ownerSnap&&_ownerSnap[_folioOf(d)];
   if(_aoc&&_aoc.ma&&d.address&&_normAddr(_aoc.ma)!==_normAddr(d.address)&&d.has_homestead!==true)p.push('<span style="background:rgba(124,118,255,.16);color:#9d97ff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">ABSENTEE &middot; '+_escHtml((_aoc.mc||'')+(_aoc.ms&&_aoc.ms!=='FL'?', '+_aoc.ms:''))+'</span>');
+  var _eo=(typeof _liveOwnerOf==='function')?estateInfo(_liveOwnerOf(d)):null;
+  if(_eo==='estate')p.push('<span style="background:rgba(214,116,200,.18);color:#e08ad2;font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">ESTATE &middot; OWNER DECEASED</span>');
+  else if(_eo==='le')p.push('<span style="background:rgba(214,116,200,.12);color:#d49ac8;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">LIFE ESTATE</span>');
+  if(typeof _nameChanged==='function'&&!d._countySourced&&!d._soldLive&&d.owner&&_aoc&&_aoc.o&&_nameChanged(d.owner,_aoc.o))p.push('<span style="background:rgba(232,195,74,.16);color:#e8c34a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">OWNER CHANGED &middot; POSSIBLE HEIR</span>');
   return p.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">'+p.join('')+'</div>':'';}
 // Plain-English BUY VERDICT: margin first (does it actually make money?), motivation as the "can you get it" modifier.
 function buyGrade(d){
@@ -1619,7 +1625,15 @@ function computeScore(d){
   if(h>=30)add(18,'Owned 30+ years (high equity)');else if(h>=20)add(14,'Owned 20+ years');else if(h>=15)add(10,'Owned 15+ years');else if(h>=10)add(6,'Owned 10+ years');
   var age=d.year_built?(2026-d.year_built):0;
   if(age>=55)add(14,'Home 55+ yrs old');else if(age>=45)add(10,'Home 45+ yrs old');else if(age>=35)add(6,'Home 35+ yrs old');else if(age>=25)add(3,'Home 25+ yrs old');
-  if(/TRUST|TRS\b|LLC|EST\b|ESTATE|INC\b/i.test(d.owner||''))add(12,'Trust / LLC / estate owner');
+  var _ownLive=(typeof _liveOwnerOf==='function')?_liveOwnerOf(d):(d.owner||'');
+  var _ei=(typeof estateInfo==='function')?estateInfo(_ownLive):null;
+  if(_ei==='estate')add(20,'ESTATE on title — owner deceased, heirs control it');
+  else if(_ei==='le')add(14,'Life estate on title — succession under way or imminent');
+  else if(/TRUST|TRS\b|LLC|INC\b/i.test(_ownLive))add(12,'Trust / LLC owner');
+  if(typeof _nameChanged==='function'&&!d._countySourced&&!d._soldLive&&d.owner&&window._ownerSnap){
+    var _lo=(_ownerSnap[_folioOf(d)]||{}).o;
+    if(_lo&&_nameChanged(d.owner,_lo))add(15,'Owner changed since lead list, no sale — possible heir ('+_lo+')');
+  }
   if(d.has_homestead===false)add(10,'No homestead exemption');
   var c=(d.rehab_condition||'').toLowerCase();
   if(c.indexOf('gut')>=0)add(14,'Full-gut condition');else if(c.indexOf('heavy')>=0)add(11,'Heavy rehab needed');else if(c.indexOf('moderate')>=0)add(7,'Moderate rehab');else if(c.indexOf('light')>=0||c.indexOf('cosmetic')>=0)add(4,'Cosmetic / light rehab');
@@ -1841,6 +1855,7 @@ function filterTable(){
   var ar=(((document.getElementById('arvFilter')||{}).value)||'').split('-');
   var arvMin=ar[0]?parseInt(ar[0]):0, arvMax=ar[1]?parseInt(ar[1]):Infinity;
   var hideSold=!!(document.getElementById('hideSoldFilter')||{}).checked;
+  var ot=((document.getElementById('ownerTypeFilter')||{}).value)||'';
   filteredRows=tableData.filter(function(r){
     var mq=!q||(r[1]+'').toLowerCase().includes(q)||(r[3]+'').toLowerCase().includes(q)||(r[2]+'').toLowerCase().includes(q);
     var mn=!nb||r[2]===nb;
@@ -1850,7 +1865,16 @@ function filterTable(){
     var mz=!sf||(r[18]||0)>=sf;
     var ma=(r[8]||0)>=arvMin&&(r[8]||0)<=arvMax;
     var msold=!hideSold||!isRecentSaleRow(r);
-    return mq&&mn&&mr&&mb&&ms&&mz&&ma&&msold;
+    var mo=true;
+    if(ot){
+      var own=_liveOwnerOf({pa_url:r[16],owner:r[3]});
+      var ei=estateInfo(own);
+      if(ot==='estate')mo=(ei==='estate');
+      else if(ot==='le')mo=(ei==='le');
+      else if(ot==='entity')mo=(!ei&&/TRUST|TRS\b|LLC|INC\b/i.test(own));
+      else if(ot==='oos')mo=!!(r[4]&&r[4]!=='FL');
+    }
+    return mq&&mn&&mr&&mb&&ms&&mz&&ma&&msold&&mo;
   });
   currentPage=1;renderTablePage();
 }
@@ -2788,6 +2812,27 @@ function printSelectedLetters(){
       '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?(failed?' ('+skipped+' missing — owner pull partly failed, Generate again to retry)':' ('+skipped+' skipped — no county mailing address)'):'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
       +out.join('');
   },function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
+}
+// ── ESTATE / DECEASED-OWNER SIGNALS — the county roll itself records deaths ──
+// When an owner dies the Property Appraiser retitles the parcel "SMITH JOHN EST OF" (estate on title,
+// heirs control it) or the name carries "LE" (life estate — the named owner held it until death).
+// Court probate filings have no public feed (Clerk API is paid), but these roll markers are live and free.
+function _liveOwnerOf(d){var f=_folioOf(d);return ((f&&window._ownerSnap&&_ownerSnap[f])||{}).o||d.owner||'';}
+function estateInfo(owner){
+  var o=(' '+(owner||'').toUpperCase()+' ');
+  if(/\sLLC\s|\sINC\s|\sCORP\s/.test(o))return null; // "MARILYN ESTATE LLC" is a company, not a probate estate
+  if(/\sEST\s+OF\s|\sESTATE\s+OF\s|\sESTATE\s$|\sEST\s$/.test(o))return 'estate';
+  if(/\sLE\s|\sL\/E\s/.test(o))return 'le';
+  return null;
+}
+// Heir detection: the lead list baked one owner name; if the county roll now shows a completely
+// different person WITHOUT a recorded sale, title moved by death/deed — usually an heir.
+function _nameChanged(baked,live){
+  if(!baked||!live)return false;
+  function toks(s){return (''+s).toUpperCase().replace(/[^A-Z ]/g,' ').split(/\s+/).filter(function(t){return t.length>2&&!/^(THE|AND|TRS|LLC|INC|EST|JTRS|REV|TR)$/.test(t);});}
+  var a=toks(baked),b=toks(live);
+  if(!a.length||!b.length)return false;
+  return !a.some(function(t){return b.indexOf(t)>=0;});
 }
 // Skip-trace helper links: free people search for individuals, SunBiz registered-agent lookup for entities.
 function _isEntityOwner(o){return /TRUST|TRS\b|LLC|EST\b|ESTATE|INC\b|CORP\b|LP\b|LTD|COMPANY|PROPERTIES|INVEST|HOLDINGS/i.test(o||'');}
