@@ -236,7 +236,7 @@
     <canvas id="heroCanvas"></canvas>
     <div class="hero-grain"></div>
     <span class="hero-tag">BRICKELL · DOWNTOWN · BISCAYNE BAY</span>
-    <div class="hero-caption"><strong>Miami, in three dimensions</strong>1,400 real buildings · drag to orbit · scroll to zoom</div>
+    <div class="hero-caption"><strong>Miami, in three dimensions</strong>Lit streets · named towers · click a district to explore</div>
     <div class="hero-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Drag · scroll to zoom</div>
   </div>
   <div class="hero-inner">
@@ -513,7 +513,9 @@
       'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
       'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
       'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js',
-      'miami-bld.js?v=2'
+      'miami-bld.js?v=2',
+      'miami-roads.js?v=1',
+      'miami-landmarks.js?v=1'
     ];
     let webgl = false;
     try { const t = document.createElement('canvas'); webgl = !!(t.getContext('webgl') || t.getContext('experimental-webgl')); } catch(e){}
@@ -561,7 +563,6 @@
       scene.fog = new THREE.FogExp2(0x0E2530, 0.00028);
       const camera = new THREE.PerspectiveCamera(60, w/h, 1, 40000);
 
-      // sky dome (gradient + east-bay glow)
       const skyMat = new THREE.ShaderMaterial({
         side: THREE.BackSide, depthWrite: false, fog: false,
         vertexShader: 'varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
@@ -580,18 +581,21 @@
       });
       scene.add(new THREE.Mesh(new THREE.SphereGeometry(6000, 32, 16), skyMat));
 
-      // lights (emissive does most of the work at night)
       scene.add(new THREE.HemisphereLight(0x143A4A, 0x08171C, 0.55));
       const d1 = new THREE.DirectionalLight(0xBFD4D8, 0.35); d1.position.set(-1200, 900, -1400); scene.add(d1);
       const d2 = new THREE.DirectionalLight(0xC79A4E, 0.25); d2.position.set(1400, 120, 1600);  scene.add(d2);
       scene.add(new THREE.AmbientLight(0x0E1A1F, 0.12));
       const pl = new THREE.PointLight(0x8C6C36, 0.9, 600, 2); pl.position.set(0, 12, 200); scene.add(pl);
 
-      // projection
-      const CLON=-80.192, CLAT=25.7725, MPLAT=111320, cosLat=Math.cos(CLAT*Math.PI/180);
-      function ll2m(lon,lat){ return [ (lon-CLON)*MPLAT*cosLat, -(lat-CLAT)*MPLAT ]; }
+      // projection (shared by buildings, roads, landmarks, districts)
+      const CLON=-80.192, CLAT=25.7725, KX=111320*Math.cos(CLAT*Math.PI/180);
+      function ll2m(lon,lat){ return [ (lon-CLON)*KX, -(lat-CLAT)*111320 ]; }
 
-      // tallest 16 -> landmark glow
+      // named landmarks (project; cap to a notable set)
+      const LMRAW = (typeof MIAMI_LANDMARKS !== 'undefined') ? MIAMI_LANDMARKS.slice(0, 26) : [];
+      const lmPts = LMRAW.map(function(l){ const p=ll2m(l.lon,l.lat); return {name:l.name, h:l.h||0, x:p[0], z:p[1], matched:false, ax:p[0], az:p[1], ay:(l.h||120)}; });
+
+      // tallest 16 -> emerald breathe; named -> brass
       const sorted = MIAMI_BLD.slice().sort(function(a,b){ return b[0]-a[0]; });
       const hot = new Set(); for (let k=0; k<16 && k<sorted.length; k++) hot.add(sorted[k]);
 
@@ -600,13 +604,17 @@
       MIAMI_BLD.forEach(function(b){
         const hgt=b[0], ring=b[1]; if (!ring || ring.length<3) return;
         let n=ring.length; if (ring[0][0]===ring[n-1][0] && ring[0][1]===ring[n-1][1]) n--; if (n<3) return;
-        const shp = new THREE.Shape();
-        for (let i=0;i<n;i++){ const p=ll2m(ring[i][0],ring[i][1]);
+        const shp = new THREE.Shape(); let scx=0, scz=0;
+        for (let i=0;i<n;i++){ const p=ll2m(ring[i][0],ring[i][1]); scx+=p[0]; scz+=p[1];
           if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0]; if(p[1]<minZ)minZ=p[1]; if(p[1]>maxZ)maxZ=p[1];
           i===0 ? shp.moveTo(p[0],p[1]) : shp.lineTo(p[0],p[1]); }
+        scx/=n; scz/=n;
         let g; try { g = new THREE.ExtrudeGeometry(shp, {depth:hgt, bevelEnabled:false, steps:1}); } catch(e){ return; }
         g.rotateX(-Math.PI/2);
-        const vc = g.attributes.position.count; const arr = new Float32Array(vc); if (hot.has(b)) arr.fill(1);
+        let flag = hot.has(b) ? 1 : 0;
+        for (let m=0;m<lmPts.length;m++){ const L=lmPts[m]; if(L.matched) continue;
+          const dx=L.x-scx, dz=L.z-scz; if (dx*dx+dz*dz < 3600){ flag=2; L.matched=true; L.ax=scx; L.az=scz; L.ay=Math.max(hgt,L.h); break; } }
+        const vc = g.attributes.position.count; const arr = new Float32Array(vc); if (flag) arr.fill(flag);
         geoms.push(g); lmArrays.push(arr);
       });
       const merged = THREE.BufferGeometryUtils.mergeBufferGeometries(geoms, false);
@@ -615,18 +623,20 @@
       const lm = new Float32Array(total); let off=0; lmArrays.forEach(function(a){ lm.set(a, off); off += a.length; });
       merged.setAttribute('aLandmark', new THREE.BufferAttribute(lm, 1));
 
-      // building material with procedural lit windows / fresnel / base-glow / landmark breathe
       const cityMat = new THREE.MeshStandardMaterial({ color:0x0C1A22, roughness:0.42, metalness:0.0 });
       cityMat.dithering = true;
-      cityMat.customProgramCacheKey = function(){ return 'maco-city-v1'; };
+      cityMat.customProgramCacheKey = function(){ return 'maco-city-v2'; };
       cityMat.onBeforeCompile = function(shader){
         shader.uniforms.uTime = { value: 0 };
+        shader.uniforms.uActiveCenter = { value: new THREE.Vector2(0,0) };
+        shader.uniforms.uActiveRadius = { value: 420.0 };
+        shader.uniforms.uActiveMix = { value: 0.0 };
         cityMat.userData.shader = shader;
         shader.vertexShader = shader.vertexShader
           .replace('#include <common>', '#include <common>\nvarying vec3 vWPos; varying vec3 vWN; attribute float aLandmark; varying float vLM;')
           .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWPos = (modelMatrix*vec4(transformed,1.0)).xyz; vWN = normalize(mat3(modelMatrix)*normal); vLM = aLandmark;');
         shader.fragmentShader = shader.fragmentShader
-          .replace('#include <common>', '#include <common>\nuniform float uTime; varying vec3 vWPos; varying vec3 vWN; varying float vLM;')
+          .replace('#include <common>', '#include <common>\nuniform float uTime; uniform vec2 uActiveCenter; uniform float uActiveRadius; uniform float uActiveMix; varying vec3 vWPos; varying vec3 vWN; varying float vLM;')
           .replace('#include <emissivemap_fragment>', [
             '#include <emissivemap_fragment>',
             'float facade = 1.0 - abs(vWN.y);',
@@ -646,12 +656,18 @@
             'totalEmissiveRadiance += vec3(0.55,0.42,0.21)*smoothstep(18.0,0.0,vWPos.y)*0.6;',
             'float fres = pow(1.0 - max(dot(normalize(cameraPosition - vWPos), vWN), 0.0), 3.0);',
             'totalEmissiveRadiance += vec3(0.11,0.35,0.40)*fres;',
-            'totalEmissiveRadiance += vec3(0.15,0.63,0.41)*vLM*(0.40 + 0.30*sin(uTime*0.5));'
+            '// flagged buildings breathe emerald; named landmarks also get a brass lift',
+            'totalEmissiveRadiance += vec3(0.15,0.63,0.41)*step(0.5,vLM)*(0.30 + 0.25*sin(uTime*0.5));',
+            'totalEmissiveRadiance += vec3(0.79,0.63,0.35)*step(1.5,vLM)*0.5;',
+            '// --- district warm-up (isolated; default uActiveMix=0 = no-op) ---',
+            'float dCenter = distance(vWPos.xz, uActiveCenter);',
+            'float warmD = uActiveMix * smoothstep(uActiveRadius, uActiveRadius*0.4, dCenter);',
+            'totalEmissiveRadiance += warmD * vec3(0.06,0.18,0.11);'
           ].join('\n'));
       };
       scene.add(new THREE.Mesh(merged, cityMat));
 
-      // Biscayne Bay (faked neon-reflection water) east of the shoreline
+      // Biscayne Bay
       const cxg=(minX+maxX)/2, czg=(minZ+maxZ)/2;
       const shoreX = maxX + 90;
       const waterMat = new THREE.ShaderMaterial({
@@ -678,25 +694,138 @@
       });
       const water = new THREE.Mesh(new THREE.PlaneGeometry(22000, 22000), waterMat);
       water.rotation.x = -Math.PI/2; water.position.set(shoreX + 11000, -1.2, czg); scene.add(water);
-      // glowing shoreline
       const shore = new THREE.Mesh(new THREE.BoxGeometry(6, 2, (maxZ-minZ)+1400),
         new THREE.MeshBasicMaterial({ color:0x2fbe7e, transparent:true, opacity:0.5 }));
       shore.position.set(shoreX, 1.0, czg); scene.add(shore);
 
-      // camera over the bay looking back at the skyline
+      // ===== GROUND + LIT STREET GRID =====
+      const groundGroup = new THREE.Group(); scene.add(groundGroup);
+      const groundGeo = new THREE.PlaneGeometry(3400, 3800); groundGeo.rotateX(-Math.PI/2);
+      const ground = new THREE.Mesh(groundGeo, new THREE.MeshStandardMaterial({
+        color:0x0B1A1E, roughness:0.62, metalness:0.18, emissive:0x0E2530, emissiveIntensity:0.10,
+        polygonOffset:true, polygonOffsetFactor:1, polygonOffsetUnits:1 }));
+      ground.position.set(cxg, -0.6, czg); groundGroup.add(ground);
+
+      if (typeof MIAMI_ROADS !== 'undefined'){
+        function buildRoadMesh(cfg, yLevel, opacity){
+          const pos=[], col=[]; const c=new THREE.Color();
+          for (let r=0;r<MIAMI_ROADS.length;r++){ let cls=MIAMI_ROADS[r][0], pts=MIAMI_ROADS[r][1];
+            const k=cfg[cls]; if(!k) continue;
+            if (pts.length>1 && pts[0][0]===pts[pts.length-1][0] && pts[0][1]===pts[pts.length-1][1]) pts=pts.slice(0,-1);
+            const hw=k.hw; c.set(k.color);
+            const P=[]; for(let i=0;i<pts.length;i++) P.push(ll2m(pts[i][0],pts[i][1]));
+            for (let i=0;i<P.length-1;i++){ const x1=P[i][0],z1=P[i][1],x2=P[i+1][0],z2=P[i+1][1];
+              let dx=x2-x1, dz=z2-z1; const L=Math.hypot(dx,dz)||1; dx/=L; dz/=L;
+              const nx=-dz*hw, nz=dx*hw;
+              const a=[x1+nx,yLevel,z1+nz], bb=[x1-nx,yLevel,z1-nz], dd=[x2+nx,yLevel,z2+nz], e=[x2-nx,yLevel,z2-nz];
+              const tri=[a,bb,dd, bb,e,dd];
+              for(let t=0;t<6;t++){ pos.push(tri[t][0],tri[t][1],tri[t][2]); col.push(c.r,c.g,c.b); } } }
+          const g=new THREE.BufferGeometry();
+          g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+          g.setAttribute('color', new THREE.Float32BufferAttribute(col,3));
+          return new THREE.Mesh(g, new THREE.MeshBasicMaterial({ vertexColors:true, transparent:true,
+            opacity:opacity, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false, fog:true }));
+        }
+        // map roads (tier numbers 0..3) to OSM-ish classes for config lookup
+        const WARM = { 0:{hw:9,color:'#FFB85C'}, 1:{hw:7,color:'#F7A23B'}, 2:{hw:5,color:'#E8923A'} };
+        const HALO = { 0:{hw:22,color:'#6B4E22'}, 1:{hw:16,color:'#5E431F'} };
+        const COOL = { 3:{hw:3,color:'#3E6E8C'} };
+        const WALK = { 1:{hw:9.5,color:'#2A3138'}, 2:{hw:7.5,color:'#2A3138'} };
+        groundGroup.add(buildRoadMesh(HALO, 0.30, 0.22));
+        groundGroup.add(buildRoadMesh(WALK, 0.08, 0.30));
+        groundGroup.add(buildRoadMesh(COOL, 0.20, 0.50));
+        groundGroup.add(buildRoadMesh(WARM, 0.35, 0.95));
+      }
+
+      // ===== DISTRICTS =====
+      const districts = [
+        { name:'BRICKELL', lon:-80.1918, lat:25.7615, glow:'#1B704A', tag:'Benchmark market',
+          copy:"South Florida's densest financial core — Class-A office and high-rise condo at the center of the action.", chips:['Trophy office','Condo'] },
+        { name:'DOWNTOWN', lon:-80.1918, lat:25.7743, glow:'#27A268', tag:'Repositioning frontier',
+          copy:"Government, the courts and the Central Business District — older stock with real repositioning upside.", chips:['Class-B office','Repositioning'] },
+        { name:'BRICKELL KEY', lon:-80.1860, lat:25.7680, glow:'#8C6C36', tag:'Scarcity play',
+          copy:"A master-planned residential island off the mainland — finite land and gated access drive scarcity.", chips:['Condo','Scarcity'] },
+        { name:'EDGEWATER', lon:-80.1900, lat:25.7950, glow:'#3DBE82', tag:'Path of growth',
+          copy:"Waterfront mid- and high-rise residential rising along Biscayne Bay, just north of Downtown.", chips:['Bayfront mid-rise','Path-of-growth'], clampZ:-1500 } ];
+      districts.forEach(function(d){ const p=ll2m(d.lon,d.lat); d.x=p[0]; d.z=p[1]; if(d.clampZ!=null && d.z<d.clampZ) d.z=d.clampZ; });
+
+      // radial glow texture + per-district disk
+      const rtex = (function(){ const c=document.createElement('canvas'); c.width=c.height=128; const x=c.getContext('2d');
+        const g=x.createRadialGradient(64,64,0,64,64,64); g.addColorStop(0,'rgba(255,255,255,0.95)'); g.addColorStop(0.45,'rgba(255,255,255,0.4)'); g.addColorStop(1,'rgba(255,255,255,0)');
+        x.fillStyle=g; x.fillRect(0,0,128,128); const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter; return t; })();
+      districts.forEach(function(d){
+        const disk=new THREE.Mesh(new THREE.CircleGeometry(240,40), new THREE.MeshBasicMaterial({ map:rtex, color:new THREE.Color(d.glow), transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false, toneMapped:false }));
+        disk.rotation.x=-Math.PI/2; disk.position.set(d.x, 0.06, d.z); groundGroup.add(disk);
+        d.disk=disk; d.diskTarget=0;
+      });
+
+      // hotspots (invisible spheres, raycast targets)
+      const hotspots=[];
+      districts.forEach(function(d,i){ const hs=new THREE.Mesh(new THREE.SphereGeometry(70,8,8), new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));
+        hs.position.set(d.x,130,d.z); hs.userData.i=i; scene.add(hs); hotspots.push(hs); });
+
+      // ===== DOM overlay (pins, card, chips, reset) =====
+      if (!document.getElementById('heroDomCss')){
+        const st=document.createElement('style'); st.id='heroDomCss'; st.textContent=
+        ".hero-stage{position:absolute}.hero-pin,.hero-chip,.hero-card,.hero-reset{font-family:Inter,system-ui,sans-serif}"+
+        ".hero-pin{position:absolute;left:0;top:0;display:flex;align-items:center;gap:.4rem;transform:translate(-50%,-100%);cursor:pointer;pointer-events:auto;z-index:6;transition:opacity .3s}"+
+        ".hero-pin .dot{width:11px;height:11px;border-radius:50%;box-shadow:0 0 10px currentColor;border:1.5px solid rgba(241,238,226,.85);flex-shrink:0}"+
+        ".hero-pin .lbl{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#F3EFE4;background:rgba(21,64,44,.78);border:1px solid #8C6C36;border-radius:999px;padding:3px 8px;white-space:nowrap}"+
+        ".hero-pin:hover .lbl{border-color:#3DBE82}.hero-pin.active .lbl{background:#15402C;border-color:#3DBE82}"+
+        ".hero-pin.active .dot{animation:heroPulse 1.6s ease-in-out infinite}"+
+        "@keyframes heroPulse{0%,100%{box-shadow:0 0 8px currentColor}50%{box-shadow:0 0 18px currentColor}}"+
+        ".hero-chip{position:absolute;left:0;top:0;transform:translate(-50%,-100%);font-size:9px;letter-spacing:.06em;color:#F3EFE4;background:rgba(21,64,44,.72);border:1px solid #8C6C36;border-radius:5px;padding:2px 7px;white-space:nowrap;pointer-events:none;z-index:5;opacity:0;transition:opacity .25s}"+
+        ".hero-card{position:absolute;z-index:8;background:#F3EFE4;color:#15402C;border-left:4px solid #8C6C36;border-radius:10px;padding:1.1rem 1.2rem;box-shadow:0 16px 50px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:opacity .35s,transform .35s cubic-bezier(.22,.61,.36,1)}"+
+        ".hero-card.rail{top:50%;right:20px;width:290px;transform:translateY(-50%) translateX(14px)}.hero-card.rail.show{transform:translateY(-50%) translateX(0)}"+
+        ".hero-card.sheet{left:12px;right:12px;bottom:12px;transform:translateY(14px)}.hero-card.sheet.show{transform:translateY(0)}"+
+        ".hero-card.show{opacity:1;pointer-events:auto}"+
+        ".hero-card h4{font-family:Georgia,serif;font-size:1.18rem;margin:0 0 .15rem;color:#15402C;font-weight:600}"+
+        ".hero-card .tag{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:#8C6C36;font-weight:700;margin-bottom:.55rem}"+
+        ".hero-card p{font-size:.82rem;line-height:1.55;color:#2c3d33;margin:.4rem 0 .55rem}"+
+        ".hero-card .chips{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.4rem}"+
+        ".hero-card .chips span{font-size:.62rem;background:rgba(27,112,74,.12);color:#15402C;border:1px solid rgba(27,112,74,.3);border-radius:999px;padding:2px 9px}"+
+        ".hero-card .foot{font-size:.56rem;color:#8a8a78;margin-top:.5rem;font-style:italic}"+
+        ".hero-card .x{position:absolute;top:7px;right:11px;cursor:pointer;color:#8C6C36;font-size:1.05rem;line-height:1;border:none;background:none;pointer-events:auto}"+
+        ".hero-reset{position:absolute;bottom:14px;right:16px;z-index:7;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#F3EFE4;background:rgba(12,22,16,.6);border:1px solid #8C6C36;border-radius:999px;padding:5px 12px;cursor:pointer;opacity:0;transition:opacity .3s;pointer-events:none}"+
+        ".hero-reset.show{opacity:.92;pointer-events:auto}.hero-reset:hover{border-color:#3DBE82}";
+        document.head.appendChild(st);
+      }
+      stage.classList.add('hero-stage');
+
+      // build pins
+      districts.forEach(function(d,i){
+        const pin=document.createElement('div'); pin.className='hero-pin';
+        pin.innerHTML='<span class="dot" style="background:'+d.glow+';color:'+d.glow+'"></span><span class="lbl">'+d.name+'</span>';
+        pin.addEventListener('click', function(ev){ ev.stopPropagation(); selectDistrict(i); });
+        stage.appendChild(pin); d.pin=pin;
+      });
+      // landmark chips
+      lmPts.forEach(function(L){ const ch=document.createElement('div'); ch.className='hero-chip';
+        ch.textContent = L.name + (L.h>40 ? '  ·  '+Math.round(L.h)+' m' : '');
+        stage.appendChild(ch); L.chip=ch; });
+      // info card
+      const card=document.createElement('div'); card.className='hero-card '+(isMobile?'sheet':'rail');
+      stage.appendChild(card);
+      // reset
+      const resetBtn=document.createElement('button'); resetBtn.className='hero-reset'; resetBtn.textContent='Aerial view';
+      resetBtn.addEventListener('click', function(ev){ ev.stopPropagation(); resetView(); });
+      stage.appendChild(resetBtn);
+
+      // ===== camera + controls =====
       const target = new THREE.Vector3(cxg-60, 95, czg);
       camera.position.set(shoreX + 760, 330, czg + 880);
+      const DEF_CAM = camera.position.clone(), DEF_TGT = target.clone();
 
       let controls = null, az = 0, R0 = 0, Y0 = 0;
       if (!isMobile){
         controls = new THREE.OrbitControls(camera, canvas);
         controls.enableDamping = true; controls.dampingFactor = 0.08;
         controls.screenSpacePanning = false;
-        controls.minDistance = 600; controls.maxDistance = 3600;
-        controls.minPolarAngle = Math.PI*0.18; controls.maxPolarAngle = Math.PI*0.49;
+        controls.minDistance = 120; controls.maxDistance = 3200;
+        controls.minPolarAngle = Math.PI*0.16; controls.maxPolarAngle = Math.PI*0.49;
         controls.target.copy(target);
         controls.autoRotate = !reduceMo; controls.autoRotateSpeed = 0.3;
-        controls.addEventListener('start', function(){ controls.autoRotate = false; stage.classList.add('dragging'); });
+        controls.addEventListener('start', function(){ controls.autoRotate=false; stage.classList.add('dragging'); if(fly){ fly=null; controls.enableDamping=wasDamp; } });
         controls.addEventListener('end', function(){ stage.classList.remove('dragging'); });
         controls.update();
       } else {
@@ -704,16 +833,80 @@
         Y0 = camera.position.y; az = Math.atan2(camera.position.x - target.x, camera.position.z - target.z);
       }
 
-      function resize(){ w = stage.clientWidth; h = stage.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+      // ===== interaction: fly, select, raycast =====
+      let fly=null, wasDamp=true, activeIdx=-1, uMixTarget=0;
+      function easeInOutCubic(t){ return t<0.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; }
+      function flyTo(camTo, tgtTo){
+        if(!controls){ camera.position.copy(camTo); return; }
+        wasDamp=controls.enableDamping;
+        if(reduceMo){ camera.position.copy(camTo); controls.target.copy(tgtTo); controls.update(); return; }
+        fly={ p0:camera.position.clone(), p1:camTo.clone(), t0v:controls.target.clone(), t1v:tgtTo.clone(), start:performance.now(), dur:1100 };
+        controls.autoRotate=false; controls.enableDamping=false;
+      }
+      function updateFly(now){ if(!fly||!controls) return;
+        const k=Math.min(1,(now-fly.start)/fly.dur); const e=easeInOutCubic(k);
+        camera.position.lerpVectors(fly.p0,fly.p1,e); controls.target.lerpVectors(fly.t0v,fly.t1v,e); controls.update();
+        if(k>=1){ fly=null; controls.enableDamping=wasDamp; } }
+      function selectDistrict(i){
+        const d=districts[i]; activeIdx=i; uMixTarget=1;
+        if(cityMat.userData.shader) cityMat.userData.shader.uniforms.uActiveCenter.value.set(d.x, d.z);
+        districts.forEach(function(o,j){ o.diskTarget=(j===i)?0.34:0; o.pin.classList.toggle('active', j===i); });
+        card.innerHTML='<button class="x" aria-label="Close">&times;</button><div class="tag">'+d.tag+'</div><h4>'+d.name+'</h4>'+
+          '<div class="chips">'+d.chips.map(function(c){return '<span>'+c+'</span>';}).join('')+'</div>'+
+          '<p>'+d.copy+'</p><div class="foot">Qualitative positioning — not investment advice.</div>';
+        card.querySelector('.x').addEventListener('click', function(ev){ ev.stopPropagation(); dismiss(); });
+        card.classList.add('show'); resetBtn.classList.add('show');
+        flyTo(new THREE.Vector3(d.x+250, 300, d.z+430), new THREE.Vector3(d.x, 70, d.z));
+      }
+      function dismiss(){ activeIdx=-1; uMixTarget=0; districts.forEach(function(o){ o.diskTarget=0; o.pin.classList.remove('active'); }); card.classList.remove('show'); }
+      function resetView(){ dismiss(); resetBtn.classList.remove('show'); flyTo(DEF_CAM.clone(), DEF_TGT.clone()); }
+
+      const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let downPos=null;
+      const cursor={x:-999,y:-999,on:false};
+      canvas.addEventListener('pointerdown', function(e){ downPos={x:e.clientX,y:e.clientY}; });
+      canvas.addEventListener('pointermove', function(e){ const r=canvas.getBoundingClientRect(); cursor.x=e.clientX-r.left; cursor.y=e.clientY-r.top; cursor.on=true; });
+      canvas.addEventListener('pointerleave', function(){ cursor.on=false; });
+      canvas.addEventListener('pointerup', function(e){ if(!downPos) return;
+        if(Math.hypot(e.clientX-downPos.x, e.clientY-downPos.y)<5){
+          const r=canvas.getBoundingClientRect();
+          ndc.x=((e.clientX-r.left)/r.width)*2-1; ndc.y=-((e.clientY-r.top)/r.height)*2+1;
+          ray.setFromCamera(ndc,camera); const hit=ray.intersectObjects(hotspots,false)[0];
+          if(hit) selectDistrict(hit.object.userData.i); else dismiss();
+        } downPos=null; });
+      window.addEventListener('keydown', function(e){ if(e.key==='Escape') dismiss(); });
+
+      function resize(){ w=stage.clientWidth; h=stage.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
       window.addEventListener('resize', resize);
+
+      const _v=new THREE.Vector3();
+      function placeEl(el, x, y, z, yNudge){ _v.set(x,y,z).project(camera);
+        if(_v.z>1){ el.style.display='none'; return null; }
+        const x2=(_v.x*0.5+0.5)*w, y2=(-_v.y*0.5+0.5)*h;
+        el.style.display=''; el.style.transform='translate(-50%,-100%) translate('+x2+'px,'+(y2-(yNudge||10))+'px)';
+        return {x:x2,y:y2};
+      }
 
       const t0 = Date.now();
       function frame(){
         const t = reduceMo ? 0 : (Date.now()-t0)/1000;
-        if (cityMat.userData.shader) cityMat.userData.shader.uniforms.uTime.value = t;
+        if (cityMat.userData.shader){ cityMat.userData.shader.uniforms.uTime.value = t;
+          const u=cityMat.userData.shader.uniforms.uActiveMix; u.value += (uMixTarget - u.value)*0.08; }
         waterMat.uniforms.uTime.value = t;
+        for (let i=0;i<districts.length;i++){ const dk=districts[i].disk; dk.material.opacity += (districts[i].diskTarget - dk.material.opacity)*0.1; }
+        if (fly) updateFly(performance.now());
         if (controls){ controls.update(); }
         else { if(!reduceMo) az += 0.0018; camera.position.set(target.x + R0*Math.sin(az), Y0, target.z + R0*Math.cos(az)); camera.lookAt(target); }
+        // pins
+        for (let i=0;i<districts.length;i++){ const d=districts[i]; placeEl(d.pin, d.x, 150+(i===0?70:0), d.z, 0); }
+        // landmark chips: show nearest 2 to cursor (desktop) / nearest 2 to camera (mobile)
+        let best=[]; for (let i=0;i<lmPts.length;i++){ const L=lmPts[i]; const sp=placeEl(L.chip, L.ax, L.ay+22, L.az, 0);
+          if(!sp){ L.chip.style.opacity=0; continue; }
+          let metric; if(isMobile||!cursor.on){ metric = (L.ax-camera.position.x)*(L.ax-camera.position.x)+(L.az-camera.position.z)*(L.az-camera.position.z); }
+          else { metric=(sp.x-cursor.x)*(sp.x-cursor.x)+(sp.y-cursor.y)*(sp.y-cursor.y); }
+          best.push({L:L, m:metric}); }
+        best.sort(function(a,b){return a.m-b.m;});
+        const lim = (!isMobile && cursor.on) ? 26000 : 1e18;
+        for (let i=0;i<best.length;i++){ best[i].L.chip.style.opacity = (i<2 && best[i].m<lim) ? 0.95 : 0; }
         renderer.render(scene, camera);
         requestAnimationFrame(frame);
       }
