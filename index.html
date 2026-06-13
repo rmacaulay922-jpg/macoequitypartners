@@ -235,9 +235,9 @@
   <div class="hero-stage" id="heroStage">
     <canvas id="heroCanvas"></canvas>
     <div class="hero-grain"></div>
-    <span class="hero-tag">25.76° N · 80.19° W · LIVE</span>
-    <div class="hero-caption"><strong>Miami-Dade, rendered</strong>The county as live deal data</div>
-    <div class="hero-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Drag to explore</div>
+    <span class="hero-tag">BRICKELL · DOWNTOWN · BISCAYNE BAY</span>
+    <div class="hero-caption"><strong>Miami, in three dimensions</strong>1,400 real buildings · drag to orbit · scroll to zoom</div>
+    <div class="hero-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Drag · scroll to zoom</div>
   </div>
   <div class="hero-inner">
     <div class="hero-index reveal">
@@ -504,99 +504,124 @@
 <script>
   const reduceMo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ===== Hero: interactive 3D model of Miami-Dade County (real boundary, WebGL) =====
-  // Real county polygon (Census, FIPS 12086), extruded; emerald markers at the ZIPs we farm.
-  var MDCOORDS=[[-80.44049,25.956861],[-80.326712,25.957118],[-80.294972,25.95677],[-80.295187,25.97057],[-80.278764,25.970968],[-80.246763,25.971874],[-80.143501,25.974511],[-80.142227,25.974674],[-80.133867,25.974868],[-80.133862,25.97411],[-80.123874,25.974484],[-80.118078,25.975158],[-80.117798,25.975152],[-80.117904,25.915772],[-80.12087,25.883152],[-80.119684,25.841043],[-80.122056,25.817913],[-80.127394,25.791224],[-80.127987,25.772245],[-80.137476,25.750301],[-80.144,25.740812],[-80.152896,25.702855],[-80.154082,25.683283],[-80.152303,25.676759],[-80.154972,25.66549],[-80.160903,25.664897],[-80.176916,25.685062],[-80.170392,25.710565],[-80.164461,25.721833],[-80.166241,25.72895],[-80.172765,25.737847],[-80.184626,25.745557],[-80.197674,25.74437],[-80.229107,25.732509],[-80.240376,25.724206],[-80.244528,25.717089],[-80.250459,25.688028],[-80.265879,25.658373],[-80.267065,25.651849],[-80.277147,25.637022],[-80.288416,25.630498],[-80.296719,25.622195],[-80.301464,25.613299],[-80.305615,25.593134],[-80.305615,25.575342],[-80.302057,25.567632],[-80.313918,25.539164],[-80.324594,25.535605],[-80.328746,25.53264],[-80.339421,25.499427],[-80.339421,25.478669],[-80.337049,25.465621],[-80.328152,25.443084],[-80.320442,25.437153],[-80.326373,25.422919],[-80.32578,25.39801],[-80.320442,25.391486],[-80.31036,25.389707],[-80.306801,25.384369],[-80.31036,25.3731],[-80.335269,25.338701],[-80.352469,25.329805],[-80.361662,25.327433],[-80.374116,25.31735],[-80.383013,25.301337],[-80.385978,25.288289],[-80.419191,25.26338],[-80.437815,25.253077],[-80.447066,25.24796],[-80.462832,25.236248],[-80.467824,25.23254],[-80.468366,25.231977],[-80.469843,25.230442],[-80.483244,25.216526],[-80.487591,25.207829],[-80.488035,25.206942],[-80.488216,25.206757],[-80.495341,25.199463],[-80.496179,25.199637],[-80.498361,25.200091],[-80.498644,25.20015],[-80.502983,25.20316],[-80.503125,25.203259],[-80.50778,25.206488],[-80.508113,25.206719],[-80.508116,25.206725],[-80.512928,25.216719],[-80.514724,25.217702],[-80.515297,25.218016],[-80.520359,25.220788],[-80.52319,25.22008],[-80.525784,25.218649],[-80.530207,25.216207],[-80.540947,25.21821],[-80.54204,25.22185],[-80.540947,25.224945],[-80.540765,25.229678],[-80.548491,25.236535],[-80.558223,25.239012],[-80.570785,25.239366],[-80.589186,25.223796],[-80.587593,25.207695],[-80.584783,25.200695],[-80.584771,25.200665],[-80.594338,25.193437],[-80.601627,25.187931],[-80.609607,25.181902],[-80.609609,25.181901],[-80.618989,25.177345],[-80.619024,25.177328],[-80.633992,25.176829],[-80.639873,25.176633],[-80.640275,25.17662],[-80.640823,25.176364],[-80.642456,25.175601],[-80.645737,25.174069],[-80.645822,25.174029],[-80.646099,25.173599],[-80.648565,25.169773],[-80.649251,25.168708],[-80.656944,25.168216],[-80.660692,25.167976],[-80.66995,25.167384],[-80.674324,25.167104],[-80.679852,25.166751],[-80.683909,25.166491],[-80.688361,25.164711],[-80.695038,25.157588],[-80.70127,25.146683],[-80.703718,25.139115],[-80.715099,25.140872],[-80.721886,25.145101],[-80.728602,25.144316],[-80.734741,25.143598],[-80.73833,25.143178],[-80.742877,25.142646],[-80.746379,25.148559],[-80.746264,25.155303],[-80.751866,25.163762],[-80.757581,25.166734],[-80.795456,25.172337],[-80.796219,25.17245],[-80.815193,25.164956],[-80.817116,25.164196],[-80.823441,25.161698],[-80.826465,25.160504],[-80.82653,25.160478],[-80.826544,25.160509],[-80.827179,25.161888],[-80.827489,25.162562],[-80.828435,25.164619],[-80.830034,25.168094],[-80.838227,25.174791],[-80.843703,25.176312],[-80.846395,25.17706],[-80.8464,25.17706],[-80.858167,25.176576],[-80.87319,25.363993],[-80.873096,25.805377],[-80.872932,25.979434],[-80.680038,25.978749],[-80.680016,25.956857],[-80.44049,25.956861]];
-  var FARM=[['Kendall',25.679,-80.357],['Westchester',25.755,-80.330],['Pinecrest',25.667,-80.307],['Palmetto Bay',25.621,-80.325],['South Miami',25.707,-80.293],['West Little River',25.857,-80.236],['Brownsville',25.823,-80.243],['Homestead',25.475,-80.460],['Princeton-Naranja',25.535,-80.415],['Cutler Bay',25.575,-80.339],['Doral',25.819,-80.352],['Hialeah',25.860,-80.292],['Miami Gardens',25.930,-80.255],['North Miami',25.890,-80.190],['Goulds',25.560,-80.382],['Tamiami',25.760,-80.402]];
+  // ===== Hero: real interactive 3D Miami — Brickell & Downtown (OSM buildings + Biscayne Bay) =====
   (function(){
-    const canvas = document.getElementById('heroCanvas');
-    const stage = document.getElementById('heroStage');
-    if (!canvas || !stage) return;
-    let gl=null; try{ gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl'); }catch(e){}
-    if (!gl){ stage.classList.add('static'); return; }
-    function boot(){
-      if (typeof THREE === 'undefined'){ stage.classList.add('static'); return; }
-      let w = stage.clientWidth, h = stage.clientHeight;
-      const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
-      renderer.setSize(w, h, false);
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x0a140f, 28, 88);
-      const camera = new THREE.PerspectiveCamera(40, w/h, 0.1, 220);
-      scene.add(new THREE.AmbientLight(0x70806a, 0.55));
-      const key = new THREE.DirectionalLight(0xcaad6e, 1.25); key.position.set(14,30,16); scene.add(key);
-      const fill = new THREE.DirectionalLight(0x1b704a, 0.55); fill.position.set(-16,12,-12); scene.add(fill);
-
-      // ---- projection (lon/lat -> centered planar) ----
-      const lon0=-80.5, lat0=25.55, cosLat=Math.cos(lat0*Math.PI/180);
-      function rp(lon,lat){ return [ (lon-lon0)*cosLat, -(lat-lat0) ]; }
-      let minx=1e9,maxx=-1e9,miny=1e9,maxy=-1e9;
-      const raw=MDCOORDS.map(p=>rp(p[0],p[1]));
-      raw.forEach(p=>{ if(p[0]<minx)minx=p[0]; if(p[0]>maxx)maxx=p[0]; if(p[1]<miny)miny=p[1]; if(p[1]>maxy)maxy=p[1]; });
-      const cx=(minx+maxx)/2, cy=(miny+maxy)/2;
-      const FIT=27/Math.max(maxx-minx,maxy-miny);
-      function P(lon,lat){ const r=rp(lon,lat); return [ -(r[0]-cx)*FIT, (r[1]-cy)*FIT ]; } // -x so east (coast) renders on the right
-
-      const mapGroup=new THREE.Group(); scene.add(mapGroup);
-      // county landmass (extruded)
-      const pts=MDCOORDS.map(p=>P(p[0],p[1]));
-      const shape=new THREE.Shape();
-      shape.moveTo(pts[0][0],pts[0][1]);
-      for(let i=1;i<pts.length;i++) shape.lineTo(pts[i][0],pts[i][1]);
-      const D=0.95;
-      const geo=new THREE.ExtrudeGeometry(shape,{depth:D,bevelEnabled:false,steps:1});
-      const land=new THREE.Mesh(geo, new THREE.MeshStandardMaterial({color:0xc0b596, roughness:0.86, metalness:0.14, emissive:0x161009, emissiveIntensity:0.16, side:THREE.DoubleSide}));
-      mapGroup.add(land);
-      // glowing emerald top outline
-      const top=[]; pts.forEach(p=>top.push(new THREE.Vector3(p[0],p[1],D+0.01)));
-      const lineGeo=new THREE.BufferGeometry().setFromPoints(top);
-      mapGroup.add(new THREE.LineLoop(lineGeo, new THREE.LineBasicMaterial({color:0x2fbe7e, transparent:true, opacity:0.7})));
-      // farm markers
-      const barGeo=new THREE.BoxGeometry(0.16,0.16,1);
-      const capGeo=new THREE.SphereGeometry(0.2,16,12);
-      const jade=0x2fbe7e;
-      const markers=[];
-      FARM.forEach((f,i)=>{
-        const p=P(f[2],f[1]); const bh=1.5+(i%4)*0.45;
-        const mat=new THREE.MeshStandardMaterial({color:0x14422e, emissive:jade, emissiveIntensity:1.2, roughness:0.3});
-        const bar=new THREE.Mesh(barGeo,mat); bar.scale.z=bh; bar.position.set(p[0],p[1],D+bh/2);
-        const cap=new THREE.Mesh(capGeo,mat); cap.position.set(p[0],p[1],D+bh);
-        mapGroup.add(bar); mapGroup.add(cap);
-        markers.push({mat:mat, phase:i*0.6});
-      });
-      mapGroup.rotation.x=-Math.PI/2; // lay flat
-
-      // ---- orbit controls ----
-      let az=Math.PI*0.92, pol=0.74, tAz=az, tPol=pol; const RAD=33;
-      let dragging=false, lx=0, ly=0;
-      stage.addEventListener('pointerdown', e=>{ dragging=true; lx=e.clientX; ly=e.clientY; stage.classList.add('dragging'); try{ stage.setPointerCapture(e.pointerId); }catch(_){} });
-      stage.addEventListener('pointermove', e=>{ if(!dragging) return; tAz -= (e.clientX-lx)*0.006; tPol -= (e.clientY-ly)*0.005; lx=e.clientX; ly=e.clientY; });
-      function endDrag(){ dragging=false; stage.classList.remove('dragging'); }
-      stage.addEventListener('pointerup', endDrag);
-      stage.addEventListener('pointercancel', endDrag);
-      function resize(){ w=stage.clientWidth; h=stage.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
-      window.addEventListener('resize', resize);
-      const t0=Date.now();
-      function frame(){
-        const t=(Date.now()-t0)/1000;
-        if(!dragging && !reduceMo) tAz += 0.0013;
-        az += (tAz-az)*0.07; pol += (tPol-pol)*0.07;
-        pol = Math.max(0.32, Math.min(1.15, pol));
-        camera.position.set(RAD*Math.sin(pol)*Math.sin(az), RAD*Math.cos(pol), RAD*Math.sin(pol)*Math.cos(az));
-        camera.lookAt(0, 0, 0);
-        for(const m of markers) m.mat.emissiveIntensity=0.95+0.55*Math.sin(t*2+m.phase);
-        renderer.render(scene,camera);
-        raf = requestAnimationFrame(frame);
-      }
-      let raf;
-      requestAnimationFrame(()=>{ resize(); frame(); });
-    }
-    if (typeof THREE !== 'undefined') boot();
-    else {
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-      s.onload=boot; s.onerror=function(){ stage.classList.add('static'); };
+    const canvas=document.getElementById('heroCanvas');
+    const stage=document.getElementById('heroStage');
+    if(!canvas||!stage) return;
+    let gl=null; try{ gl=canvas.getContext('webgl')||canvas.getContext('experimental-webgl'); }catch(e){}
+    if(!gl){ stage.classList.add('static'); return; }
+    const isMobile = window.innerWidth<760 || (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+    const SRC=[
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js',
+      'miami-bld.js?v=1'
+    ];
+    function loadSeq(i){
+      if(i>=SRC.length){ try{ boot(); }catch(e){ stage.classList.add('static'); } return; }
+      var s=document.createElement('script'); s.src=SRC[i];
+      s.onload=function(){ loadSeq(i+1); };
+      s.onerror=function(){ stage.classList.add('static'); };
       document.head.appendChild(s);
+    }
+    loadSeq(0);
+
+    function boot(){
+      if(typeof THREE==='undefined' || !THREE.OrbitControls || !THREE.BufferGeometryUtils || typeof MIAMI_BLD==='undefined'){ stage.classList.add('static'); return; }
+      var reduceMo = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var w=stage.clientWidth, h=stage.clientHeight;
+      var renderer=new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+      renderer.setSize(w,h,false);
+      var scene=new THREE.Scene();
+      scene.fog=new THREE.Fog(0x0a140f, 1300, 6000);
+      var camera=new THREE.PerspectiveCamera(52, w/h, 1, 40000);
+
+      scene.add(new THREE.HemisphereLight(0xa8c0cf, 0x202a22, 0.85));
+      var sun=new THREE.DirectionalLight(0xffe7bf, 1.2); sun.position.set(900,1500,650); scene.add(sun);
+      var emFill=new THREE.DirectionalLight(0x1f7a52, 0.5); emFill.position.set(-700,500,-600); scene.add(emFill);
+
+      // projection lon/lat -> local metres (cos-lat x scaling)
+      var CLON=-80.192, CLAT=25.7725, MPLAT=111320, cosLat=Math.cos(CLAT*Math.PI/180);
+      function ll2m(lon,lat){ return [ (lon-CLON)*MPLAT*cosLat, -(lat-CLAT)*MPLAT ]; }
+
+      // pick the tallest few as glowing landmark towers
+      var sorted=MIAMI_BLD.slice().sort(function(a,b){return b[0]-a[0];});
+      var hot=new Set(); for(var k=0;k<16 && k<sorted.length;k++) hot.add(sorted[k]);
+
+      var geomsN=[], geomsH=[];
+      var minX=1e9,maxX=-1e9,minZ=1e9,maxZ=-1e9;
+      MIAMI_BLD.forEach(function(b){
+        var hgt=b[0], ring=b[1];
+        if(!ring || ring.length<3) return;
+        var n=ring.length; if(ring[0][0]===ring[n-1][0] && ring[0][1]===ring[n-1][1]) n--; // drop closing dup
+        if(n<3) return;
+        var shp=new THREE.Shape();
+        for(var i=0;i<n;i++){
+          var p=ll2m(ring[i][0],ring[i][1]);
+          if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0]; if(p[1]<minZ)minZ=p[1]; if(p[1]>maxZ)maxZ=p[1];
+          if(i===0) shp.moveTo(p[0],p[1]); else shp.lineTo(p[0],p[1]);
+        }
+        var g; try{ g=new THREE.ExtrudeGeometry(shp,{depth:hgt,bevelEnabled:false,steps:1}); }catch(e){ return; }
+        g.rotateX(-Math.PI/2);
+        if(hot.has(b)) geomsH.push(g); else geomsN.push(g);
+      });
+      var mergeFn=THREE.BufferGeometryUtils.mergeBufferGeometries.bind(THREE.BufferGeometryUtils);
+      if(geomsN.length){
+        var mN=mergeFn(geomsN,false);
+        if(mN) scene.add(new THREE.Mesh(mN, new THREE.MeshStandardMaterial({color:0xcdc3a3, roughness:0.82, metalness:0.05, flatShading:true, emissive:0x1a140b, emissiveIntensity:0.16})));
+      }
+      var hotMat=null;
+      if(geomsH.length){
+        var mH=mergeFn(geomsH,false);
+        if(mH){ hotMat=new THREE.MeshStandardMaterial({color:0x16472f, roughness:0.4, metalness:0.1, flatShading:true, emissive:0x2fbe7e, emissiveIntensity:0.95}); scene.add(new THREE.Mesh(mH, hotMat)); }
+      }
+      geomsN.concat(geomsH).forEach(function(g){ g.dispose(); });
+
+      var cxg=(minX+maxX)/2, czg=(minZ+maxZ)/2, spanZ=(maxZ-minZ);
+      // ground (city / dark) + Biscayne Bay water (east of the skyline)
+      var shoreX=maxX+90;
+      var land=new THREE.Mesh(new THREE.PlaneGeometry(16000,16000), new THREE.MeshStandardMaterial({color:0x0c1611, roughness:1}));
+      land.rotation.x=-Math.PI/2; land.position.set(shoreX-8000, -0.5, czg); scene.add(land);
+      var water=new THREE.Mesh(new THREE.PlaneGeometry(20000,20000), new THREE.MeshStandardMaterial({color:0x0e4150, roughness:0.66, metalness:0.04, emissive:0x05202a, emissiveIntensity:0.13}));
+      water.rotation.x=-Math.PI/2; water.position.set(shoreX+10000, -1.4, czg); scene.add(water);
+      // glowing emerald shoreline
+      var shore=new THREE.Mesh(new THREE.BoxGeometry(7, 2.5, spanZ+1400), new THREE.MeshBasicMaterial({color:0x2fbe7e, transparent:true, opacity:0.55}));
+      shore.position.set(shoreX, 1.2, czg); scene.add(shore);
+
+      var target=new THREE.Vector3(cxg, 82, czg);
+      camera.position.set(cxg+1600, 700, czg+1500);
+
+      var controls=null, az=0;
+      if(!isMobile){
+        controls=new THREE.OrbitControls(camera, canvas);
+        controls.enableDamping=true; controls.dampingFactor=0.08;
+        controls.screenSpacePanning=false;
+        controls.minDistance=350; controls.maxDistance=5200;
+        controls.minPolarAngle=Math.PI*0.16; controls.maxPolarAngle=Math.PI*0.49;
+        controls.target.copy(target);
+        controls.autoRotate=!reduceMo; controls.autoRotateSpeed=0.32;
+        controls.addEventListener('start',function(){ controls.autoRotate=false; stage.classList.add('dragging'); });
+        controls.addEventListener('end',function(){ stage.classList.remove('dragging'); });
+        controls.update();
+      } else {
+        // mobile: non-interactive auto-orbit (so it never traps page scroll)
+        var R0=Math.hypot(camera.position.x-target.x, camera.position.z-target.z);
+        var Y0=camera.position.y; az=Math.atan2(camera.position.x-target.x, camera.position.z-target.z);
+      }
+
+      function resize(){ w=stage.clientWidth; h=stage.clientHeight; if(!w||!h)return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+      window.addEventListener('resize', resize);
+      var raf;
+      function frame(){
+        if(controls){ controls.update(); }
+        else { if(!reduceMo) az+=0.0016; camera.position.set(target.x+R0*Math.sin(az), Y0, target.z+R0*Math.cos(az)); camera.lookAt(target); }
+        if(hotMat) hotMat.emissiveIntensity=0.7+0.4*Math.sin(Date.now()*0.0022);
+        renderer.render(scene,camera);
+        raf=requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(function(){ resize(); frame(); });
     }
   })();
 
