@@ -628,7 +628,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.8</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.9</div>
     </div>
   </header>
 
@@ -701,6 +701,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
         <option value="arv-desc">ARV / value (high &rarr; low)</option>
         <option value="arv-asc">ARV / value (low &rarr; high)</option>
         <option value="cases-desc">Most open code cases</option>
+        <option value="estates">Estates &amp; heirs first</option>
       </select>
       <span id="dealRefreshStatus" style="font-size:11px;color:var(--muted);"></span>
     </div>
@@ -1055,6 +1056,7 @@ function _rebuildSoon(invalidateDeals){
     try{if(document.getElementById('dealGrid'))buildDeals();}catch(e){}
     try{if(document.getElementById('propTbody'))buildAllTable();}catch(e){}
     try{buildOverview();}catch(e){}
+    try{buildPipeline();}catch(e){} // keep pipeline numbers in lock-step with the other tabs
   },700);
 }
 // Resolve a deal by its rendered card index — _dealList is the exact array the cards were built from
@@ -1213,6 +1215,8 @@ function dealDossierHtml(d,idx){
       (d.zillow_url?'<a class="btn btn-outline" href="'+d.zillow_url+'" target="_blank" style="border-color:#006AFF;color:#006AFF;">Zillow</a>':'')+
       skipTraceLinks(d)+
       ((typeof estateInfo==='function'&&estateInfo(_liveOwnerOf(d)))?'<a class="btn btn-outline" href="https://www2.miamidadeclerk.gov/ocs/" target="_blank" title="Estate on title — search the owner\'s name in the Clerk\'s Online Case Search for the probate case and personal representative (no API exists; copy the name from above)" style="border-color:#e08ad2;color:#e08ad2;">Probate Case (Clerk)</a>':'')+
+      (violInfo(d.address)?'<button class="btn btn-outline" onclick="gotoViolations(\''+pcJs(d.address)+'\')">County Cases &#8599;</button>':'')+
+      '<button class="btn btn-outline" onclick="gotoProperty(\''+pcJs(d.address)+'\')">All Properties &#8599;</button>'+
       '<button class="btn btn-outline" onclick="openPrint('+idx+')">Print Deal Sheet</button>'+
     '</div>'+
   '</div>';
@@ -1357,16 +1361,22 @@ function buildOverview(){
     {name:'home',label:'Top Deal Comp ARV',value:fmtK(topDeal.arv),sub:topDeal.address+(LIVE_COMPS?' (live comps)':' (comps)')},
     {name:'dollar',label:'Top Deal Est. Profit',value:fmtK(topProfit),sub:'6-mo flip, net of all costs'},
     {name:'bars',label:'Median Comp Price',value:fmtK(medPrice),sub:'Across '+SALES.length.toLocaleString()+(LIVE_COMPS?' live 12-mo sales':' Kendall sales')},
-    {name:'sales',label:'Recent Sales Comps',value:SALES.length.toLocaleString(),sub:'$'+medPpsf+'/sqft median'}
+    {name:'sales',label:'Recent Sales Comps',value:SALES.length.toLocaleString(),sub:'$'+medPpsf+'/sqft median'},
+    (function(){var e=0,le=0;try{ALL_ROWS.forEach(function(r){var x=estateInfo(_liveOwnerOf({pa_url:r[16],owner:r[3]}));if(x==='estate')e++;else if(x==='le')le++;});}catch(_x){}
+      return {name:'home',label:'Estates on Title',value:e,sub:le+' life estates &middot; click to view list',act:'gotoEstates()'};})()
   ];
   document.getElementById('statsGrid').innerHTML=cards.map(function(c){
-    return '<div class="stat-card"><div class="stat-icon">'+ICON(c.name,22)+'</div><div class="stat-lbl">'+c.label+'</div><div class="stat-val">'+c.value+'</div><div class="stat-sub">'+c.sub+'</div></div>';
+    return '<div class="stat-card"'+(c.act?' onclick="'+c.act+'" style="cursor:pointer;" title="Click to open the filtered list"':'')+'><div class="stat-icon">'+ICON(c.name,22)+'</div><div class="stat-lbl">'+c.label+'</div><div class="stat-val">'+c.value+'</div><div class="stat-sub">'+c.sub+'</div></div>';
   }).join('');
 
   try{renderFollowups();}catch(e){}
   buildOverviewMarket();
 }
 function showTabByName(name){var b=document.querySelector('#tabBar button[data-tab="'+name+'"]');if(b)b.click();}
+// Cross-tab jumps — every record should be one click away from its other views.
+function gotoProperty(addr){showTabByName('all');var s=document.getElementById('propSearch');if(s)s.value=addr;try{filterTable();}catch(e){}window.scrollTo(0,0);}
+function gotoViolations(addr){showTabByName('violations');var s=document.getElementById('violSearch');if(s)s.value=addr;try{buildViolations();}catch(e){}window.scrollTo(0,0);}
+function gotoEstates(){showTabByName('all');var f=document.getElementById('ownerTypeFilter');if(f)f.value='estate';var s=document.getElementById('propSearch');if(s)s.value='';try{filterTable();}catch(e){}window.scrollTo(0,0);}
 // Follow-ups saved on Pipeline cards surface here — deals are won on the 4th-7th touch.
 function renderFollowups(){
   var el=document.getElementById('followupsDue'); if(el==null||typeof getPipeline!=='function')return;
@@ -1572,9 +1582,9 @@ function buildViolIndex(){
   if(typeof VIOL_DETAIL!=='undefined')VIOL_DETAIL.forEach(function(v){var k=_normAddr(v.address);if(!_violIndex[k])_violIndex[k]={n:(v.violations||[]).length,lien:null,live:false};});
 }
 function violInfo(a){if(!_violIndex)buildViolIndex();return _violIndex[_normAddr(a)]||null;}
-function dealFlags(d){var vi=violInfo(d.address);var p=[];
-  if(vi&&vi.n)p.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">'+vi.n+' OPEN CODE CASE'+(vi.n!==1?'S':'')+'</span>');
-  if(vi&&vi.lien)p.push('<span style="background:rgba(224,102,74,.2);color:#e0664a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">LIEN'+(vi.lien.date?' &middot; '+vi.lien.date:' RECORDED')+'</span>');
+function dealFlags(d){var vi=violInfo(d.address);var p=[];var _ja='onclick="gotoViolations(\''+pcJs(d.address)+'\')" title="Open this property in Code &amp; Liens" ';
+  if(vi&&vi.n)p.push('<span '+_ja+'style="background:rgba(232,133,74,.16);color:#e8854a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;cursor:pointer;text-decoration:underline dotted;">'+vi.n+' OPEN CODE CASE'+(vi.n!==1?'S':'')+'</span>');
+  if(vi&&vi.lien)p.push('<span '+_ja+'style="background:rgba(224,102,74,.2);color:#e0664a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;cursor:pointer;text-decoration:underline dotted;">LIEN'+(vi.lien.date?' &middot; '+vi.lien.date:' RECORDED')+'</span>');
   var bv=(typeof bldgViolInfo==='function')?bldgViolInfo(d):null;
   if(bv){
     if(bv.unsafe)p.push('<span style="background:rgba(224,74,74,.25);color:#ff6b5e;font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">UNSAFE STRUCTURE</span>');
@@ -1748,6 +1758,7 @@ function buildDeals(){
     if(sortBy==='arv-asc')return (a.arv||0)-(b.arv||0);
     if(sortBy==='profit-desc'){var pa=finVal(a,getProfit),pb=finVal(b,getProfit);return (pb==null?-1e12:pb)-(pa==null?-1e12:pa);}
     if(sortBy==='cases-desc'){var ca=(violInfo(a.address)||{}).n||0,cb=(violInfo(b.address)||{}).n||0;return (cb-ca)||(b._score-a._score);}
+    if(sortBy==='estates'){function er(d){var x=estateInfo(_liveOwnerOf(d));return x==='estate'?2:(x==='le'?1:0);}var ea=er(a),eb=er(b);return (eb-ea)||(b._score-a._score);}
     return b._score-a._score;
   });
   window._dealList=deals;
@@ -3062,7 +3073,7 @@ function buildViolations(){
     var metaParts=[]; if(v.owner)metaParts.push(v.owner); if(v.neighborhood)metaParts.push(v.neighborhood);
     metaParts.push(openN+' open case'+(openN!==1?'s':'')+(lienN?' + '+lienN+' liened':''));
     if(v._oldest){var _yrs=((Date.now()-v._oldest)/31557600000);if(_yrs>=0.5)metaParts.push('<span style="color:#e8a14a;font-weight:700;">ignored '+(_yrs>=1?_yrs.toFixed(1)+' yrs':Math.round(_yrs*12)+' mo')+'</span> (oldest open '+_fmtEpoch(v._oldest)+')');}
-    var lienLine=v._lien?'<div style="font-size:11px;color:#e0664a;background:rgba(224,102,74,.08);border:1px solid rgba(224,102,74,.25);border-radius:6px;padding:6px 9px;margin:0 0 10px;">Recorded county code lien'+(v._lien.date?' &middot; '+v._lien.date:'')+(v._lien.book?' &middot; OR Book/Page '+v._lien.book+'/'+v._lien.page:'')+' &mdash; must be cleared at closing.</div>':'';
+    var lienLine=v._lien?'<div style="font-size:11px;color:#e0664a;background:rgba(224,102,74,.08);border:1px solid rgba(224,102,74,.25);border-radius:6px;padding:6px 9px;margin:0 0 10px;">Recorded county code lien'+(v._lien.date?' &middot; '+v._lien.date:'')+(v._lien.book?' &middot; <a href="https://onlineservices.miamidadeclerk.gov/officialrecords/StandardSearch.aspx" target="_blank" title="Opens the Clerk\'s Official Records search — enter Book '+_escHtml(v._lien.book)+' / Page '+_escHtml(v._lien.page)+' to read the recorded lien document" style="color:#e0664a;text-decoration:underline;">OR Book/Page '+v._lien.book+'/'+v._lien.page+' &#8599;</a>':'')+' &mdash; must be cleared at closing.</div>':'';
     var border=v._lien?' style="border-left-color:#e0664a;"':(v._verified?'':' style="border-left-color:#e8854a;"');
     return '<div class="viol-card"'+border+'>'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;"><div class="viol-addr">'+(v.address||'').replace(/\s+/g,' ').trim()+'</div><div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;">'+lienTag+tag+'</div></div>'+
@@ -3082,6 +3093,7 @@ function buildViolations(){
         return '';
       })()+
       '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">'+
+        (function(){var f=v.folio,lead=f&&window._rowByFolio&&_rowByFolio[f];return lead?'<button type="button" class="btn btn-gold" style="font-size:10px;padding:4px 8px;" onclick="gotoProperty(\''+pcJs(lead[1])+'\')">View Deal &#8599;</button>':'';})()+
         (v.pa_url?'<a href="'+v.pa_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">PA Record</a>':'')+
         '<a href="'+v.maps_url+'" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 8px;">Maps</a>'+
         '<button type="button" class="btn btn-outline" style="font-size:10px;padding:4px 8px;" onclick="violToPipeline(\''+(v.folio||'')+'\',\''+pcJs(v.address)+'\');this.textContent=\'\\u2713 In Pipeline\';this.disabled=true;">+ Pipeline</button>'+
@@ -3198,10 +3210,32 @@ function migratePipeline(data){
   return data;
 }
 
+// Find the live deal object behind any address so every tab reads the same numbers.
+function _currentDealFor(addr){
+  var k=_normAddr(addr);
+  for(var i=0;i<TOP10.length;i++)if(_normAddr(TOP10[i].address)===k)return TOP10[i];
+  for(var j=0;j<ALL_ROWS.length;j++)if(_normAddr(ALL_ROWS[j][1])===k)return rowToDeal(ALL_ROWS[j]);
+  var cl=_countyLeads||[];
+  for(var c=0;c<cl.length;c++)if(_normAddr(cl[c].address)===k)return cl[c];
+  return null;
+}
 function buildPipeline(){
   var board=document.getElementById('pipelineBoard');
   if(!board)return;
   var data=migratePipeline(getPipeline());
+  // Live-sync: pipeline cards froze a snapshot from the day they were added; ARVs/repairs have since
+  // been recomputed from county-verified sqft + live comps. Sync any field the user has NOT hand-edited.
+  var dirty=false;
+  Object.keys(data).forEach(function(a){
+    var e=data[a];var cur=_currentDealFor(a);if(!cur||!cur.arv)return;
+    e.man=e.man||{};
+    if(!e.man.arv&&e.arv!==cur.arv){e.arv=cur.arv;dirty=true;}
+    if(!e.man.repair&&cur.repair!=null&&e.repair!==cur.repair){e.repair=cur.repair;dirty=true;}
+    if(!e.man.purchase){var p=Math.round((e.arv||0)*0.65);if(e.purchase!==p){e.purchase=p;dirty=true;}}
+    var sc=(cur._score!=null)?cur._score:computeScore(cur).score;
+    if(sc&&e.score!==sc){e.score=sc;dirty=true;}
+  });
+  if(dirty)savePipeline(data);
   board.innerHTML=PIPE_STAGES.map(function(s){
     return '<div class="pipeline-col" data-stage="'+s.key+'">'+
       '<div class="pipeline-col-hdr" style="background:'+s.bg+';color:'+s.fg+';">'+s.label+' <span class="col-count" id="cnt-'+s.key+'">0</span></div>'+
@@ -3240,6 +3274,8 @@ function renderPipelineCard(entry, stage){
     +'<a href="'+zillowUrl({address:entry.address})+'" target="_blank" style="color:var(--bronze);">Zillow</a> &middot; '
     +'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(entry.address+' FL')+'" target="_blank" style="color:var(--bronze);">Maps</a>'
     +(_fol?' &middot; <a href="'+_paFolioUrl(_fol)+'" target="_blank" style="color:var(--bronze);">PA Record</a>':'')
+    +' &middot; <a href="javascript:void(0)" onclick="gotoProperty(\''+a+'\')" style="color:var(--bronze);">All Properties &#8599;</a>'
+    +' &middot; <a href="javascript:void(0)" onclick="gotoViolations(\''+a+'\')" style="color:var(--bronze);">Code &amp; Liens &#8599;</a>'
     +(_own&&_own.o?' '+skipTraceLinks({owner:_own.o,mail_city:_own.mc,mail_state:_own.ms}).replace(/class="btn btn-outline"/g,'style="color:var(--bronze);font-size:11.5px;"'):'')
   +'</div>';
   card.innerHTML=
@@ -3271,7 +3307,10 @@ function renderPipelineCard(entry, stage){
 function pcUpdate(addr,field,val){
   var data=getPipeline();
   if(!data[addr])return;
-  if(field==='purchase'||field==='arv'||field==='repair'){ val=parseFloat((''+val).replace(/[^0-9.]/g,''))||0; }
+  if(field==='purchase'||field==='arv'||field==='repair'){
+    val=parseFloat((''+val).replace(/[^0-9.]/g,''))||0;
+    data[addr].man=data[addr].man||{};data[addr].man[field]=1; // hand-edited — live sync keeps hands off
+  }
   data[addr][field]=val;
   savePipeline(data);
   buildPipeline();
