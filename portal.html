@@ -11,14 +11,18 @@
 
 <style>
 :root {
-  --bg:#0d0c0a; --bg-deep:#080806; --bg-soft:#16140f; --bg-warm:#1a1812; --bg-card:#1c1a14;
-  --ivory:#f4f1ea; --ivory-soft:#e8e3d6; --muted:#8a8478; --faint:#5a554c;
-  --bronze:#b89968; --bronze-soft:#d4b884; --bronze-deep:#8b6f47;
-  --rule:rgba(244,241,234,.10); --rule-strong:rgba(244,241,234,.20); --rule-bronze:rgba(184,153,104,.30);
+  /* "Miami Ledger" dark — forest-black canvas, brass chrome, emerald/jade for money. The
+     marketing site publishes in the light; the deal-finder works in the dark, same DNA. */
+  --bg:#0B1410; --bg-deep:#070F0B; --bg-soft:#101C16; --bg-warm:#14241C; --bg-card:#122019;
+  --ivory:#F1EEE2; --ivory-soft:#D6DBCE; --muted:#8B968B; --faint:#5C6760;
+  --bronze:#B5915A; --bronze-soft:#CDA972; --bronze-deep:#6E5528;
+  --rule:rgba(241,238,226,.10); --rule-strong:rgba(241,238,226,.20); --rule-bronze:rgba(181,145,90,.32);
   /* aliases used throughout portal */
-  --black:#0d0c0a; --gold:#b89968; --gold-light:#d4b884;
-  --card:#1c1a14; --border:rgba(244,241,234,.12);
-  --text:#f4f1ea; --green:#4a8c6a; --red:#c97a6a;
+  --black:#0B1410; --gold:#B5915A; --gold-light:#CDA972;
+  --card:#122019; --border:rgba(241,238,226,.12);
+  --text:#F1EEE2; --green:#3DBE82; --red:#E0705C;
+  /* brand accent — emerald (used by new redesign accents) */
+  --emerald:#1B704A; --jade:#3DBE82; --forest:#15402C;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--ivory);-webkit-font-smoothing:antialiased;}
@@ -628,7 +632,7 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v10.9</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.0</div>
     </div>
   </header>
 
