@@ -134,16 +134,9 @@ main,nav,footer,section,header{position:relative;z-index:2}
   letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink);
 }
-/* Crisp monogram chip in place of the photographic logo — sharp & on-brand at any size */
-.nav-logo img{display:none}
-.nav-logo::before{
-  content:'M';display:inline-flex;align-items:center;justify-content:center;
-  width:36px;height:36px;border-radius:10px;
-  border:1px solid var(--brass-line);background:var(--card);
-  color:var(--emerald);font-family:var(--serif);font-weight:500;font-size:1.18rem;line-height:1;
-  flex-shrink:0;transition:border-color .3s,background .3s;
-}
-.nav-logo:hover::before{border-color:var(--emerald)}
+/* Real Maco ME monogram (transparent PNG), forest-green on the light pages */
+.nav-logo img{display:block;height:36px;width:auto;flex-shrink:0;transition:transform .3s}
+.nav-logo:hover img{transform:translateY(-1px)}
 .nav-logo .accent{color:var(--brass)}
 .nav-logo .text{display:inline-block}
 
@@ -308,7 +301,12 @@ main,nav,footer,section,header{position:relative;z-index:2}
 .footer-brand .footer-logo{
   font-family:var(--serif);font-weight:500;font-size:1.3rem;
   letter-spacing:.1em;text-transform:uppercase;
-  color:var(--on-dark);margin-bottom:1.2rem;display:block;
+  color:var(--on-dark);margin-bottom:1.2rem;display:flex;align-items:center;gap:.85rem;
+}
+/* Ivory ME monogram in the dark footer */
+.footer-brand .footer-logo::before{
+  content:'';display:inline-block;width:38px;height:38px;flex-shrink:0;
+  background:url(logo-mark-light.png) center/contain no-repeat;
 }
 .footer-brand .footer-logo .accent{color:var(--brass-soft)}
 .footer-brand p{font-size:.92rem;color:var(--on-dark-mute);line-height:1.7;max-width:380px;font-weight:400}
@@ -443,13 +441,7 @@ main,nav,footer,section,header{position:relative;z-index:2}
 .report-hero{padding:10rem 5vw 4rem;background:var(--paper);border-bottom:1px solid var(--rule)}
 .report-hero-inner{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:auto 1fr;gap:3rem;align-items:center}
 .report-hero-mark{width:96px;flex-shrink:0}
-.report-hero-mark img{display:none}
-.report-hero-mark::before{
-  content:'M';display:flex;align-items:center;justify-content:center;
-  width:96px;height:96px;border-radius:18px;
-  border:1px solid var(--brass-line);background:var(--card);
-  color:var(--emerald);font-family:var(--serif);font-weight:400;font-size:3.4rem;line-height:1;
-}
+.report-hero-mark img{display:block;width:96px;height:auto}
 .report-hero-meta{display:flex;align-items:center;gap:1.2rem;font-family:var(--sans);font-size:.63rem;letter-spacing:.34em;text-transform:uppercase;color:var(--brass);margin-bottom:1.5rem;font-weight:600}
 .report-hero-meta .dot{width:4px;height:4px;background:var(--brass);border-radius:50%}
 .report-hero-meta .muted{color:var(--ink-mute)}
