@@ -28,84 +28,40 @@
 <link rel="apple-touch-icon" href="favicon.jpg">
 <link rel="stylesheet" href="styles.css?v=11">
 <style>
-  /* ===== HERO ===== */
-  .hero{
-    position:relative;padding:9.5rem 5vw 4.5rem;
-    max-width:var(--container);margin:0 auto;
-    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  /* ===== HERO — big interactive 3D stage + editorial text ===== */
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
+  /* Large drag-to-orbit 3D stage, bleeding to the right edge */
+  .hero-stage{
+    position:absolute;top:5.2rem;right:1.4rem;bottom:1.4rem;width:53vw;z-index:0;
+    background:radial-gradient(120% 100% at 65% 18%, #1b2e22 0%, #0c1610 54%, #070f0b 100%);
+    border:1px solid var(--rule-2);border-radius:22px;overflow:hidden;
+    box-shadow:var(--shadow);
+    cursor:grab;touch-action:none;
   }
-  .hero-index{
-    display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
-    padding-bottom:1.1rem;margin-bottom:3.2rem;
-    border-bottom:1px solid var(--rule);
-    font-family:var(--sans);font-size:.62rem;font-weight:500;
-    letter-spacing:.28em;text-transform:uppercase;color:var(--ink-mute);
-  }
+  .hero-stage:active{cursor:grabbing}
+  .hero-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
+  .hero-stage.static canvas{display:none}
+  .hero-grain{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.32;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .hero-tag{position:absolute;right:1.7rem;top:1.7rem;z-index:5;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;color:rgba(241,238,226,.8);border:1px solid rgba(241,238,226,.26);border-radius:999px;padding:.34rem .8rem;background:rgba(12,22,16,.4);backdrop-filter:blur(4px)}
+  .hero-caption{position:absolute;left:2rem;bottom:1.8rem;z-index:5;font-family:var(--sans);font-size:.56rem;letter-spacing:.26em;text-transform:uppercase;color:rgba(241,238,226,.78)}
+  .hero-caption strong{display:block;font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.15rem;letter-spacing:0;text-transform:none;color:var(--on-dark);margin-bottom:.3rem}
+  .hero-hint{position:absolute;right:1.8rem;bottom:1.8rem;z-index:5;display:flex;align-items:center;gap:.5rem;font-family:var(--sans);font-size:.55rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(241,238,226,.72);transition:opacity .4s}
+  .hero-hint svg{width:15px;height:15px;opacity:.85}
+  .hero-stage.dragging .hero-hint{opacity:0}
+  /* text column */
+  .hero-inner{position:relative;z-index:4;width:44vw;max-width:600px;padding:9.5rem 0 4rem 5vw}
+  .hero-index{display:flex;gap:1.4rem;flex-wrap:wrap;padding-bottom:1.1rem;margin-bottom:2.4rem;border-bottom:1px solid var(--rule);font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-mute)}
   .hero-index .mid{color:var(--brass)}
-  .hero-grid{
-    display:grid;grid-template-columns:1.15fr .85fr;gap:5vw;align-items:center;
-  }
-  .hero-eyebrow{
-    display:inline-flex;align-items:center;gap:.9rem;
-    font-size:.66rem;letter-spacing:.4em;text-transform:uppercase;
-    color:var(--brass);margin-bottom:2rem;font-weight:600;
-  }
-  .hero-eyebrow::before{content:'';width:26px;height:1px;background:var(--brass);opacity:.7}
-  .hero h1{
-    font-family:var(--serif);font-weight:300;
-    font-size:clamp(3rem,6.6vw,6.6rem);
-    line-height:.98;letter-spacing:-.028em;color:var(--ink);
-    margin-bottom:2rem;
-  }
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:.9rem;font-size:.62rem;letter-spacing:.36em;text-transform:uppercase;color:var(--brass);margin-bottom:1.7rem;font-weight:600}
+  .hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--brass);opacity:.7}
+  .hero h1{font-family:var(--serif);font-weight:300;font-size:clamp(2.7rem,5vw,5.4rem);line-height:.97;letter-spacing:-.026em;color:var(--ink);margin-bottom:1.7rem}
   .hero h1 em{font-style:italic;color:var(--emerald);font-weight:400}
-  .hero-lede{
-    font-size:1.12rem;color:var(--ink-soft);line-height:1.65;font-weight:400;
-    max-width:460px;margin-bottom:2.4rem;
-  }
-  .hero-cta-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3.2rem}
-  .hero-meta{
-    display:flex;gap:2.8rem;flex-wrap:wrap;
-    padding-top:1.8rem;border-top:1px solid var(--rule);max-width:520px;
-  }
-  .hero-meta-item strong{
-    display:block;font-family:var(--serif);font-weight:400;
-    font-size:2rem;color:var(--ink);letter-spacing:-.02em;line-height:1;margin-bottom:.45rem;
-  }
-  .hero-meta-item span{
-    font-family:var(--sans);font-size:.6rem;letter-spacing:.2em;
-    text-transform:uppercase;color:var(--ink-mute);font-weight:500;
-  }
-  /* Live 3D data-skyline panel (WebGL) */
-  .hero-media{
-    position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;
-    box-shadow:var(--shadow);border:1px solid var(--rule-2);
-    background:radial-gradient(130% 110% at 50% -10%, #182a20 0%, #0b1510 62%, #070f0b 100%);
-    cursor:crosshair;
-  }
-  .hero-media canvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1}
-  .hero-media .frame{position:absolute;inset:10px;border:1px solid rgba(241,238,226,.20);border-radius:8px;z-index:4;pointer-events:none}
-  .hero-grain{
-    position:absolute;inset:0;z-index:3;pointer-events:none;opacity:.4;mix-blend-mode:overlay;
-    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  }
-  .hero-caption{
-    position:absolute;left:1.5rem;bottom:1.4rem;z-index:5;
-    font-family:var(--sans);font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;
-    color:rgba(241,238,226,.82);
-  }
-  .hero-caption strong{display:block;font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.05rem;letter-spacing:0;text-transform:none;color:var(--on-dark);margin-bottom:.3rem}
-  .hero-tag{
-    position:absolute;right:1.4rem;top:1.4rem;z-index:5;
-    font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;
-    color:rgba(241,238,226,.78);
-    border:1px solid rgba(241,238,226,.28);border-radius:999px;padding:.3rem .7rem;
-    background:rgba(16,29,23,.3);backdrop-filter:blur(4px);
-  }
-  .scroll-cue{
-    position:absolute;bottom:1.6rem;left:5vw;
-    font-family:var(--sans);font-size:.58rem;letter-spacing:.36em;text-transform:uppercase;color:var(--ink-mute);
-    display:flex;align-items:center;gap:.8rem;
-  }
+  .hero-lede{font-size:1.05rem;color:var(--ink-soft);line-height:1.6;font-weight:400;max-width:430px;margin-bottom:2.1rem}
+  .hero-cta-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2.6rem}
+  .hero-meta{display:flex;gap:2.2rem;flex-wrap:wrap;padding-top:1.6rem;border-top:1px solid var(--rule);max-width:520px}
+  .hero-meta-item strong{display:block;font-family:var(--serif);font-weight:400;font-size:1.85rem;color:var(--ink);letter-spacing:-.02em;line-height:1;margin-bottom:.4rem}
+  .hero-meta-item span{font-family:var(--sans);font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+  .scroll-cue{position:absolute;bottom:1.6rem;left:5vw;z-index:4;font-family:var(--sans);font-size:.56rem;letter-spacing:.36em;text-transform:uppercase;color:var(--ink-mute);display:flex;align-items:center;gap:.8rem}
   .scroll-cue::after{content:'';width:42px;height:1px;background:linear-gradient(90deg,var(--brass),transparent)}
 
   /* ===== STATEMENT ===== */
@@ -222,9 +178,9 @@
   .form-sent{background:rgba(27,112,74,.1);border:1px solid var(--brass-line);border-radius:10px;padding:1rem 1.2rem;font-size:.9rem;color:var(--emerald);margin-bottom:.5rem;display:flex;align-items:center;gap:.6rem}
 
   @media(max-width:960px){
-    .hero-grid{grid-template-columns:1fr;gap:3rem}
-    .hero-media{aspect-ratio:16/11;order:-1}
-    .hero{min-height:auto;padding-top:8rem}
+    .hero{flex-direction:column;min-height:auto}
+    .hero-stage{position:relative;width:100%;height:54vh;min-height:380px;border-left:none;border-bottom:1px solid var(--rule-2);border-radius:0 0 22px 22px;box-shadow:var(--shadow)}
+    .hero-inner{width:100%;max-width:none;padding:3rem 5vw 2rem}
     .scroll-cue{display:none}
     .vertical{grid-template-columns:auto 1fr;gap:1.5rem}
     .vertical-cta{display:none}
@@ -276,16 +232,22 @@
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-index">
-    <span>Maco <span class="mid">·</span> Equity Partners</span>
-    <span>South Florida · Value-Add</span>
-    <span>Index 01 — The Firm</span>
+  <div class="hero-stage" id="heroStage">
+    <canvas id="heroCanvas"></canvas>
+    <div class="hero-grain"></div>
+    <span class="hero-tag">25.76° N · 80.19° W · LIVE</span>
+    <div class="hero-caption"><strong>Miami-Dade, rendered</strong>The county as live deal data</div>
+    <div class="hero-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Drag to explore</div>
   </div>
-  <div class="hero-grid">
-    <div class="hero-copy reveal">
-      <div class="hero-eyebrow">A value-add real estate firm · Established South Florida</div>
+  <div class="hero-inner">
+    <div class="hero-index reveal">
+      <span>Maco <span class="mid">·</span> Equity Partners</span>
+      <span>South Florida · Value-Add</span>
+    </div>
+    <div class="hero-copy reveal d1">
+      <div class="hero-eyebrow">A value-add real estate firm · Est. South Florida</div>
       <h1>Underwritten with <em>rigor.</em><br>Executed with <em>discipline.</em></h1>
-      <p class="hero-lede">We acquire below replacement basis, execute the plan, and exit when the value is created — backed by a proprietary engine that reads Miami-Dade before the market does.</p>
+      <p class="hero-lede">We acquire below replacement basis, execute the plan, and exit when the value is created — backed by an engine that reads Miami-Dade before the market does.</p>
       <div class="hero-cta-row">
         <a href="#contact" class="btn btn-primary">Speak with a Principal
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -297,13 +259,6 @@
         <div class="hero-meta-item"><strong data-count="45">45</strong><span>Miami-Dade ZIPs farmed</span></div>
         <div class="hero-meta-item"><strong data-count="1">1</strong><span>Business-day response</span></div>
       </div>
-    </div>
-    <div class="hero-media reveal d2" id="heroMedia">
-      <canvas id="heroCanvas"></canvas>
-      <div class="hero-grain"></div>
-      <div class="frame"></div>
-      <span class="hero-tag">25.76° N · 80.19° W · LIVE</span>
-      <div class="hero-caption"><strong>Miami-Dade, rendered</strong>The county as live deal data</div>
     </div>
   </div>
   <div class="scroll-cue">Scroll</div>
@@ -549,40 +504,38 @@
 <script>
   const reduceMo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ===== Hero: 3D Miami-Dade "data skyline" (WebGL / Three.js) =====
+  // ===== Hero: large drag-to-orbit 3D Miami-Dade "data skyline" (WebGL / Three.js) =====
   (function(){
     const canvas = document.getElementById('heroCanvas');
-    const media = document.getElementById('heroMedia');
-    if (!canvas || !media) return;
+    const stage = document.getElementById('heroStage');
+    if (!canvas || !stage) return;
     let gl=null; try{ gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl'); }catch(e){}
-    if (!gl || window.innerWidth < 700){ media.classList.add('static'); return; }
+    if (!gl){ stage.classList.add('static'); return; }
     function boot(){
-      if (typeof THREE === 'undefined'){ media.classList.add('static'); return; }
-      const wrap = media;
-      let w = wrap.clientWidth, h = wrap.clientHeight;
+      if (typeof THREE === 'undefined'){ stage.classList.add('static'); return; }
+      let w = stage.clientWidth, h = stage.clientHeight;
       const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
       renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
       renderer.setSize(w, h, false);
       const scene = new THREE.Scene();
-      scene.fog = new THREE.Fog(0x0a140f, 15, 48);
-      const camera = new THREE.PerspectiveCamera(38, w/h, 0.1, 120);
-      camera.position.set(0, 16, 23);
+      scene.fog = new THREE.Fog(0x0a140f, 24, 74);
+      const camera = new THREE.PerspectiveCamera(42, w/h, 0.1, 200);
       scene.add(new THREE.AmbientLight(0x6b7a5f, 0.5));
-      const key = new THREE.DirectionalLight(0xc8aa6c, 1.15); key.position.set(9,20,11); scene.add(key);
-      const fill = new THREE.DirectionalLight(0x1b704a, 0.55); fill.position.set(-11,9,-7); scene.add(fill);
-      const floor = new THREE.Mesh(new THREE.PlaneGeometry(120,120), new THREE.MeshStandardMaterial({color:0x070f0b, roughness:1}));
+      const key = new THREE.DirectionalLight(0xc8aa6c, 1.2); key.position.set(12,26,14); scene.add(key);
+      const fill = new THREE.DirectionalLight(0x1b704a, 0.6); fill.position.set(-14,10,-9); scene.add(fill);
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(200,200), new THREE.MeshStandardMaterial({color:0x070f0b, roughness:1}));
       floor.rotation.x = -Math.PI/2; scene.add(floor);
       const group = new THREE.Group(); scene.add(group);
-      const geo = new THREE.BoxGeometry(0.66,1,0.66);
-      const N=16, gap=1.05, span=(N-1)*gap, R=span*0.54;
+      const geo = new THREE.BoxGeometry(0.7,1,0.7);
+      const N=20, gap=1.08, span=(N-1)*gap, R=span*0.55;
       const cols=[]; let idx=0; const hot=new Set();
-      while(hot.size<7) hot.add(Math.floor(Math.random()*N*N));
+      while(hot.size<10) hot.add(Math.floor(Math.random()*N*N));
       for(let i=0;i<N;i++) for(let j=0;j<N;j++){
         const x=i*gap-span/2, z=j*gap-span/2, rad=Math.sqrt(x*x+z*z);
         if(rad>R){ idx++; continue; }
         const dome=1-(rad/R);
-        const noise=(Math.sin(i*0.62)+Math.cos(j*0.55)+Math.sin((i+j)*0.4))*0.9+1.6;
-        const hgt=Math.max(0.5, noise*dome*1.7);
+        const noise=(Math.sin(i*0.6)+Math.cos(j*0.55)+Math.sin((i+j)*0.4))*0.9+1.7;
+        const hgt=Math.max(0.5, noise*dome*2.0);
         const isHot=hot.has(idx);
         const mat=new THREE.MeshStandardMaterial({
           color:isHot?0x14422e:0xb4a986, roughness:isHot?0.3:0.78, metalness:isHot?0.1:0.28,
@@ -593,32 +546,40 @@
         m.userData={h0:hgt, hot:isHot, phase:(i+j)*0.5};
         group.add(m); cols.push(m); idx++;
       }
-      let tx=0,ty=0,mx=0,my=0;
-      wrap.addEventListener('pointermove',e=>{const r=wrap.getBoundingClientRect();tx=(e.clientX-r.left)/r.width-.5;ty=(e.clientY-r.top)/r.height-.5;});
-      wrap.addEventListener('pointerleave',()=>{tx=0;ty=0;});
-      function resize(){ w=wrap.clientWidth; h=wrap.clientHeight; if(!w||!h)return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
-      window.addEventListener('resize',resize);
+      // ---- orbit controls (drag to rotate) ----
+      let az=0.7, pol=0.92, tAz=0.7, tPol=0.92; const RAD=36;
+      let dragging=false, lx=0, ly=0;
+      stage.addEventListener('pointerdown', e=>{ dragging=true; lx=e.clientX; ly=e.clientY; stage.classList.add('dragging'); try{ stage.setPointerCapture(e.pointerId); }catch(_){} });
+      stage.addEventListener('pointermove', e=>{ if(!dragging) return; tAz -= (e.clientX-lx)*0.006; tPol -= (e.clientY-ly)*0.005; lx=e.clientX; ly=e.clientY; });
+      function endDrag(){ dragging=false; stage.classList.remove('dragging'); }
+      stage.addEventListener('pointerup', endDrag);
+      stage.addEventListener('pointercancel', endDrag);
+      function resize(){ w=stage.clientWidth; h=stage.clientHeight; if(!w||!h) return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+      window.addEventListener('resize', resize);
       const t0=Date.now();
       function frame(){
         const t=(Date.now()-t0)/1000;
-        group.rotation.y = t*0.11;
+        if(!dragging && !reduceMo) tAz += 0.0016;            // gentle auto-rotate when idle
+        az += (tAz-az)*0.07; pol += (tPol-pol)*0.07;
+        pol = Math.max(0.42, Math.min(1.3, pol));
+        camera.position.set(RAD*Math.sin(pol)*Math.sin(az), RAD*Math.cos(pol), RAD*Math.sin(pol)*Math.cos(az));
+        camera.lookAt(0, 2.4, 0);
         for(const m of cols){
-          const s=m.userData.h0*(1+0.10*Math.sin(t*1.2+m.userData.phase));
+          const s=m.userData.h0*(1+0.09*Math.sin(t*1.1+m.userData.phase));
           m.scale.y=s; m.position.y=s/2;
-          if(m.userData.hot) m.material.emissiveIntensity=0.85+0.5*Math.sin(t*2+m.userData.phase);
+          if(m.userData.hot) m.material.emissiveIntensity=0.9+0.5*Math.sin(t*2+m.userData.phase);
         }
-        mx+=(tx-mx)*0.05; my+=(ty-my)*0.05;
-        camera.position.x=mx*9; camera.position.y=16-my*5; camera.lookAt(0,2.2,0);
         renderer.render(scene,camera);
-        if(!reduceMo) requestAnimationFrame(frame);
+        raf = requestAnimationFrame(frame);
       }
+      let raf;
       requestAnimationFrame(()=>{ resize(); frame(); });
     }
     if (typeof THREE !== 'undefined') boot();
     else {
       const s=document.createElement('script');
       s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
-      s.onload=boot; s.onerror=function(){ media.classList.add('static'); };
+      s.onload=boot; s.onerror=function(){ stage.classList.add('static'); };
       document.head.appendChild(s);
     }
   })();
