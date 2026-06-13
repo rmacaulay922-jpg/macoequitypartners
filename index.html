@@ -27,6 +27,8 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
 <link rel="stylesheet" href="styles.css?v=11">
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.js" defer></script>
 <style>
   /* ===== HERO — big interactive 3D stage + editorial text ===== */
   .hero{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden}
@@ -48,6 +50,29 @@
   .hero-hint{position:absolute;right:1.8rem;bottom:1.8rem;z-index:5;display:flex;align-items:center;gap:.5rem;font-family:var(--sans);font-size:.55rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(241,238,226,.72);transition:opacity .4s}
   .hero-hint svg{width:15px;height:15px;opacity:.85}
   .hero-stage.dragging .hero-hint{opacity:0}
+  /* ===== MapLibre interactive Miami map (hero) ===== */
+  .hero-stage{cursor:auto}
+  #maco-map{position:absolute;inset:0;z-index:1}
+  #maco-map .maplibregl-canvas{outline:none}
+  .map-ui{position:absolute;top:14px;left:14px;z-index:5;display:flex;gap:.5rem}
+  .map-btn{font-family:var(--sans),Inter,sans-serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;font-weight:600;color:#F3EFE4;background:#15402C;border:1px solid rgba(181,145,90,.55);padding:.5rem .85rem;border-radius:100px;cursor:pointer;box-shadow:0 6px 18px rgba(16,29,23,.4);transition:background .2s}
+  .map-btn:hover{background:#1B704A}
+  .map-btn-ghost{background:rgba(21,64,44,.62);backdrop-filter:blur(6px)}
+  .map-note{position:absolute;bottom:9px;left:46px;z-index:5;font-family:var(--sans),Inter,sans-serif;font-size:9px;letter-spacing:.04em;color:rgba(243,239,228,.85);font-style:italic;text-shadow:0 1px 3px rgba(16,29,23,.7);pointer-events:none}
+  .maco-pin{width:15px;height:15px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#27A268;border:1.5px solid #F3EFE4;box-shadow:0 3px 7px rgba(16,29,23,.5);cursor:pointer;transition:transform .18s,background .18s}
+  .maco-pin:hover,.maco-pin:focus-visible{background:#3DBE82;transform:rotate(-45deg) scale(1.5);outline:none}
+  .maco-pin.brass{background:#B5915A}
+  .maco-pop .maplibregl-popup-content{background:#15402C;color:#F3EFE4;border:.5px solid rgba(181,145,90,.55);border-radius:11px;padding:13px 15px;font-family:var(--sans),Inter,sans-serif;box-shadow:0 12px 34px rgba(16,29,23,.45)}
+  .maco-pop .maplibregl-popup-tip{border-top-color:#15402C!important;border-bottom-color:#15402C!important}
+  .maco-pop .pop-t{font-family:var(--serif),Georgia,serif;font-style:italic;font-size:16px;margin-bottom:3px;color:#F3EFE4}
+  .maco-pop .pop-k{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:#B5915A;margin-bottom:6px;font-weight:600}
+  .maco-pop .pop-b{font-size:12px;line-height:1.5;color:rgba(243,239,228,.92)}
+  .maco-pop .pop-n{font-size:9px;color:rgba(243,239,228,.5);margin-top:8px;font-style:italic}
+  .maplibregl-ctrl-group{background:#15402C!important;border:.5px solid rgba(181,145,90,.4)!important}
+  .maplibregl-ctrl-group button+button{border-top:1px solid rgba(181,145,90,.25)!important}
+  .maplibregl-ctrl button .maplibregl-ctrl-icon{filter:invert(1) brightness(1.7) sepia(.3) hue-rotate(70deg)}
+  .maplibregl-ctrl-attrib{background:rgba(243,239,228,.82)!important;font-size:10px}
+  .maplibregl-ctrl-attrib a{color:#15402C}
   /* text column */
   .hero-inner{position:relative;z-index:4;width:44vw;max-width:600px;padding:9.5rem 0 4rem 5vw}
   .hero-index{display:flex;gap:1.4rem;flex-wrap:wrap;padding-bottom:1.1rem;margin-bottom:2.4rem;border-bottom:1px solid var(--rule);font-family:var(--sans);font-size:.6rem;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-mute)}
@@ -233,11 +258,12 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-stage" id="heroStage">
-    <canvas id="heroCanvas"></canvas>
-    <div class="hero-grain"></div>
-    <span class="hero-tag">BRICKELL · DOWNTOWN · BISCAYNE BAY</span>
-    <div class="hero-caption"><strong>Miami, in three dimensions</strong>Lit streets · named towers · click a district to explore</div>
-    <div class="hero-hint"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg> Drag · scroll to zoom</div>
+    <div id="maco-map" aria-label="Interactive 3D map of Miami-Dade"></div>
+    <div class="map-ui">
+      <button id="maco-tour" class="map-btn" type="button">Tour our markets</button>
+      <button id="maco-reset" class="map-btn map-btn-ghost" type="button">Reset</button>
+    </div>
+    <div class="map-note">Qualitative overview · not investment advice</div>
   </div>
   <div class="hero-inner">
     <div class="hero-index reveal">
@@ -504,324 +530,145 @@
 <script>
   const reduceMo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ===== Blue-Hour Miami: realistic 3D hero (#heroCanvas) + true-3D "Stack" network (#netCanvas) =====
-  // Three.js r128. One merged building mesh with procedural lit windows (emissive), gradient sky dome,
-  // ACES tone mapping, faked neon-reflection bay. Network panel shares the same world. Keyless, baked.
+  // ===== HERO: full interactive 3D map of Miami — MapLibre GL + keyless OpenFreeMap =====
+  // Real streets, houses, 3D-extruded buildings (true heights), parks, water; brand-recolored.
+  // The "Stack" network panel below still uses Three.js (loaded separately).
   (function(){
     const isMobile = window.innerWidth < 760 || (window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
-    const SRC = [
-      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
-      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
-      'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js',
-      'miami-bld.js?v=2',
-      'miami-roads.js?v=1',
-      'miami-landmarks.js?v=1'
-    ];
+
+    // ---- build the live map once the deferred MapLibre script is available ----
+    function buildMacoMap(){
+      var container = document.getElementById('maco-map');
+      var stage = document.getElementById('heroStage');
+      if (!container) return;
+      var gl2 = false; try { gl2 = !!(window.WebGL2RenderingContext && document.createElement('canvas').getContext('webgl2')); } catch(e){}
+      if (!window.maplibregl || !gl2){ if (stage) stage.classList.add('static'); return; }
+
+      var map = new maplibregl.Map({
+        container: 'maco-map',
+        style: 'https://tiles.openfreemap.org/styles/liberty',
+        center: [-80.21, 25.74], zoom: 10.2, pitch: 56, bearing: -21,
+        maxPitch: 75, minZoom: 8.5, maxBounds: [[-80.95, 25.30], [-79.95, 26.05]],
+        antialias: true, attributionControl: false, cooperativeGestures: true, hash: false, fadeDuration: 200
+      });
+      map.on('error', function(e){ if (e && e.error){ try { console.warn('[maco-map]', e.error.message || e.error); } catch(_e){} } });
+      map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+      map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>' }), 'bottom-left');
+      map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+      window.addEventListener('resize', function(){ map.resize(); });
+      try { new ResizeObserver(function(){ map.resize(); }).observe(container); } catch(e){}
+
+      var P = { bone:'#F3EFE4', land:'#EFE7D4', landWarm:'#E9DFC6', water:'#2C6F62', park:'#27A268',
+        emerald:'#1B704A', jade:'#3DBE82', roadMaj:'#D8C9A6', roadMin:'#E7DEC8', roadCasing:'#CBB98F',
+        brass:'#8C6C36', brass2:'#B5915A', forest:'#15402C' };
+      function set(id, prop, val){ try { if (map.getLayer(id)) map.setPaintProperty(id, prop, val); } catch(e){} }
+
+      function recolorMaco(){
+        set('background','background-color', P.land);
+        set('water','fill-color', P.water);
+        set('park','fill-color', P.park); set('park','fill-opacity', 0.5); set('park_outline','line-color', P.emerald);
+        set('landcover_wood','fill-color', P.park); set('landcover_wood','fill-opacity', 0.45);
+        set('landcover_grass','fill-color', P.jade); set('landcover_grass','fill-opacity', 0.4);
+        set('landcover_wetland','fill-color', P.park); set('landcover_wetland','fill-opacity', 0.35);
+        set('landuse_pitch','fill-color', P.park); set('landuse_cemetery','fill-color', P.park);
+        set('landuse_residential','fill-color', P.landWarm); set('landuse_hospital','fill-color', P.landWarm); set('landuse_school','fill-color', P.landWarm);
+        ['road_motorway','road_trunk_primary','road_secondary_tertiary','road_motorway_link'].forEach(function(id){ set(id,'line-color', P.roadMaj); });
+        ['road_minor','road_service_track','road_link','road_path_pedestrian'].forEach(function(id){ set(id,'line-color', P.roadMin); });
+        ['road_motorway_casing','road_trunk_primary_casing','road_secondary_tertiary_casing','road_minor_casing','road_motorway_link_casing','road_service_track_casing','road_link_casing'].forEach(function(id){ set(id,'line-color', P.roadCasing); });
+        ['boundary_2','boundary_3','boundary_disputed'].forEach(function(id){ set(id,'line-color', P.brass); });
+        set('building','fill-color','#C9A86A');
+        map.getStyle().layers.forEach(function(l){ if (l.type === 'symbol'){
+          set(l.id,'text-color', P.forest); set(l.id,'text-halo-color', P.bone); set(l.id,'text-halo-width', 1.4);
+          if (/water|marine|ocean|bay/i.test(l.id)) set(l.id,'text-color', P.brass);
+        }});
+      }
+      function addSky(){
+        // v5.24.0: 'sky' is NOT a layer type. Use the Sky API (feature-detected) for a golden horizon.
+        try { if (typeof map.setSky === 'function') map.setSky({
+          'sky-color':'#A9C8EC', 'sky-horizon-blend':0.5,
+          'horizon-color':'#EFE7D4', 'horizon-fog-blend':0.5,
+          'fog-color':'#F6E2B8', 'fog-ground-blend':0.55,
+          'atmosphere-blend':['interpolate',['linear'],['zoom'], 0,0.85, 11,0.35, 13,0]
+        }); } catch(e){}
+      }
+      function brandBuildings(){
+        if (!map.getLayer('building-3d')) return;
+        set('building-3d','fill-extrusion-color', ['interpolate',['linear'],['coalesce',['get','render_height'],['get','height'],8], 0,'#B89B62', 12,'#C9A86A', 40,'#D9BC82', 120,'#E7CF97']);
+        set('building-3d','fill-extrusion-height', ['coalesce',['get','render_height'],['get','height'],8]);
+        set('building-3d','fill-extrusion-base', ['coalesce',['get','render_min_height'],['get','min_height'],0]);
+        set('building-3d','fill-extrusion-opacity', 0.92);
+        set('building-3d','fill-extrusion-vertical-gradient', true);
+      }
+
+      var MARKETS = [
+        ['Kendall',25.679,-80.357,'Large established suburban submarket; mature single-family stock and steady owner-occupier demand.'],
+        ['Westchester',25.755,-80.330,'Dense, tightly held residential pocket; long-tenured ownership and consistent rental depth.'],
+        ['Pinecrest',25.667,-80.307,'Premium low-density enclave; larger lots and a higher-end renovation buyer.'],
+        ['Palmetto Bay',25.621,-80.325,'Quiet residential village; family-oriented demand and limited new supply.'],
+        ['South Miami',25.707,-80.293,'Walkable core-adjacent submarket blending older homes with infill activity.'],
+        ['West Little River',25.857,-80.236,'Transitional urban submarket; older stock and active repositioning.'],
+        ['Brownsville',25.823,-80.243,'Historic urban neighborhood; aging inventory and ongoing reinvestment.'],
+        ['Homestead',25.475,-80.460,'Affordability-driven far-south market; newer subdivisions and entry-level demand.'],
+        ['Princeton-Naranja',25.535,-80.415,'South-corridor growth area; mixed stock and value-oriented buyers.'],
+        ['Cutler Bay',25.575,-80.339,'Planned coastal-adjacent suburb with stable family demand.'],
+        ['Doral',25.819,-80.352,'Master-planned, employment-rich submarket; newer product, strong rental demand.'],
+        ['Hialeah',25.860,-80.292,'Dense, deeply tenured working community; durable demand and tight supply.'],
+        ['Miami Gardens',25.930,-80.255,'Large northern submarket; older single-family stock and steady absorption.'],
+        ['North Miami',25.890,-80.190,'Coastal-adjacent urban market; mix of older homes and infill.'],
+        ['Goulds',25.560,-80.382,'Small south-corridor community; aging stock and value repositioning.'],
+        ['Tamiami',25.760,-80.402,'Suburban western submarket; consistent owner-occupier demand.']
+      ];
+      var DOWNTOWN = ['Downtown / Brickell',25.772,-80.190,'The urban core anchoring Miami-Dade — a reference point, not a farmed market.'];
+      function pinEl(brass){ var e=document.createElement('div'); e.className='maco-pin'+(brass?' brass':''); e.setAttribute('role','button'); e.tabIndex=0; return e; }
+      function pop(k,n,b,note){ return new maplibregl.Popup({ offset:18, closeButton:false, maxWidth:'240px', className:'maco-pop' }).setHTML('<div class="pop-k">'+k+'</div><div class="pop-t">'+n+'</div><div class="pop-b">'+b+'</div>'+(note?'<div class="pop-n">'+note+'</div>':'')); }
+      function addMarkets(){
+        MARKETS.forEach(function(m){ var el=pinEl(false); el.setAttribute('aria-label', m[0]+' — farmed market');
+          var p=pop('Farmed market', m[0], m[3], 'Qualitative overview · not investment advice');
+          var mk=new maplibregl.Marker({ element:el, anchor:'bottom' }).setLngLat([m[2],m[1]]).setPopup(p).addTo(map);
+          function go(){ stopSpin(); map.flyTo({ center:[m[2],m[1]], zoom:14.4, pitch:62, bearing:-25, duration:2600, curve:1.4, essential:true }); }
+          el.addEventListener('click', go);
+          el.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); mk.togglePopup(); go(); } });
+        });
+        var de=pinEl(true); de.setAttribute('aria-label','Downtown / Brickell — reference point');
+        new maplibregl.Marker({ element:de, anchor:'bottom' }).setLngLat([DOWNTOWN[2],DOWNTOWN[1]]).setPopup(pop('Urban core', DOWNTOWN[0], DOWNTOWN[3], '')).addTo(map);
+      }
+
+      var _raf=null, _spinning=false, _idle=null;
+      var ALLOW_SPIN = matchMedia('(min-width:900px) and (pointer:fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function armSpin(){ if (ALLOW_SPIN) spin(); }
+      function spin(){ _spinning=true; (function loop(){ if(!_spinning) return; map.setBearing(map.getBearing()+0.04); _raf=requestAnimationFrame(loop); })(); }
+      function stopSpin(){ _spinning=false; if(_raf) cancelAnimationFrame(_raf); clearTimeout(_idle); if (ALLOW_SPIN) _idle=setTimeout(spin, 4500); }
+      ['mousedown','touchstart','wheel','dragstart','zoomstart'].forEach(function(ev){ map.on(ev, stopSpin); });
+
+      var _ti=0;
+      var tourBtn=document.getElementById('maco-tour'); if(tourBtn) tourBtn.addEventListener('click', function(){ stopSpin(); var m=MARKETS[_ti++ % MARKETS.length]; map.flyTo({ center:[m[2],m[1]], zoom:14.2, pitch:62, bearing:-15+((_ti*23)%80), duration:3200, curve:1.5, essential:true }); });
+      var resetBtn=document.getElementById('maco-reset'); if(resetBtn) resetBtn.addEventListener('click', function(){ stopSpin(); map.flyTo({ center:[-80.21,25.74], zoom:10.2, pitch:56, bearing:-21, duration:2400, essential:true }); });
+
+      map.on('load', function(){ recolorMaco(); addSky(); brandBuildings(); addMarkets(); setTimeout(armSpin, 3500); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildMacoMap);
+    else buildMacoMap();
+
+    // ---- "The Stack" network panel still uses Three.js — load it, then init ----
     let webgl = false;
     try { const t = document.createElement('canvas'); webgl = !!(t.getContext('webgl') || t.getContext('experimental-webgl')); } catch(e){}
-    if (!webgl) { const s = document.getElementById('heroStage'); if (s) s.classList.add('static'); return; }
-
-    function loadSeq(i){
-      if (i >= SRC.length){ start(); return; }
-      var sc = document.createElement('script'); sc.src = SRC[i];
-      sc.onload = function(){ loadSeq(i+1); };
-      sc.onerror = function(){ if (i < 3){ const s = document.getElementById('heroStage'); if (s) s.classList.add('static'); } else { start(); } };
-      document.head.appendChild(sc);
-    }
-    loadSeq(0);
-
-    function start(){
-      try { initHero(); } catch(e){ const s = document.getElementById('heroStage'); if (s) s.classList.add('static'); }
-      try { initNetwork(); } catch(e){ /* network stays as its CSS-framed dark panel */ }
+    if (webgl){
+      const SRC = [
+        'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+        'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/BufferGeometryUtils.js'
+      ];
+      (function loadSeq(i){ if (i >= SRC.length){ try { initNetwork(); } catch(e){} return; }
+        var sc=document.createElement('script'); sc.src=SRC[i]; sc.onload=function(){ loadSeq(i+1); }; sc.onerror=function(){}; document.head.appendChild(sc); })(0);
     }
 
-    // vertical-gradient CanvasTexture (top->bottom hex)
+    // vertical-gradient CanvasTexture (top->bottom hex) — used by the network panel
     function gradientTex(top, bottom){
       const c = document.createElement('canvas'); c.width = 8; c.height = 256;
       const x = c.getContext('2d');
       const g = x.createLinearGradient(0,0,0,256); g.addColorStop(0, top); g.addColorStop(1, bottom);
       x.fillStyle = g; x.fillRect(0,0,8,256);
       const t = new THREE.CanvasTexture(c); t.minFilter = THREE.LinearFilter; t.magFilter = THREE.LinearFilter; return t;
-    }
-
-    // ---------- HERO: county-wide daytime Miami vista (farms + sky + clouds) ----------
-    function initHero(){
-      const canvas = document.getElementById('heroCanvas');
-      const stage  = document.getElementById('heroStage');
-      if (!canvas || !stage) return;
-      if (typeof MIAMI_BLD === 'undefined' || !THREE.OrbitControls || !THREE.BufferGeometryUtils){ stage.classList.add('static'); return; }
-      let w = stage.clientWidth, h = stage.clientHeight;
-      const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: !isMobile, alpha: false });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 1.5));
-      renderer.setSize(w, h, false);
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
-      renderer.outputEncoding = THREE.sRGBEncoding;
-
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0xDCEBF2, 0.000040);
-      const camera = new THREE.PerspectiveCamera(52, w/h, 1, 40000);
-
-      // ---- day sky dome (CanvasTexture gradient, fog off) ----
-      (function(){
-        const c=document.createElement('canvas'); c.width=16; c.height=512; const g=c.getContext('2d');
-        const gr=g.createLinearGradient(0,0,0,512);
-        gr.addColorStop(0,'#2E7FD1'); gr.addColorStop(.55,'#7FB8E8'); gr.addColorStop(.86,'#DCEBF2'); gr.addColorStop(1,'#EAF2FA');
-        g.fillStyle=gr; g.fillRect(0,0,16,512);
-        const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter; t.encoding=THREE.sRGBEncoding;
-        scene.add(new THREE.Mesh(new THREE.SphereGeometry(20000,32,16),
-          new THREE.MeshBasicMaterial({ map:t, side:THREE.BackSide, fog:false, depthWrite:false })));
-      })();
-
-      // ---- daytime light rig: warm raking sun NE + sky/ground hemisphere ----
-      const sun=new THREE.DirectionalLight(0xFFF1D6, 1.05); sun.position.set(12000,14000,-9000); scene.add(sun);
-      scene.add(new THREE.HemisphereLight(0xBFD9F2, 0xB8A878, 0.58));
-      scene.add(new THREE.AmbientLight(0xBFD9F2, 0.12));
-
-      // ---- projection + asinh radial compression (X/Z only; Y never touched) ----
-      const CLON=-80.192, CLAT=25.7725, K=7000;
-      function ll2m(lon,lat){ return [ (lon-CLON)*100250, -(lat-CLAT)*111320 ]; }
-      function cmp(v){ return K*Math.asinh(v/K); }
-      function project(lon,lat){ const m=ll2m(lon,lat); return [ cmp(m[0]), cmp(m[1]) ]; }
-      // project an already-metres point
-      function cmpXZ(x,z){ return [ cmp(x), cmp(z) ]; }
-
-      // ===== DOWNTOWN: real OSM buildings, compressed, daytime bone =====
-      const sortedH = MIAMI_BLD.slice().sort(function(a,b){return b[0]-a[0];});
-      const hot=new Set(); for(let k=0;k<16&&k<sortedH.length;k++) hot.add(sortedH[k]);
-      const geoms=[], lmArr=[]; let minX=1e9,maxX=-1e9,minZ=1e9,maxZ=-1e9;
-      // named landmark match
-      const LM = (typeof MIAMI_LANDMARKS!=='undefined') ? MIAMI_LANDMARKS.slice(0,26) : [];
-      const lmPts = LM.map(function(l){ const p=project(l.lon,l.lat); return {name:l.name,h:l.h||0,x:p[0],z:p[1],matched:false,ax:p[0],az:p[1],ay:(l.h||120)}; });
-      MIAMI_BLD.forEach(function(b){
-        const hgt=b[0], ring=b[1]; if(!ring||ring.length<3) return;
-        let n=ring.length; if(ring[0][0]===ring[n-1][0]&&ring[0][1]===ring[n-1][1]) n--; if(n<3) return;
-        const shp=new THREE.Shape(); let scx=0,scz=0;
-        for(let i=0;i<n;i++){ const p=project(ring[i][0],ring[i][1]); scx+=p[0]; scz+=p[1];
-          if(p[0]<minX)minX=p[0]; if(p[0]>maxX)maxX=p[0]; if(p[1]<minZ)minZ=p[1]; if(p[1]>maxZ)maxZ=p[1];
-          i===0?shp.moveTo(p[0],p[1]):shp.lineTo(p[0],p[1]); }
-        scx/=n; scz/=n;
-        let g; try{ g=new THREE.ExtrudeGeometry(shp,{depth:hgt,bevelEnabled:false,steps:1}); }catch(e){ return; }
-        g.rotateX(-Math.PI/2);
-        let flag = hot.has(b)?1:0;
-        for(let m=0;m<lmPts.length;m++){ const L=lmPts[m]; if(L.matched) continue; const dx=L.x-scx,dz=L.z-scz; if(dx*dx+dz*dz<3600){ flag=2; L.matched=true; L.ax=scx; L.az=scz; L.ay=Math.max(hgt,L.h); break; } }
-        const vc=g.attributes.position.count; const arr=new Float32Array(vc); if(flag)arr.fill(flag);
-        geoms.push(g); lmArr.push(arr);
-      });
-      const merged=THREE.BufferGeometryUtils.mergeBufferGeometries(geoms,false);
-      geoms.forEach(function(g){g.dispose();});
-      let tot=0; lmArr.forEach(function(a){tot+=a.length;});
-      const lm=new Float32Array(tot); let off=0; lmArr.forEach(function(a){lm.set(a,off);off+=a.length;});
-      merged.setAttribute('aLandmark', new THREE.BufferAttribute(lm,1));
-      const cityMat=new THREE.MeshStandardMaterial({ color:0xE4D9BE, roughness:0.74, metalness:0.02 });
-      cityMat.customProgramCacheKey=function(){return 'maco-city-day';};
-      cityMat.onBeforeCompile=function(shader){
-        cityMat.userData.shader=shader;
-        shader.vertexShader=shader.vertexShader
-          .replace('#include <common>','#include <common>\nvarying vec3 vWPos; varying vec3 vWN; attribute float aLandmark; varying float vLM;')
-          .replace('#include <begin_vertex>','#include <begin_vertex>\nvWPos=(modelMatrix*vec4(transformed,1.0)).xyz; vWN=normalize(mat3(modelMatrix)*normal); vLM=aLandmark;');
-        shader.fragmentShader=shader.fragmentShader
-          .replace('#include <common>','#include <common>\nvarying vec3 vWPos; varying vec3 vWN; varying float vLM;')
-          .replace('#include <emissivemap_fragment>',[
-            '#include <emissivemap_fragment>',
-            'float hfac = clamp(vWPos.y/170.0, 0.0, 1.0);',
-            'float fres = pow(1.0 - max(dot(normalize(cameraPosition - vWPos), vWN), 0.0), 3.0);',
-            'totalEmissiveRadiance += vec3(0.20,0.31,0.42)*fres*(0.10+0.30*hfac);', // sky-blue glass on upper floors
-            'totalEmissiveRadiance += vec3(0.34,0.26,0.13)*step(1.5,vLM)*0.35;'      // brass on named towers
-          ].join('\n'));
-      };
-      scene.add(new THREE.Mesh(merged, cityMat));
-
-      // ===== ROADS (compressed, daytime asphalt) =====
-      if (typeof MIAMI_ROADS!=='undefined'){
-        function roadMesh(cfg,yL,op){ const pos=[],col=[]; const c=new THREE.Color();
-          for(let r=0;r<MIAMI_ROADS.length;r++){ let cls=MIAMI_ROADS[r][0], pts=MIAMI_ROADS[r][1]; const k=cfg[cls]; if(!k) continue;
-            if(pts.length>1&&pts[0][0]===pts[pts.length-1][0]&&pts[0][1]===pts[pts.length-1][1]) pts=pts.slice(0,-1);
-            const hw=k.hw; c.set(k.color); const P=[]; for(let i=0;i<pts.length;i++) P.push(project(pts[i][0],pts[i][1]));
-            for(let i=0;i<P.length-1;i++){ const x1=P[i][0],z1=P[i][1],x2=P[i+1][0],z2=P[i+1][1];
-              let dx=x2-x1,dz=z2-z1; const L=Math.hypot(dx,dz)||1; dx/=L; dz/=L; const nx=-dz*hw,nz=dx*hw;
-              const a=[x1+nx,yL,z1+nz],bb=[x1-nx,yL,z1-nz],dd=[x2+nx,yL,z2+nz],e=[x2-nx,yL,z2-nz]; const tri=[a,bb,dd,bb,e,dd];
-              for(let t=0;t<6;t++){ pos.push(tri[t][0],tri[t][1],tri[t][2]); col.push(c.r,c.g,c.b); } } }
-          const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
-          return new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:op,depthWrite:false,fog:true})); }
-        const ARok={0:{hw:8,color:'#9a9482'},1:{hw:6,color:'#8f8a78'},2:{hw:4,color:'#84806f'}};
-        const SDok={3:{hw:2.5,color:'#6f6c5f'}};
-        const rA=roadMesh(ARok,0.6,0.5); const rS=roadMesh(SDok,0.45,0.4); scene.add(rA); scene.add(rS);
-      }
-
-      // ===== GROUND (sand) + WATER (turquoise day) =====
-      const cxg=(minX+maxX)/2, czg=(minZ+maxZ)/2, shoreX=maxX+120;
-      const ground=new THREE.Mesh(new THREE.PlaneGeometry(48000,48000), new THREE.MeshBasicMaterial({color:0x82743F, fog:true}));
-      ground.rotation.x=-Math.PI/2; ground.position.set(-4000,-0.6,1000); scene.add(ground);
-      const waterMat=new THREE.ShaderMaterial({ uniforms:{uTime:{value:0}},
-        vertexShader:'varying vec3 vWPos; void main(){ vWPos=(modelMatrix*vec4(position,1.0)).xyz; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
-        fragmentShader:[
-          'uniform float uTime; varying vec3 vWPos;',
-          'void main(){',
-          '  vec3 vd=normalize(cameraPosition - vWPos);',
-          '  float fres=pow(1.0-max(vd.y,0.0),4.0);',
-          '  vec3 deep=vec3(0.109,0.560,0.690);',
-          '  vec3 shallow=vec3(0.274,0.780,0.808);',
-          '  float rip=sin(vWPos.x*0.0021+uTime*0.55)*sin(vWPos.z*0.0024-uTime*0.45);',
-          '  vec3 base=mix(deep,shallow,0.5+0.28*rip);',
-          '  vec3 sky=vec3(0.498,0.721,0.910);',
-          '  vec3 col=mix(base,sky,fres*0.6);',
-          '  float spark=pow(max(0.0, sin(vWPos.x*0.009+uTime)*cos(vWPos.z*0.011-uTime)),32.0);',
-          '  col += vec3(0.918,0.984,0.980)*spark*0.45;',
-          '  gl_FragColor=vec4(col,1.0);',
-          '}'
-        ].join('\n') });
-      const water=new THREE.Mesh(new THREE.PlaneGeometry(40000,40000), waterMat);
-      water.rotation.x=-Math.PI/2; water.position.set(shoreX+20000, -0.2, czg); scene.add(water);
-
-      // ===== 16 FARMED NEIGHBORHOODS + DOWNTOWN anchor =====
-      const HOODS=[
-        {n:'Kendall',lat:25.679,lon:-80.357,c:'#2FB36F',copy:'Sprawling established SW suburb — deep single-family inventory and steady flip demand.'},
-        {n:'Westchester',lat:25.755,lon:-80.330,c:'#33B98C',copy:'Tight-knit central-west; older CBS homes with strong rental pull.'},
-        {n:'Pinecrest',lat:25.667,lon:-80.307,c:'#37BEA6',copy:'Affluent south — large lots and higher ARVs, fewer but bigger deals.'},
-        {n:'Palmetto Bay',lat:25.621,lon:-80.325,c:'#3BC3BE',copy:'Leafy south near the bay; family homes and premium exits.'},
-        {n:'South Miami',lat:25.707,lon:-80.293,c:'#3FC8D6',copy:'Compact, walkable core by the university; older stock.'},
-        {n:'West Little River',lat:25.857,lon:-80.236,c:'#3DBE82',copy:'Unincorporated NW pocket — lower basis, heavy value-add.'},
-        {n:'Brownsville',lat:25.823,lon:-80.243,c:'#46C46A',copy:'Inner NW; distressed inventory and code-driven leads.'},
-        {n:'Homestead',lat:25.475,lon:-80.460,c:'#C9A24A',copy:'Far-south frontier — lowest basis, longer holds, new construction nearby.'},
-        {n:'Princeton-Naranja',lat:25.535,lon:-80.415,c:'#C2923F',copy:'Deep-south agricultural edge; entry-level pricing.'},
-        {n:'Cutler Bay',lat:25.575,lon:-80.339,c:'#B5803A',copy:'South suburban — newer subdivisions and steady demand.'},
-        {n:'Doral',lat:25.819,lon:-80.352,c:'#5BC95C',copy:'Newer NW submarket by the airport; higher basis, faster turns.'},
-        {n:'Hialeah',lat:25.860,lon:-80.292,c:'#3AAFCB',copy:'Dense NW working-class core — tight inventory, quick comps.'},
-        {n:'Miami Gardens',lat:25.930,lon:-80.255,c:'#359FC4',copy:'North-county; large single-family base with code-heavy leads.'},
-        {n:'North Miami',lat:25.890,lon:-80.190,c:'#CDB14C',copy:'NE near the bay — mixed older stock with redevelopment upside.'},
-        {n:'Goulds',lat:25.560,lon:-80.382,c:'#BC833E',copy:'Far-south unincorporated; low basis, value-add plays.'},
-        {n:'Tamiami',lat:25.760,lon:-80.402,c:'#36BCAE',copy:'West-edge suburban grid — uniform stock, predictable comps.'},
-        {n:'Downtown / Brickell',lat:25.772,lon:-80.190,c:'#B5915A',copy:'The urban core and Biscayne Bay frontage — your skyline anchor and reference market.',anchor:true}
-      ];
-      HOODS.forEach(function(d){ const p=project(d.lon,d.lat); d.x=p[0]; d.z=p[1]; d.ms=1+Math.hypot(d.x,d.z)/16000*0.6; });
-
-      function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
-      const PER = isMobile?10:30;
-      const boxes = HOODS.filter(function(d){return !d.anchor;});
-      const inst = new THREE.InstancedMesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshLambertMaterial(), boxes.length*PER);
-      const m4=new THREE.Matrix4(), sv=new THREE.Vector3(), qv=new THREE.Quaternion(), pv=new THREE.Vector3(); let gi=0;
-      boxes.forEach(function(d,idx){ const rnd=mulberry32(idx*9973+1); const ms=d.ms;
-        const roof=new THREE.Color('#E4D9BE').lerp(new THREE.Color(d.c),0.25);
-        for(let i=0;i<PER;i++){ const ang=rnd()*6.2832, rr=rnd()*430*ms, ww=(20+rnd()*28)*ms, hh=(8+rnd()*15+(i<5?16:0))*ms;
-          qv.setFromAxisAngle(new THREE.Vector3(0,1,0), rnd()*6.2832); sv.set(ww,hh,ww*0.9); pv.set(d.x+Math.cos(ang)*rr, hh/2, d.z+Math.sin(ang)*rr);
-          m4.compose(pv,qv,sv); inst.setMatrixAt(gi,m4); inst.setColorAt(gi,roof); gi++; } });
-      inst.instanceMatrix.needsUpdate=true; if(inst.instanceColor) inst.instanceColor.needsUpdate=true; scene.add(inst);
-
-      // greenbelt + glow disc per hood
-      HOODS.forEach(function(d){ const ms=d.ms;
-        if(!d.anchor){ const gb=new THREE.Mesh(new THREE.CircleGeometry(430*ms,36), new THREE.MeshBasicMaterial({color:0x8FAA56,transparent:true,opacity:0.5,fog:true,depthWrite:false}));
-          gb.rotation.x=-Math.PI/2; gb.position.set(d.x,0.8,d.z); scene.add(gb); }
-        const disk=new THREE.Mesh(new THREE.CircleGeometry((d.anchor?780:1000)*ms,40), new THREE.MeshBasicMaterial({color:new THREE.Color(d.c),transparent:true,opacity:d.anchor?0.28:0.48,depthWrite:false}));
-        disk.rotation.x=-Math.PI/2; disk.position.set(d.x,2,d.z); scene.add(disk); d.disk=disk; d.diskBase=disk.material.opacity; d.diskTarget=disk.material.opacity;
-      });
-
-      // hotspots (invisible spheres)
-      const hotspots=[]; HOODS.forEach(function(d,i){ const hs=new THREE.Mesh(new THREE.SphereGeometry(320*d.ms,8,8), new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})); hs.position.set(d.x,180,d.z); hs.userData.i=i; scene.add(hs); hotspots.push(hs); });
-
-      // ===== CLOUDS (two-tone drifting sprites) =====
-      const cloudTex=(function(){ const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d');
-        const pf=[[70,110,70],[120,95,80],[160,120,65],[95,135,55],[185,135,55],[135,150,60]];
-        for(let i=0;i<pf.length;i++){ const x=pf[i][0],y=pf[i][1],r=pf[i][2]; const rg=g.createRadialGradient(x,y,0,x,y,r);
-          rg.addColorStop(0,'rgba(255,255,255,.95)'); rg.addColorStop(.6,'rgba(234,242,250,.5)'); rg.addColorStop(1,'rgba(255,255,255,0)');
-          g.fillStyle=rg; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); }
-        const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter; return t; })();
-      const clouds=[]; const NC = isMobile?9:18;
-      const crnd=mulberry32(20240613);
-      for(let i=0;i<NC;i++){ const s=3200+crnd()*3800, x=-20000+crnd()*40000, y=5400+crnd()*2800, z=-20000+crnd()*40000;
-        const belly=new THREE.Sprite(new THREE.SpriteMaterial({map:cloudTex,color:0xEAF2FA,transparent:true,opacity:0.55,depthWrite:false,fog:false}));
-        const cap=new THREE.Sprite(new THREE.SpriteMaterial({map:cloudTex,color:0xFFFFFF,transparent:true,opacity:0.85,depthWrite:false,fog:false}));
-        belly.position.set(x,y-90,z); belly.scale.set(s,s*0.6,1); cap.position.set(x,y,z); cap.scale.set(s,s*0.6,1);
-        scene.add(belly); scene.add(cap); clouds.push({b:belly,c:cap,spd:6+crnd()*6}); }
-
-      // ===== camera + controls =====
-      const DEF_POS=new THREE.Vector3(8200,4500,11500), DEF_TGT=new THREE.Vector3(-5000,350,1600);
-      camera.position.copy(DEF_POS);
-      let controls=null, az=0, R0=0, Y0=0, T0=DEF_TGT.clone();
-      if(!isMobile){
-        controls=new THREE.OrbitControls(camera,canvas);
-        controls.enableDamping=true; controls.dampingFactor=0.06; controls.screenSpacePanning=false;
-        controls.minDistance=3000; controls.maxDistance=22000; controls.maxPolarAngle=1.45;
-        controls.target.copy(DEF_TGT);
-        controls.autoRotate=!reduceMo; controls.autoRotateSpeed=0.16;
-        controls.addEventListener('start',function(){ controls.autoRotate=false; stage.classList.add('dragging'); if(fly){fly=null;controls.enableDamping=wasDamp;} });
-        controls.addEventListener('end',function(){ stage.classList.remove('dragging'); });
-        controls.update();
-      } else {
-        R0=Math.hypot(DEF_POS.x-DEF_TGT.x, DEF_POS.z-DEF_TGT.z); Y0=DEF_POS.y; az=Math.atan2(DEF_POS.x-DEF_TGT.x, DEF_POS.z-DEF_TGT.z);
-      }
-
-      // ===== DOM overlay (pins, card, reset) ===== (reuse the .hero-* styles already injected)
-      if(!document.getElementById('heroDomCss')){
-        const st=document.createElement('style'); st.id='heroDomCss'; st.textContent=
-        ".hero-stage{position:absolute}"+
-        ".hero-pin{position:absolute;left:0;top:0;display:flex;align-items:center;gap:.4rem;transform:translate(-50%,-100%);cursor:pointer;pointer-events:auto;z-index:6;transition:opacity .3s;font-family:Inter,system-ui,sans-serif}"+
-        ".hero-pin .dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 10px currentColor;border:1.5px solid rgba(255,255,255,.9);flex-shrink:0}"+
-        ".hero-pin .lbl{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#13261c;background:rgba(243,239,228,.9);border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:2px 7px;white-space:nowrap;font-weight:600}"+
-        ".hero-pin.active .lbl{background:#fff}"+
-        ".hero-card{position:absolute;z-index:8;background:#F3EFE4;color:#15402C;border-left:4px solid #8C6C36;border-radius:10px;padding:1.05rem 1.15rem;box-shadow:0 16px 50px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .35s,transform .35s cubic-bezier(.22,.61,.36,1);font-family:Inter,sans-serif}"+
-        ".hero-card.rail{top:50%;right:20px;width:280px;transform:translateY(-50%) translateX(14px)}.hero-card.rail.show{transform:translateY(-50%) translateX(0)}"+
-        ".hero-card.sheet{left:12px;right:12px;bottom:12px;transform:translateY(14px)}.hero-card.sheet.show{transform:translateY(0)}"+
-        ".hero-card.show{opacity:1;pointer-events:auto}"+
-        ".hero-card h4{font-family:Georgia,serif;font-size:1.15rem;margin:0 0 .35rem;font-weight:600}"+
-        ".hero-card p{font-size:.82rem;line-height:1.55;color:#2c3d33;margin:.2rem 0 .5rem}"+
-        ".hero-card .tag{font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:.5rem}"+
-        ".hero-card .foot{font-size:.56rem;color:#8a8a78;font-style:italic}"+
-        ".hero-card .x{position:absolute;top:7px;right:11px;cursor:pointer;color:#8C6C36;font-size:1.05rem;line-height:1;border:none;background:none}"+
-        ".hero-reset{position:absolute;bottom:14px;right:16px;z-index:7;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#13261c;background:rgba(243,239,228,.85);border:1px solid rgba(0,0,0,.15);border-radius:999px;padding:5px 12px;cursor:pointer;opacity:0;transition:opacity .3s;pointer-events:none;font-family:Inter,sans-serif}"+
-        ".hero-reset.show{opacity:.95;pointer-events:auto}";
-        document.head.appendChild(st);
-      }
-      stage.classList.add('hero-stage');
-      HOODS.forEach(function(d,i){ const pin=document.createElement('div'); pin.className='hero-pin';
-        pin.innerHTML='<span class="dot" style="background:'+d.c+';color:'+d.c+'"></span><span class="lbl">'+d.n+'</span>';
-        pin.addEventListener('click',function(ev){ ev.stopPropagation(); selectHood(i); }); stage.appendChild(pin); d.pin=pin; });
-      const card=document.createElement('div'); card.className='hero-card '+(isMobile?'sheet':'rail'); stage.appendChild(card);
-      const resetBtn=document.createElement('button'); resetBtn.className='hero-reset'; resetBtn.textContent='County view';
-      resetBtn.addEventListener('click',function(ev){ ev.stopPropagation(); resetView(); }); stage.appendChild(resetBtn);
-
-      // ===== interaction =====
-      let fly=null, wasDamp=true, activeIdx=-1;
-      function easeInOutCubic(t){ return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2; }
-      function flyTo(cp,ct){ if(!controls){ camera.position.copy(cp); return; }
-        wasDamp=controls.enableDamping; if(reduceMo){ camera.position.copy(cp); controls.target.copy(ct); controls.update(); return; }
-        fly={p0:camera.position.clone(),p1:cp.clone(),t0v:controls.target.clone(),t1v:ct.clone(),start:performance.now(),dur:1100}; controls.autoRotate=false; controls.enableDamping=false; }
-      function updateFly(now){ if(!fly||!controls) return; const k=Math.min(1,(now-fly.start)/fly.dur), e=easeInOutCubic(k);
-        camera.position.lerpVectors(fly.p0,fly.p1,e); controls.target.lerpVectors(fly.t0v,fly.t1v,e); controls.update(); if(k>=1){ fly=null; controls.enableDamping=wasDamp; } }
-      function selectHood(i){ const d=HOODS[i]; activeIdx=i;
-        HOODS.forEach(function(o,j){ o.diskTarget=(j===i)?Math.min(0.4,o.diskBase+0.22):o.diskBase; o.pin.classList.toggle('active',j===i); });
-        card.innerHTML='<button class="x" aria-label="Close">&times;</button><div class="tag" style="color:'+d.c+'">'+(d.anchor?'Skyline anchor':'Farmed market')+'</div><h4 style="color:'+d.c+'">'+d.n+'</h4><p>'+d.copy+'</p><div class="foot">Qualitative positioning — not investment advice.</div>';
-        card.style.borderLeftColor=d.c; card.querySelector('.x').addEventListener('click',function(ev){ ev.stopPropagation(); dismiss(); });
-        card.classList.add('show'); resetBtn.classList.add('show');
-        const lift=d.anchor?2600:2200; flyTo(new THREE.Vector3(d.x+1800,lift,d.z+2400), new THREE.Vector3(d.x,60,d.z)); }
-      function dismiss(){ activeIdx=-1; HOODS.forEach(function(o){ o.diskTarget=o.diskBase; o.pin.classList.remove('active'); }); card.classList.remove('show'); }
-      function resetView(){ dismiss(); resetBtn.classList.remove('show'); flyTo(DEF_POS.clone(), DEF_TGT.clone()); }
-
-      const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let downPos=null;
-      canvas.addEventListener('pointerdown',function(e){ downPos={x:e.clientX,y:e.clientY}; });
-      canvas.addEventListener('pointerup',function(e){ if(!downPos) return;
-        if(Math.hypot(e.clientX-downPos.x,e.clientY-downPos.y)<5){ const r=canvas.getBoundingClientRect();
-          ndc.x=((e.clientX-r.left)/r.width)*2-1; ndc.y=-((e.clientY-r.top)/r.height)*2+1; ray.setFromCamera(ndc,camera);
-          const hit=ray.intersectObjects(hotspots,false)[0]; if(hit) selectHood(hit.object.userData.i); else dismiss(); } downPos=null; });
-      window.addEventListener('keydown',function(e){ if(e.key==='Escape') dismiss(); });
-
-      function resize(){ w=stage.clientWidth; h=stage.clientHeight; if(!w||!h)return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
-      window.addEventListener('resize',resize);
-      const _v=new THREE.Vector3();
-      function placeEl(el,x,y,z){ _v.set(x,y,z).project(camera); if(_v.z>1){ el.style.display='none'; return; }
-        const x2=(_v.x*0.5+0.5)*w, y2=(-_v.y*0.5+0.5)*h; el.style.display=''; el.style.transform='translate(-50%,-100%) translate('+x2+'px,'+(y2-8)+'px)'; }
-
-      const t0=Date.now(); let last=t0;
-      function frame(){ const now=Date.now(); const dt=Math.min(0.05,(now-last)/1000); last=now; const t=reduceMo?0:(now-t0)/1000;
-        waterMat.uniforms.uTime.value=t;
-        if(!reduceMo){ for(let i=0;i<clouds.length;i++){ const cl=clouds[i]; const d=cl.spd*dt; cl.c.position.x+=d; cl.b.position.x+=d; if(cl.c.position.x>20000){ cl.c.position.x-=40000; cl.b.position.x-=40000; } } }
-        for(let i=0;i<HOODS.length;i++){ const dk=HOODS[i].disk; dk.material.opacity += (HOODS[i].diskTarget-dk.material.opacity)*0.1; }
-        if(fly) updateFly(performance.now());
-        if(controls){ controls.update(); } else { if(!reduceMo) az+=0.0009; camera.position.set(T0.x+R0*Math.sin(az),Y0,T0.z+R0*Math.cos(az)); camera.lookAt(T0); }
-        for(let i=0;i<HOODS.length;i++){ const d=HOODS[i]; placeEl(d.pin, d.x, (d.anchor?340:260)*d.ms, d.z); }
-        renderer.render(scene,camera); requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(function(){ resize(); frame(); });
     }
 
     // ---------- NETWORK ("The Stack") ----------
