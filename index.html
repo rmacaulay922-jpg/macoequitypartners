@@ -547,7 +547,7 @@
       var map = new maplibregl.Map({
         container: 'maco-map',
         style: 'https://tiles.openfreemap.org/styles/liberty',
-        center: [-80.21, 25.74], zoom: 10.2, pitch: 56, bearing: -21,
+        center: [-80.196, 25.767], zoom: 14.2, pitch: 62, bearing: -20,
         maxPitch: 75, minZoom: 8.5, maxBounds: [[-80.95, 25.30], [-79.95, 26.05]],
         antialias: true, attributionControl: false, cooperativeGestures: true, hash: false, fadeDuration: 200
       });
@@ -593,10 +593,13 @@
       }
       function brandBuildings(){
         if (!map.getLayer('building-3d')) return;
+        try { map.setLayerZoomRange('building-3d', 13, 24); } catch(e){}  // extrude from a wider view
+        // exaggerate height (1.5x) with a 7m floor so even low residential houses read as 3D
+        var H = ['*', 1.5, ['max', ['coalesce',['get','render_height'],['get','height'],7], 7]];
         set('building-3d','fill-extrusion-color', ['interpolate',['linear'],['coalesce',['get','render_height'],['get','height'],8], 0,'#B89B62', 12,'#C9A86A', 40,'#D9BC82', 120,'#E7CF97']);
-        set('building-3d','fill-extrusion-height', ['coalesce',['get','render_height'],['get','height'],8]);
+        set('building-3d','fill-extrusion-height', H);
         set('building-3d','fill-extrusion-base', ['coalesce',['get','render_min_height'],['get','min_height'],0]);
-        set('building-3d','fill-extrusion-opacity', 0.92);
+        set('building-3d','fill-extrusion-opacity', 0.95);
         set('building-3d','fill-extrusion-vertical-gradient', true);
       }
 
@@ -642,9 +645,13 @@
 
       var _ti=0;
       var tourBtn=document.getElementById('maco-tour'); if(tourBtn) tourBtn.addEventListener('click', function(){ stopSpin(); var m=MARKETS[_ti++ % MARKETS.length]; map.flyTo({ center:[m[2],m[1]], zoom:14.2, pitch:62, bearing:-15+((_ti*23)%80), duration:3200, curve:1.5, essential:true }); });
-      var resetBtn=document.getElementById('maco-reset'); if(resetBtn) resetBtn.addEventListener('click', function(){ stopSpin(); map.flyTo({ center:[-80.21,25.74], zoom:10.2, pitch:56, bearing:-21, duration:2400, essential:true }); });
+      var resetBtn=document.getElementById('maco-reset'); if(resetBtn) resetBtn.addEventListener('click', function(){ stopSpin(); map.flyTo({ center:[-80.196,25.767], zoom:14.2, pitch:62, bearing:-20, duration:2400, essential:true }); });
 
-      map.on('load', function(){ recolorMaco(); addSky(); brandBuildings(); addMarkets(); setTimeout(armSpin, 3500); });
+      // brand styling + markers apply on style.load (fires as soon as the style JSON is parsed —
+      // earlier than 'load', no flash of default blue/gray, and not gated on a completed idle render).
+      function styleReady(){ recolorMaco(); addSky(); brandBuildings(); addMarkets(); }
+      if (map.isStyleLoaded()) styleReady(); else map.on('style.load', styleReady);
+      map.on('load', function(){ setTimeout(armSpin, 3500); });
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildMacoMap);
     else buildMacoMap();
