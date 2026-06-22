@@ -653,7 +653,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.1</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.2</div>
     </div>
   </header>
 
@@ -1046,7 +1046,7 @@ var STATUS_VALS=['unreviewed','researching','contacted','negotiating','pursuing'
 var STATUS_LABELS=['Unreviewed','Researching','Contacted','Negotiating','Pursuing','Pass'];
 var STATUS_BG={unreviewed:'#e5e7eb',researching:'#2563eb',contacted:'#7c3aed',negotiating:'#d97706',pursuing:'#16a34a',pass:'#6b7280'};
 var STATUS_FG={unreviewed:'#6b7280',researching:'#fff',contacted:'#fff',negotiating:'#fff',pursuing:'#fff',pass:'#fff'};
-var ARV_TIP='<span class="arv-tip"><span class="tip-icon">i</span><span class="tip-box">ARV from live county comps when loaded: median $/sqft of the last 12 months of qualified sales in the same ZIP (similar size &amp; beds) &times; living area. Rows labeled &ldquo;assessed-derived&rdquo; have no usable comps yet &mdash; comp those by hand. Always verify with current MLS comps before submitting offers.</span></span>';
+var ARV_TIP='<span class="arv-tip"><span class="tip-icon">i</span><span class="tip-box">ARV from live county comps: the last 12 months of qualified same-size, similar-vintage sales, weighted by how CLOSE they are to this house (nearest sales count most) &times; living area. A ZIP can span a $200/sqft block and an $700/sqft block, so proximity matters. The &ldquo;likely&rdquo; range is the spread of those comps; low confidence = thin or scattered comps. Rows labeled &ldquo;assessed-derived&rdquo; have no usable comps yet &mdash; comp those by hand. Always verify with current MLS comps before submitting offers.</span></span>';
 
 var maoP=70;
 var sortColIdx=-1, sortDir=1;
@@ -1210,7 +1210,7 @@ function dealDossierHtml(d,idx){
       '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;">'+
         '<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:10px;">Deal Analysis</div>'+
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+
-          tile('Comp ARV',fmtK(d.arv),_arvSub(d),'var(--bronze)')+
+          tile('Comp ARV',fmtK(d.arv),_arvSubHtml(d),'var(--bronze)')+
           tile('Repair Est',fmtK(d.repair),(repPsf?'$'+repPsf+'/sf'+(d._repairAssumed?' (assumed)':''):(d.rehab_condition||'')),'#c97a6a')+
           (rs?tile('Status','Recently Sold',(d.last_sale_price?fmt$(d.last_sale_price):''),'#e8854a')
              :tile('Est. Net Profit',fmtK(profit),'6-mo flip',profit>0?'var(--green)':'var(--red)'))+
@@ -1693,7 +1693,7 @@ function computeScore(d){
   if(_rb)add(_rb,(_rb>0?'Est. ROI ~'+Math.round(dealROIpct(d.arv,d.repair))+'% (margin)':'Thin / negative margin'));
   return {score:Math.round(s),why:why};
 }
-function rowToDeal(r){return {address:r[1],neighborhood:r[2],owner:r[3],owner_state:r[4],beds:r[6],baths:r[7],beds_baths:(r[6]?r[6]+'bd':'')+(r[7]?'/'+r[7]+'ba':''),arv:r[8],repair:r[9],market_value:r[10],last_sale_price:r[11],year_built:r[12],held_years:r[13],sqft:r[18],rehab_condition:r[17],mail_city:r[19],outreach_type:r[20],pa_url:r[16],maps_url:r[15],_arvSrc:r._arvSrc,_arvN:r._arvN,_arvPpsf:r._arvPpsf,_repairAssumed:r._repairAssumed,_condUnverified:!!(r[17]&&!r._repairAssumed),last_sale_date:(r._soldLive?r._soldLive.date:undefined),_soldLive:r._soldLive};}
+function rowToDeal(r){return {address:r[1],neighborhood:r[2],owner:r[3],owner_state:r[4],beds:r[6],baths:r[7],beds_baths:(r[6]?r[6]+'bd':'')+(r[7]?'/'+r[7]+'ba':''),arv:r[8],repair:r[9],market_value:r[10],last_sale_price:r[11],year_built:r[12],held_years:r[13],sqft:r[18],rehab_condition:r[17],mail_city:r[19],outreach_type:r[20],pa_url:r[16],maps_url:r[15],_lat:r._lat,_lon:r._lon,_arvSrc:r._arvSrc,_arvN:r._arvN,_arvPpsf:r._arvPpsf,_arvConf:r._arvConf,_arvLo:r._arvLo,_arvHi:r._arvHi,_arvProx:r._arvProx,_repairAssumed:r._repairAssumed,_condUnverified:!!(r[17]&&!r._repairAssumed),last_sale_date:(r._soldLive?r._soldLive.date:undefined),_soldLive:r._soldLive};}
 // County-flagged leads: live violation/lien properties NOT already in the lead set, with 3+ open cases or a recorded lien.
 var _countyLeads=null;
 function getCountyLeads(){
@@ -1817,7 +1817,7 @@ function buildDeals(){
         dealFlags(d)+
       '</div>'+
       '<div class="metrics-row">'+
-        '<div class="metric-cell"><div class="metric-lbl">Comp ARV '+ARV_TIP+'</div><div class="metric-val">'+fmtK(d.arv)+'</div><div class="metric-sub">'+_arvSub(d)+'</div></div>'+
+        '<div class="metric-cell"><div class="metric-lbl">Comp ARV '+ARV_TIP+'</div><div class="metric-val">'+fmtK(d.arv)+'</div><div class="metric-sub">'+_arvSubHtml(d)+'</div></div>'+
         '<div class="metric-cell"><div class="metric-lbl">Repair Est</div><div class="metric-val" style="font-size:16px;">'+fmtK(d.repair)+'</div><div class="metric-sub">'+(d.rehab_condition?(d.rehab_condition+(d._condUnverified?' &middot; unverified &mdash; walk it':'')):(d._repairAssumed?(d._countySourced?'assumed $45/sqft &mdash; walk it':'assumed (age-based)'):'&mdash;'))+'</div></div>'+
         (rs
           ? '<div class="metric-cell"><div class="metric-lbl">Status</div><div class="metric-val" style="font-size:13px;color:#e8854a;">Recently Sold</div><div class="metric-sub">'+(d.last_sale_price?fmt$(d.last_sale_price):'owner-occ')+'</div></div>'
@@ -2200,13 +2200,13 @@ var ZIP_LABEL={'33173':'Kendall','33175':'Kendall','33176':'Kendall','33183':'Ke
 // (city-jurisdiction parcels inside the box simply return no county cases).
 var FARM_BBOX={xmin:-80.55,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}}; // west edge covers West Kendall/Tamiami
 var SALES_BAKED=null, LIVE_COMPS=null, _compsTried=false, _compsInFlight=false;
-var COMPS_KEY='mep_comps_v1', COMPS_TTL=6*24*3600*1000; // county layer refreshes weekly (Sat)
+var COMPS_KEY='mep_comps_v2', COMPS_TTL=6*24*3600*1000; // v2: comps now carry lat/lon for proximity matching
 var _vinCounty='', _vinComps='';
 function _updateVintage(){var dv=document.getElementById('dataVintage');if(!dv)return;var p=[];if(_vinCounty)p.push(_vinCounty);if(_vinComps)p.push(_vinComps);dv.textContent=p.length?p.join(' · '):'County data: connecting…';}
 function _med(a){if(!a||!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;});var m=Math.floor(s.length/2);return s.length%2?s[m]:Math.round((s[m-1]+s[m])/2);}
 function _compZipList(){return Object.keys(ZIP_LABEL);}
 function _compCutoff(){var d=new Date();d.setFullYear(d.getFullYear()-1);return d.toISOString().slice(0,10);}
-function _conformComp(a){
+function _conformComp(a,g){
   var zip=(''+(a.TRUE_SITE_ZIP_CODE||'')).slice(0,5);
   var sqft=a.BUILDING_HEATED_AREA||0, price=a.PRICE_1||0;
   if(!sqft||!price)return null;
@@ -2219,6 +2219,7 @@ function _conformComp(a){
   return {address:addr+', '+(ZIP_LABEL[zip]||'Miami')+', FL '+zip, zip:zip, neighborhood:ZIP_LABEL[zip]||zip,
     beds:a.BEDROOM_COUNT||null, baths:a.BATHROOM_COUNT||null, sqft:sqft, price:price, ppsf:ppsf, date:dt,
     year_built:a.YEAR_BUILT||null, folio:fd,
+    lat:(g&&g.y!=null?g.y:null), lon:(g&&g.x!=null?g.x:null),
     pa_url:fd?('https://apps.miamidadepa.gov/PropertySearch/#/?folio='+fd):'',
     maps_url:'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(addr+' FL '+zip)};
 }
@@ -2231,7 +2232,7 @@ function _compsWhere(){
 function _compsQuery(){
   return COMPS_API+'?where='+encodeURIComponent(_compsWhere())
     +'&outFields='+encodeURIComponent('FOLIO,TRUE_SITE_ADDR,TRUE_SITE_ZIP_CODE,PRICE_1,DATEOFSALE_UTC,BEDROOM_COUNT,BATHROOM_COUNT,BUILDING_HEATED_AREA,YEAR_BUILT')
-    +'&orderByFields='+encodeURIComponent('DATEOFSALE_UTC DESC')+'&returnGeometry=false';
+    +'&orderByFields='+encodeURIComponent('DATEOFSALE_UTC DESC')+'&returnGeometry=true&outSR=4326';
 }
 function fetchLiveComps(force){
   if(_compsTried&&!force)return; if(_compsInFlight)return;
@@ -2246,7 +2247,7 @@ function fetchLiveComps(force){
     .then(function(res){
       window._compsTruncated=!!res.truncated;
       if(res.truncated)console.warn('comps pull truncated at',res.features.length);
-      var rows=(res.features||[]).map(function(f){return _conformComp(f.attributes||{});}).filter(Boolean);
+      var rows=(res.features||[]).map(function(f){return _conformComp(f.attributes||{}, f.geometry);}).filter(Boolean);
       if(!rows.length)throw new Error('no sales returned');
       try{localStorage.setItem(COMPS_KEY,JSON.stringify({t:Date.now(),zipKey:_compZipList().join(','),rows:rows}));}catch(e){}
       _compsInFlight=false;
@@ -2272,24 +2273,78 @@ function applyLiveComps(rows,asOf){
   _vinComps='comps: '+rows.length.toLocaleString()+' live sales'+(asOf?' ('+new Date(asOf).toLocaleDateString('en-US',{month:'short',day:'numeric'})+')':'')+(window._compsTruncated?' — CAPPED, oldest months missing':'');
   _updateVintage();
 }
-// Per-deal comp matching: same ZIP(s), similar size (±25%), beds ±1; falls back to ZIP-wide median.
-function compsForDeal(zips,sqft,beds){
-  if(!LIVE_COMPS)return {tight:[],zone:[]};
-  var zone=LIVE_COMPS.filter(function(s){return zips.indexOf(s.zip)>=0;});
-  var tight=sqft?zone.filter(function(s){return s.sqft&&Math.abs(s.sqft-sqft)<=sqft*0.25&&(beds==null||s.beds==null||Math.abs(s.beds-beds)<=1);}):[];
-  return {tight:tight,zone:zone};
+// ── PROXIMITY COMP ENGINE ──────────────────────────────────────────────────
+// A ZIP like 33173 spans a $160/sqft pocket and a $680/sqft pocket; the old ZIP-wide
+// median applied one number to every home and minted fantasy ARVs (e.g. 9301 SW 76 ST
+// showed $1.9M when the homes on its own block sell ~$216/sqft → ~$1.1M). The fix: weight
+// comps by DISTANCE to the subject so the nearest sales dominate, match vintage (don't comp
+// a 1981 house against a 2020 build), trim outliers, and report a confidence + $/sqft RANGE.
+function _miles(la1,lo1,la2,lo2){
+  if(la1==null||lo1==null||la2==null||lo2==null)return 9999;
+  var R=3958.8, p1=la1*Math.PI/180, p2=la2*Math.PI/180,
+      dp=(la2-la1)*Math.PI/180, dl=(lo2-lo1)*Math.PI/180;
+  var a=Math.sin(dp/2)*Math.sin(dp/2)+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)*Math.sin(dl/2);
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(a)));
 }
-function liveArvFor(zips,sqft,beds,excl){
-  if(!LIVE_COMPS||!sqft||!zips||!zips.length)return null;
-  if(!beds)beds=null; // 0 / missing bed counts must not poison the similarity filter
-  var m=compsForDeal(zips,sqft,beds);
-  var pool=m.tight.filter(function(s){return !excl||!excl[s.folio];});
-  if(pool.length>=3)return {arv:Math.round(_med(pool.map(function(s){return s.ppsf;}))*sqft/1000)*1000, ppsf:_med(pool.map(function(s){return s.ppsf;})), n:pool.length, src:'comps'};
-  // ZIP-median fallback only for normal-sized homes — median $/sqft applied to an outlier sqft mints fantasy ARVs.
-  if(sqft<600||sqft>3800)return null;
-  var zp=m.zone.filter(function(s){return !excl||!excl[s.folio];});
-  if(zp.length>=5)return {arv:Math.round(_med(zp.map(function(s){return s.ppsf;}))*sqft/1000)*1000, ppsf:_med(zp.map(function(s){return s.ppsf;})), n:zp.length, src:'zip-median'};
-  return null;
+function _quantV(arr,q){if(!arr.length)return null;var s=arr.slice().sort(function(a,b){return a-b;});return s[Math.min(s.length-1,Math.floor(q*s.length))];}
+function _wmedian(pairs){return _wquant(pairs,0.5);}            // pairs = [[value,weight],...]
+function _wquant(pairs,q){
+  if(!pairs.length)return null;
+  var s=pairs.slice().sort(function(a,b){return a[0]-b[0];});
+  var tot=0,i; for(i=0;i<s.length;i++)tot+=s[i][1];
+  var acc=0; for(i=0;i<s.length;i++){acc+=s[i][1]; if(acc>=tot*q)return s[i][0];}
+  return s[s.length-1][0];
+}
+function _round1k(x){return Math.round(x/1000)*1000;}
+// Select & rank the comps behind a subject's ARV. Returns {list:[{s,d}], mode}.
+// mode 'prox' = distance-weighted (subject coords known); 'tight'/'zip' = size-matched fallback.
+function _selectComps(zips,sqft,lat,lon,yr,excl,self){
+  if(!LIVE_COMPS||!sqft||!zips||!zips.length)return {list:[],mode:null};
+  var selfF=(''+(self||'')).replace(/[^0-9]/g,''); // never comp a property against its OWN recent sale
+  var zone=LIVE_COMPS.filter(function(s){return zips.indexOf(s.zip)>=0 && (!excl||!excl[s.folio]) && !(selfF&&s.folio===selfF);});
+  if(lat!=null&&lon!=null){
+    var cand=[];
+    zone.forEach(function(s){
+      if(s.lat==null||s.lon==null)return;
+      if(Math.abs(s.sqft-sqft)>sqft*0.40)return;                 // size band ±40%
+      if(yr&&s.year_built&&s.year_built>yr+20)return;            // vintage guard: skip much-newer builds
+      var d=_miles(lat,lon,s.lat,s.lon);
+      if(d<=1.5)cand.push({s:s,d:d});                            // within 1.5 mi
+    });
+    if(cand.length>=3){cand.sort(function(a,b){return a.d-b.d;});return {list:cand,mode:'prox'};}
+  }
+  // Fallbacks when subject has no coords (or too few nearby): size-matched, then ZIP-wide.
+  var tight=zone.filter(function(s){return s.sqft&&Math.abs(s.sqft-sqft)<=sqft*0.25;}).map(function(s){return {s:s,d:null};});
+  if(tight.length>=3)return {list:tight,mode:'tight'};
+  if(sqft<600||sqft>3800)return {list:[],mode:null};             // outlier sqft × ZIP median = fantasy
+  if(zone.length>=5)return {list:zone.map(function(s){return {s:s,d:null};}),mode:'zip'};
+  return {list:[],mode:null};
+}
+function compsForDeal(zips,sqft,beds,lat,lon,yr,excl,self){return _selectComps(zips,sqft,lat,lon,yr,excl,self);}
+function liveArvFor(zips,sqft,beds,excl,lat,lon,yr,self){
+  if(!sqft)return null;
+  var sel=_selectComps(zips,sqft,lat,lon,yr,excl,self);
+  if(!sel.list.length)return null;
+  if(sel.mode==='prox'){
+    // inverse-square distance weight (nearest sales dominate). The subject's OWN sale is already
+    // excluded upstream, so no comp sits at distance 0; the 0.15mi floor just bounds the very nearest.
+    var pairs=sel.list.map(function(c){return [c.s.ppsf, 1/Math.pow(0.15+c.d,2)];});
+    var pp=_wmedian(pairs), q1=_wquant(pairs,0.25), q3=_wquant(pairs,0.75);
+    // Confidence is gated on the NEAREST comps that actually drive the estimate — not the whole 1.5mi pool.
+    // IQR over a big pool can read "tight" while the closest sales disagree 2-3x; that mislabel drives bad offers.
+    var near5=sel.list.slice(0,Math.min(5,sel.list.length)).map(function(c){return c.s.ppsf;});
+    var mn=Math.min.apply(null,near5), mx=Math.max.apply(null,near5);
+    var spread=(mn>0)?mx/mn:99; // priciest÷cheapest of the 5 nearest comps
+    var within=0; sel.list.forEach(function(c){if(c.d<=0.75)within++;});
+    var conf=(within>=5&&sel.list.length>=8&&spread<=1.6)?'high'
+            :((sel.list.length>=4&&spread<=2.2)?'med':'low');
+    return {arv:_round1k(pp*sqft), ppsf:Math.round(pp), n:sel.list.length, src:'comps', prox:true,
+            conf:conf, lo:_round1k(q1*sqft), hi:_round1k(q3*sqft)};
+  }
+  // size-matched / ZIP fallback — plain median, raw IQR, never high confidence
+  var p=sel.list.map(function(c){return c.s.ppsf;}), mm=_med(p);
+  return {arv:_round1k(mm*sqft), ppsf:mm, n:p.length, src:(sel.mode==='zip'?'zip-median':'comps'), prox:false,
+          conf:'low', lo:_round1k(_quantV(p,0.25)*sqft), hi:_round1k(_quantV(p,0.75)*sqft)};
 }
 function _dealZips(d){if(d.comp_zip)return [''+d.comp_zip];return NB_ZIPS[d.neighborhood]||[];}
 function _compExcl(){try{return JSON.parse(localStorage.getItem('mep_comp_excl')||'{}')}catch(e){return{}}}
@@ -2304,39 +2359,47 @@ function applyLiveArvs(){
     var f=_folioOf({pa_url:r[16]});
     var sold=f&&soldByFolio[f];
     if(sold&&sold.price>100000){r._soldLive=sold;r[11]=sold.price;r[13]=0;}
-    var got=liveArvFor(NB_ZIPS[r[2]]||[],r[18],r[6],excl[_normAddr(r[1])]);
-    if(got){r[8]=got.arv;r._arvSrc=got.src;r._arvN=got.n;r._arvPpsf=got.ppsf;}
-    else r._arvSrc='assessed';
+    var got=liveArvFor(NB_ZIPS[r[2]]||[],r[18],r[6],excl[_normAddr(r[1])],r._lat,r._lon,r[12],f);
+    if(got){r[8]=got.arv;r._arvSrc=got.src;r._arvN=got.n;r._arvPpsf=got.ppsf;r._arvConf=got.conf;r._arvLo=got.lo;r._arvHi=got.hi;r._arvProx=got.prox;}
+    else {r._arvSrc='assessed';r._arvConf=null;r._arvLo=null;r._arvHi=null;}
   });
   TOP10.forEach(function(d){
-    var got=liveArvFor(_dealZips(d),d.sqft,parseInt(d.beds_baths)||null,excl[_normAddr(d.address)]);
-    if(got){d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;}
+    var got=liveArvFor(_dealZips(d),d.sqft,parseInt(d.beds_baths)||null,excl[_normAddr(d.address)],d._lat,d._lon,d.year_built,_folioOf(d));
+    if(got){d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;d._arvConf=got.conf;d._arvLo=got.lo;d._arvHi=got.hi;d._arvProx=got.prox;}
     else d._arvSrc=d._arvSrc||'hand';
   });
 }
 // Dossier panel: the actual comps behind this deal's ARV, with include/exclude checkboxes.
 function compListHtml(d,idx){
   if(!LIVE_COMPS||!d.sqft)return '';
-  var m=compsForDeal(_dealZips(d),d.sqft,parseInt(d.beds_baths)||null);
-  var usingTight=m.tight.length>=3;
-  var pool=(usingTight?m.tight:m.zone).slice().sort(function(a,b){return (''+(b.date||'')).localeCompare(''+(a.date||''));}).slice(0,14);
-  if(!pool.length)return '';
   var key=_normAddr(d.address);
   var excl=_compExcl()[key]||{};
-  var rows=pool.map(function(s){
-    var off=!!excl[s.folio];
+  var full=_selectComps(_dealZips(d),d.sqft,d._lat,d._lon,d.year_built,null,_folioOf(d)); // full candidate list (excluded greyed below)
+  var mode=full.mode;
+  if(!full.list.length)return '';
+  var list=full.list.slice();
+  if(mode==='prox') list.sort(function(a,b){return a.d-b.d;}); else list.sort(function(a,b){return (''+(b.s.date||'')).localeCompare(''+(a.s.date||''));});
+  list=list.slice(0,16);
+  var showDist=(mode==='prox');
+  var rows=list.map(function(c){
+    var s=c.s, off=!!excl[s.folio];
+    var dist=showDist?('<td style="padding:4px 6px;font-size:11px;color:var(--bronze);white-space:nowrap;">'+(c.d!=null?c.d.toFixed(2)+' mi':'')+'</td>'):'';
     return '<tr style="'+(off?'opacity:.4;':'')+'border-bottom:1px solid var(--border);">'+
       '<td style="padding:4px 6px;"><input type="checkbox" '+(off?'':'checked')+' onchange="toggleComp(\''+pcJs(key)+'\',\''+s.folio+'\','+idx+')" style="cursor:pointer;"></td>'+
       '<td style="padding:4px 6px;font-size:11px;"><a href="'+s.pa_url+'" target="_blank" style="color:var(--ivory);">'+s.address.split(',')[0]+'</a></td>'+
+      dist+
       '<td style="padding:4px 6px;font-size:11px;color:var(--muted);white-space:nowrap;">'+(s.date||'')+'</td>'+
-      '<td style="padding:4px 6px;font-size:11px;color:var(--muted);white-space:nowrap;">'+(s.beds||'?')+'bd · '+(s.sqft?s.sqft.toLocaleString():'?')+'sf</td>'+
+      '<td style="padding:4px 6px;font-size:11px;color:var(--muted);white-space:nowrap;">'+(s.beds||'?')+'bd · '+(s.sqft?s.sqft.toLocaleString():'?')+'sf'+(s.year_built?' · '+s.year_built:'')+'</td>'+
       '<td style="padding:4px 6px;font-size:11px;text-align:right;white-space:nowrap;">'+fmtK(s.price)+'</td>'+
       '<td style="padding:4px 6px;font-size:11px;text-align:right;color:var(--bronze);font-weight:700;white-space:nowrap;">$'+s.ppsf+'/sf</td></tr>';
   }).join('');
-  var conf=usingTight?'':'<div style="font-size:11px;color:#e8854a;margin-top:6px;">Fewer than 3 similar-size comps — using ZIP-wide sales. Treat this ARV as low-confidence.</div>';
+  var head=mode==='prox'?'nearest first &middot; distance-weighted':(mode==='zip'?'ZIP-wide &middot; no nearby comps':'similar size');
+  var note='';
+  if(d._arvConf==='low') note='<div style="font-size:11px;color:#e8854a;margin-top:6px;">Low confidence — comps are thin or scattered (wide $/sf spread). Treat the ARV as the &ldquo;likely&rdquo; range above, not a point; pull MLS comps before offering.</div>';
+  else if(mode!=='prox') note='<div style="font-size:11px;color:#e8854a;margin-top:6px;">No geo-located nearby comps yet — using size-matched ZIP sales. Treat as low-confidence.</div>';
   return '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-top:14px;">'+
-    '<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:8px;">Comps Behind This ARV <span style="color:var(--muted);text-transform:none;letter-spacing:0;">('+(usingTight?'similar size &amp; beds':'ZIP-wide')+' &middot; last 12 months &middot; uncheck to exclude)</span></div>'+
-    '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'+rows+'</table></div>'+conf+
+    '<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:8px;">Comps Behind This ARV <span style="color:var(--muted);text-transform:none;letter-spacing:0;">('+head+' &middot; last 12 months &middot; uncheck to exclude)</span></div>'+
+    '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;">'+rows+'</table></div>'+note+
   '</div>';
 }
 function toggleComp(key,folio,idx){
@@ -2347,8 +2410,8 @@ function toggleComp(key,folio,idx){
   applyLiveArvs();
   var d=DL(idx);
   if(d){
-    var got=liveArvFor(_dealZips(d),d.sqft,parseInt(d.beds_baths)||null,(all[key]||{}));
-    if(got){d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;}
+    var got=liveArvFor(_dealZips(d),d.sqft,parseInt(d.beds_baths)||null,(all[key]||{}),d._lat,d._lon,d.year_built,_folioOf(d));
+    if(got){d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;d._arvConf=got.conf;d._arvLo=got.lo;d._arvHi=got.hi;d._arvProx=got.prox;}
     // Rebuild the grid so the card's ARV/profit/grade agree with the dossier, then re-open this deal's dossier.
     buildDeals();
     var ni=DEALS50.indexOf(d); if(ni<0)ni=idx;
@@ -2357,16 +2420,30 @@ function toggleComp(key,folio,idx){
   }
 }
 // Provenance line shown under every ARV figure.
+function _arvConfTxt(c){return c==='high'?'high confidence':c==='med'?'med confidence':c==='low'?'low conf · verify':'';}
+function _arvConfColor(c){return c==='high'?'var(--green)':c==='low'?'#e8854a':'var(--gold)';}
+function _arvRange(d){return (d._arvLo&&d._arvHi&&d._arvHi>d._arvLo)?(fmtK(d._arvLo)+'–'+fmtK(d._arvHi)):'';}
 function _arvSub(d){
-  if(d._arvSrc==='comps')return '$'+d._arvPpsf+'/sf · '+d._arvN+' comps (12-mo)';
-  if(d._arvSrc==='zip-median')return '$'+d._arvPpsf+'/sf · ZIP median ('+d._arvN+' sales)';
+  if(d._arvSrc==='comps'){
+    var how=d._arvProx?(d._arvN+' nearby comps'):(d._arvN+' comps · ZIP size-match');
+    return '$'+d._arvPpsf+'/sf · '+how+(d._arvConf?' · '+_arvConfTxt(d._arvConf):'');
+  }
+  if(d._arvSrc==='zip-median')return '$'+d._arvPpsf+'/sf · ZIP median ('+d._arvN+' sales) · low conf · verify';
   if(d._arvSrc==='assessed')return 'assessed-derived · comp it';
   return d.comp_ppsf?'$'+d.comp_ppsf+'/sqft':'est. value';
 }
+// Provenance + a "likely $X–$Y" range line (the comp spread) under the ARV figure.
+function _arvSubHtml(d){
+  var base=_arvSub(d), rng=_arvRange(d);
+  if(rng&&(d._arvSrc==='comps'||d._arvSrc==='zip-median'))
+    return base+'<br><span style="color:'+_arvConfColor(d._arvConf)+';">likely '+rng+'</span>';
+  return base;
+}
 // ── PARCEL TRUTH — replace the generator's fake sqft/beds with county BUILDING_HEATED_AREA ──
 // The baked r[18] "sqft" runs 1.3-2.2x the county's heated area (verified by folio), which inflated
-// every live-comp ARV by the same factor. This pulls the real heated area + bedrooms for every row.
-var PDATA_KEY='mep_pdata_v1';
+// every live-comp ARV by the same factor. This pulls the real heated area + bedrooms + LAT/LON for
+// every row (v2 adds coordinates so the comp engine can match by geographic proximity).
+var PDATA_KEY='mep_pdata_v2';
 var _pdataInFlight=false,_pdataTried=false;
 function _pdataCache(){
   try{var c=JSON.parse(localStorage.getItem(PDATA_KEY)||'null');
@@ -2385,13 +2462,17 @@ function enrichParcelData(force){
   function apply(){
     var changed=false;
     ALL_ROWS.forEach(function(r){
-      var f=_folioOf({pa_url:r[16]});var p=f&&cache[f];if(!p||!p.h)return;
+      var f=_folioOf({pa_url:r[16]});var p=f&&cache[f];if(!p)return;
+      if(p.lat!=null&&(r._lat==null)){r._lat=p.lat;r._lon=p.lon;changed=true;} // coords arriving → re-ARV by proximity
+      if(!p.h)return;
       if(r[18]!==p.h){r[18]=p.h;changed=true;}
       if(p.b&&!r[6])r[6]=p.b;
       r._sqftVerified=true;
     });
     TOP10.forEach(function(d){
-      var p=cache[_folioOf(d)];if(!p||!p.h)return;
+      var p=cache[_folioOf(d)];if(!p)return;
+      if(p.lat!=null&&(d._lat==null)){d._lat=p.lat;d._lon=p.lon;changed=true;}
+      if(!p.h)return;
       if(d.sqft!==p.h){d.sqft=p.h;changed=true;}
       d._sqftVerified=true;
     });
@@ -2412,12 +2493,12 @@ function enrichParcelData(force){
       apply();return;
     }
     var body='where='+encodeURIComponent("FOLIO IN ("+batch.map(function(f){return "'"+f+"'";}).join(',')+")")
-      +'&outFields='+encodeURIComponent('FOLIO,BUILDING_HEATED_AREA,BEDROOM_COUNT')+'&returnGeometry=false&f=json';
+      +'&outFields='+encodeURIComponent('FOLIO,BUILDING_HEATED_AREA,BEDROOM_COUNT')+'&returnGeometry=true&outSR=4326&f=json';
     fetch(COMPS_API,{method:'POST',mode:'cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body})
       .then(function(r){return r.json();})
       .then(function(j){
-        ((j&&j.features)||[]).forEach(function(ft){var a=ft.attributes||{};var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');
-          if(fd)cache[fd]={h:a.BUILDING_HEATED_AREA||0,b:a.BEDROOM_COUNT||null};});
+        ((j&&j.features)||[]).forEach(function(ft){var a=ft.attributes||{};var g=ft.geometry||{};var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');
+          if(fd)cache[fd]={h:a.BUILDING_HEATED_AREA||0,b:a.BEDROOM_COUNT||null,lat:(g.y!=null?g.y:null),lon:(g.x!=null?g.x:null)};});
         i++;next();
       })
       .catch(function(){
@@ -2429,8 +2510,8 @@ function enrichParcelData(force){
   next();
 }
 
-// ── COUNTY-LEAD ENRICHMENT — pull beds/sqft/year/zip for county-flagged leads, then comp them live ──
-var CPROP_KEY='mep_cprop_v1';
+// ── COUNTY-LEAD ENRICHMENT — pull beds/sqft/year/zip/coords for county-flagged leads, then comp them live ──
+var CPROP_KEY='mep_cprop_v2';
 function _cpropCache(){
   try{
     var c=JSON.parse(localStorage.getItem(CPROP_KEY)||'null');
@@ -2452,12 +2533,13 @@ function enrichCountyLeads(){
     top.forEach(function(d){
       var f=_folioOf(d);var p=f&&cache[f];if(!p||!p.sqft)return;
       d.sqft=p.sqft;d.beds=p.beds||null;d.year_built=p.yr||null;
+      if(p.lat!=null){d._lat=p.lat;d._lon=p.lon;}
       if(p.zip&&ZIP_LABEL[p.zip]){d.comp_zip=p.zip;d.neighborhood=ZIP_LABEL[p.zip];}
       if(p.price>10000&&p.dos){d.last_sale_price=p.price;d.last_sale_date=p.dos;}
       if(p.dor&&p.dor!=='0101')return; // not a single-family parcel — keep the honest "Needs comp" card
-      var got=liveArvFor(_dealZips(d),d.sqft,d.beds,(_compExcl()[_normAddr(d.address)])||null);
+      var got=liveArvFor(_dealZips(d),d.sqft,d.beds,(_compExcl()[_normAddr(d.address)])||null,d._lat,d._lon,d.year_built,f);
       if(got){
-        d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;
+        d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;d._arvConf=got.conf;d._arvLo=got.lo;d._arvHi=got.hi;d._arvProx=got.prox;
         d.repair=Math.round(45*d.sqft/500)*500; // walk-it assumption: $45/sqft moderate-light rehab
         d._repairAssumed=true;d.rehab_condition='';d._needsComp=false;
         var c=computeScore(d);d._score=c.score;d._why=c.why;
@@ -2472,11 +2554,11 @@ function enrichCountyLeads(){
     var batch=need.slice(i*50,(i+1)*50);
     if(!batch.length){try{localStorage.setItem(CPROP_KEY,JSON.stringify({_t:Date.now(),data:cache}));}catch(e){}apply();return;}
     var w="FOLIO IN ("+batch.map(function(f){return "'"+f+"'";}).join(',')+")";
-    fetch(COMPS_API+'?where='+encodeURIComponent(w)+'&outFields='+encodeURIComponent('FOLIO,TRUE_SITE_ZIP_CODE,DOR_CODE_CUR,BEDROOM_COUNT,BUILDING_HEATED_AREA,YEAR_BUILT,PRICE_1,DATEOFSALE_UTC')+'&returnGeometry=false&f=json',{mode:'cors'})
+    fetch(COMPS_API+'?where='+encodeURIComponent(w)+'&outFields='+encodeURIComponent('FOLIO,TRUE_SITE_ZIP_CODE,DOR_CODE_CUR,BEDROOM_COUNT,BUILDING_HEATED_AREA,YEAR_BUILT,PRICE_1,DATEOFSALE_UTC')+'&returnGeometry=true&outSR=4326&f=json',{mode:'cors'})
       .then(function(r){return r.json();})
       .then(function(j){
-        ((j&&j.features)||[]).forEach(function(ft){var a=ft.attributes||{};var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');
-          if(fd)cache[fd]={zip:(''+(a.TRUE_SITE_ZIP_CODE||'')).slice(0,5),dor:_cleanTxt(a.DOR_CODE_CUR),beds:a.BEDROOM_COUNT||null,sqft:a.BUILDING_HEATED_AREA||0,yr:a.YEAR_BUILT||null,price:a.PRICE_1||0,dos:a.DATEOFSALE_UTC?new Date(a.DATEOFSALE_UTC).toISOString().slice(0,10):''};});
+        ((j&&j.features)||[]).forEach(function(ft){var a=ft.attributes||{};var g=ft.geometry||{};var fd=(''+(a.FOLIO||'')).replace(/[^0-9]/g,'');
+          if(fd)cache[fd]={zip:(''+(a.TRUE_SITE_ZIP_CODE||'')).slice(0,5),dor:_cleanTxt(a.DOR_CODE_CUR),beds:a.BEDROOM_COUNT||null,sqft:a.BUILDING_HEATED_AREA||0,yr:a.YEAR_BUILT||null,price:a.PRICE_1||0,dos:a.DATEOFSALE_UTC?new Date(a.DATEOFSALE_UTC).toISOString().slice(0,10):'',lat:(g.y!=null?g.y:null),lon:(g.x!=null?g.x:null)};});
         i++;next();
       }).catch(function(){apply();});
   }
