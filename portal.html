@@ -616,7 +616,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 .status-dropdown{transition:opacity .2s ease}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tab-content.active{animation:none}.deal-card,.stat-card,.comp-card,.viol-card,.btn{transition:none}}
 </style>
-<script src="polk-leads.js?v=1"></script>
+<script src="polk-leads.js?v=2"></script>
 </head>
 <body>
 
@@ -654,7 +654,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.3</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.4</div>
     </div>
   </header>
 
@@ -1355,8 +1355,14 @@ function showTab(btn){
 // Data baked in polk-leads.js (window.POLK_LEADS / POLK_META) from the Polk PA map service.
 // Polk has NO open comp or code-violation feed, so these are targeting leads only (no ARV).
 var _polkFilter={market:'',tag:'',q:''};
-function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(l.a+' '+l.c+' FL '+(l.z||''));}
-function polkPaUrl(l){return 'https://map.polkflpa.gov/';} // Polk PA's public search IS the map viewer (no deep-link); user searches the address shown
+function _polkAddr(l){return l.a+', '+l.c+' FL '+(l.z||'');}
+function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_polkAddr(l));}
+function polkPaUrl(l){return 'https://map.polkflpa.gov/';}                                   // Polk PA public search = the map viewer (search the parcel/address shown)
+function polkTaxUrl(l){return 'https://esearch.polk-tax.com/';}                              // Polk Tax Collector property search (By Address / By ID)
+function polkProbateUrl(l){return 'https://pro.polkcountyclerk.net/PRO';}                    // Polk Records Online — probate/estate & court case search (by owner name)
+function polkCodeUrl(l){return 'https://aca-prod.accela.com/POLKCO/Cap/CapHome.aspx?module=Enforcement&TabName=Home';} // Accela code-enforcement case search (by address)
+function polkRecordsUrl(l){return 'https://www.polkclerkfl.gov/187/Public-Records-Searches';}// Clerk official records — deeds, mortgages, liens
+function polkZillowUrl(l){return 'https://www.zillow.com/homes/'+encodeURIComponent(_polkAddr(l).replace(/\s+/g,'-'))+'_rb/';}
 function polkSkipUrl(l){return 'https://www.truepeoplesearch.com/results?name='+encodeURIComponent(l.o)+'&citystatezip='+encodeURIComponent(l.c+', FL');}
 function polkTagStyle(tag){var m={probate:['#e8854a','Estate / probate'],trust:['#B5915A','Trust-owned'],entity:['#3DBE82','LLC / entity'],other:['#8a8478','Non-homestead']};return m[tag]||m.other;}
 function polkFiltered(){
@@ -1394,26 +1400,73 @@ function buildPolk(){
   }
   renderPolk();
 }
+function polkWhy(l){
+  var s=[]; var t=polkTagStyle(l.tag)[1];
+  s.push(t+' owner');
+  s.push('Non-homestead (not owner-occupied)');
+  if(l.mkt>=120000&&l.mkt<=300000)s.push('In the flip value band');
+  if(l.bld&&l.mkt&&(l.bld/l.mkt)<0.5)s.push('Land-heavy — older/tear-down-leaning structure');
+  if(l.lot&&l.lot>0.45)s.push('Larger lot ('+l.lot+' ac)');
+  return s;
+}
+function _polkLink(href,label,title){return '<a class="btn btn-outline" style="font-size:10px;padding:5px 9px;" href="'+href+'" target="_blank" rel="noopener"'+(title?' title="'+title+'"':'')+'>'+label+'</a>';}
+function polkDossierHtml(l){
+  var row=function(k,v){return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">'+k+'</span><span style="color:var(--ivory);font-weight:600;">'+v+'</span></div>';};
+  var data='<div style="background:var(--bg-soft,var(--bg-card));border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
+    +'<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">County record</div>'
+    +row('Market / just value',fmt$(l.mkt))
+    +row('Assessed value',l.asr?fmt$(l.asr):'&mdash;')
+    +row('Taxable value',l.tax?fmt$(l.tax):'&mdash;')
+    +row('Building value',fmt$(l.bld))
+    +row('Land value',fmt$(l.lnd!=null?l.lnd:Math.max(0,l.mkt-l.bld)))
+    +row('Lot size',(l.lot||0)+' ac')
+    +row('Use',' Single-family (DOR 0100)')
+    +row('Homestead','No — non-homestead')
+    +row('Parcel',(l.st||l.pid))
+    +'</div>';
+  var why='<div style="margin-top:10px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:5px;">Why it&rsquo;s a lead <span style="color:var(--muted);">&middot; score '+l.sc+'</span></div>'
+    +'<div style="font-size:12px;color:var(--ivory-soft);line-height:1.7;">'+polkWhy(l).map(function(x){return '&bull; '+x;}).join('<br>')+'</div></div>';
+  var recLinks='<div style="margin-top:12px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">County records &middot; search &ldquo;'+(l.st||l.pid)+'&rdquo; or the address</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
+      +_polkLink(polkPaUrl(l),'Polk PA record','Polk Property Appraiser map — search the parcel/address for the full record, sales & sketch')
+      +_polkLink(polkTaxUrl(l),'Tax record','Polk Tax Collector — values, tax bills & any delinquency')
+      +_polkLink(polkProbateUrl(l),'Probate / court','Polk Records Online — search the owner name for probate/estate & court cases')
+      +_polkLink(polkCodeUrl(l),'Code cases','Polk Accela — search the address for code-enforcement cases')
+      +_polkLink(polkRecordsUrl(l),'Deeds / liens','Polk Clerk official records — deeds, mortgages & liens')
+    +'</div></div>';
+  var ownLinks='<div style="margin-top:12px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">Owner &amp; listing</div>'
+    +'<div style="display:flex;gap:6px;flex-wrap:wrap;">'
+      +_polkLink(polkSkipUrl(l),'Skip-trace','TruePeopleSearch — find owner phone/contact')
+      +_polkLink(polkMapsUrl(l),'Google Maps','Aerial / street view of the property')
+      +_polkLink(polkZillowUrl(l),'Zillow','Check if it is currently listed')
+    +'</div></div>';
+  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'+data+why+recLinks+ownLinks+'</div>';
+}
+function polkToggleDetail(pid){var el=document.getElementById('polkD-'+pid);if(!el)return;var open=el.style.display!=='none'&&el.style.display!=='';el.style.display=open?'none':'block';var b=document.getElementById('polkT-'+pid);if(b)b.innerHTML=open?'Details &#9662;':'Hide &#9652;';}
 function renderPolk(){
   var L=polkFiltered(), g=document.getElementById('polkGrid'); if(!g)return;
   if(!L.length){g.innerHTML='<div style="color:var(--muted);padding:20px;">No Polk leads match these filters.</div>';return;}
   var pip=(typeof getPipeline==='function')?getPipeline():{};
   g.innerHTML=L.slice(0,400).map(function(l){
-    var ts=polkTagStyle(l.tag), addr=l.a+', '+l.c+' '+(l.z||''), inPipe=!!pip[addr];
+    var ts=polkTagStyle(l.tag), addr=l.a+', '+l.c+' '+(l.z||''), inPipe=!!pip[addr], pj=JSON.stringify(l.pid);
     return '<div class="deal-card" style="padding:18px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
-        +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+'</div></div>'
+        +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+' &middot; #'+(l.st||l.pid)+'</div></div>'
         +'<span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;white-space:nowrap;">'+ts[1]+'</span></div>'
       +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 2px;">'+l.o+'</div>'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
-        +'<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:10px;color:var(--muted);">market / just value</div></div>'
-        +'<div class="metric-cell" style="border-right:none;"><div class="metric-lbl">Building / Lot</div><div class="metric-val" style="font-size:15px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:10px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div></div>'
-      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">'
-        +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkMapsUrl(l)+'" target="_blank" rel="noopener">Map</a>'
-        +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkPaUrl(l)+'" target="_blank" rel="noopener" title="Opens the Polk PA map — search the address to see the full county record">County map</a>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
+        +'<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>'
+        +'<div class="metric-cell"><div class="metric-lbl">Building</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>'
+        +'<div class="metric-cell" style="border-right:none;"><div class="metric-lbl">Taxable</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.tax)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">non-homestead</div></div></div>'
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
+        +'<button class="btn btn-gold" id="polkT-'+l.pid+'" style="font-size:10px;padding:4px 10px;" onclick="polkToggleDetail('+pj+')">Details &#9662;</button>'
+        +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkPaUrl(l)+'" target="_blank" rel="noopener">Polk PA</a>'
+        +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkProbateUrl(l)+'" target="_blank" rel="noopener" title="Search the owner name for probate/estate cases">Probate</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkSkipUrl(l)+'" target="_blank" rel="noopener">Skip-trace</a>'
-        +(inPipe?'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" disabled>&#10003; In Pipeline</button>':'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" onclick="polkToPipeline('+JSON.stringify(l.pid)+',this)">+ Pipeline</button>')
-      +'</div></div>';
+        +(inPipe?'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" disabled>&#10003; In Pipeline</button>':'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" onclick="polkToPipeline('+pj+',this)">+ Pipeline</button>')
+      +'</div>'
+      +'<div id="polkD-'+l.pid+'" style="display:none;">'+polkDossierHtml(l)+'</div>'
+    +'</div>';
   }).join('')+(L.length>400?'<div style="grid-column:1/-1;color:var(--muted);font-size:12px;padding:12px;">Showing top 400 of '+L.length+' by lead score. Narrow with the filters above.</div>':'');
 }
 function polkToPipeline(pid,btn){
