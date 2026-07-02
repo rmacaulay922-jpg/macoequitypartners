@@ -616,7 +616,8 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 .status-dropdown{transition:opacity .2s ease}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tab-content.active{animation:none}.deal-card,.stat-card,.comp-card,.viol-card,.btn{transition:none}}
 </style>
-<script src="polk-leads.js?v=2"></script>
+<script src="polk-leads.js?v=4"></script>
+<script src="mia-homestead.js?v=1"></script>
 </head>
 <body>
 
@@ -654,7 +655,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.4</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v11.7</div>
     </div>
   </header>
 
@@ -738,12 +739,15 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
         <option value="cases-desc">Most open code cases</option>
         <option value="estates">Estates &amp; heirs first</option>
       </select>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ivory-soft);cursor:pointer;" title="PA-verified homesteaded = the owner lives there — statistically the weakest sellers on the list">
+        <input type="checkbox" id="hideHsFilter" onchange="buildDeals()" style="width:15px;height:15px;cursor:pointer;"> Hide owner-occupied
+      </label>
       <span id="dealRefreshStatus" style="font-size:11px;color:var(--muted);"></span>
     </div>
     <div class="deal-grid" id="dealGrid"></div>
     <div style="margin-top:24px;background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:16px 20px;">
       <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:8px;">How the Deal Score Works</div>
-      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.8;">The <strong>Deal Score</strong> blends two things: <strong>seller motivation</strong> (how likely they sell below market) <em>plus</em> the deal's <strong>financial return</strong>, so margin &mdash; not just distress &mdash; affects the ranking. <u>Motivation</u>: out-of-state owner <strong>+22</strong> &middot; long ownership <strong>+6 to +18</strong> &middot; home age <strong>+3 to +14</strong> &middot; trust / LLC / estate <strong>+12</strong> &middot; no homestead <strong>+10</strong> &middot; rehab condition <strong>+4 to +14</strong> &middot; high equity <strong>+10</strong> &middot; open code violations <strong>+12 to +38</strong> (more live cases score higher) &middot; recorded county lien <strong>+16</strong> (older liens +8) &middot; UNSAFE STRUCTURE case <strong>+30</strong> &middot; expired permit <strong>+8</strong> &middot; unpaid-waste county judgement <strong>+10</strong> (county signals are correlated, so together they cap at <strong>+50</strong>) &middot; permit activity <strong>+6</strong>. <u>Return</u>: estimated <strong>cash-on-cash ROI %</strong> is added on top (a thin or negative margin pulls the score down). So a wildly motivated seller with a thin spread can still rank below a slightly-less-distressed deal that actually makes money &mdash; use the <strong>Sort</strong> dropdown to rank purely by ROI, profit, or cases. Open any deal's <strong>Field Report</strong> for its exact breakdown. Triage tool only &mdash; verify condition &amp; live comps before offering.</div>
+      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.8;">The <strong>Deal Score</strong> blends two things: <strong>seller motivation</strong> (how likely they sell below market) <em>plus</em> the deal's <strong>financial return</strong>, so margin &mdash; not just distress &mdash; affects the ranking. <u>Motivation</u>: out-of-state owner <strong>+22</strong> &middot; long ownership <strong>+6 to +18</strong> &middot; home age <strong>+3 to +14</strong> &middot; trust / LLC / estate <strong>+12</strong> &middot; no homestead <strong>+10</strong> (PA-verified) &middot; owner-occupied / homesteaded <strong>&minus;12</strong> &middot; rehab condition <strong>+4 to +14</strong> &middot; high equity <strong>+10</strong> &middot; open code violations <strong>+12 to +38</strong> (more live cases score higher) &middot; recorded county lien <strong>+16</strong> (older liens +8) &middot; UNSAFE STRUCTURE case <strong>+30</strong> &middot; expired permit <strong>+8</strong> &middot; unpaid-waste county judgement <strong>+10</strong> (county signals are correlated, so together they cap at <strong>+50</strong>) &middot; permit activity <strong>+6</strong>. <u>Return</u>: estimated <strong>cash-on-cash ROI %</strong> is added on top (a thin or negative margin pulls the score down). So a wildly motivated seller with a thin spread can still rank below a slightly-less-distressed deal that actually makes money &mdash; use the <strong>Sort</strong> dropdown to rank purely by ROI, profit, or cases. Open any deal's <strong>Field Report</strong> for its exact breakdown. Triage tool only &mdash; verify condition &amp; live comps before offering.</div>
     </div>
   </div>
 
@@ -773,7 +777,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
           <select class="filter-sel" id="scoreFilter" onchange="filterTable()"><option value="">Any Score</option><option value="40">Score 40+</option><option value="60">Score 60+</option><option value="80">Score 80+</option></select>
           <select class="filter-sel" id="arvFilter" onchange="filterTable()"><option value="">Any ARV</option><option value="0-500000">Under $500K</option><option value="500000-750000">$500&ndash;750K</option><option value="750000-1000000">$750K&ndash;1M</option><option value="1000000-99999999">$1M+</option></select>
           <select class="filter-sel" id="sqftFilter" onchange="filterTable()"><option value="">Any Size</option><option value="1500">1,500+ sf</option><option value="2000">2,000+ sf</option><option value="2500">2,500+ sf</option></select>
-          <select class="filter-sel" id="ownerTypeFilter" onchange="filterTable()" title="Estates and life estates come straight from the county roll — the PA retitles a parcel when its owner dies"><option value="">All Owner Types</option><option value="estate">Estates / deceased</option><option value="le">Life estates</option><option value="entity">Trusts &amp; LLCs</option><option value="oos">Out-of-state</option></select>
+          <select class="filter-sel" id="ownerTypeFilter" onchange="filterTable()" title="Estates and life estates come straight from the county roll — the PA retitles a parcel when its owner dies"><option value="">All Owner Types</option><option value="estate">Estates / deceased</option><option value="le">Life estates</option><option value="entity">Trusts &amp; LLCs</option><option value="oos">Out-of-state</option><option value="nonhomestead">Non-homestead (rental/absentee)</option><option value="homestead">Homesteaded (owner-occupied)</option></select>
           <label class="filter-sel" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="hideSoldFilter" onchange="filterTable()" style="margin:0;width:auto;">Hide recently sold</label>
           <button class="btn btn-dark" type="button" style="font-size:11px;padding:6px 12px;" onclick="exportTableCsv()">&#8681; Export CSV</button>
           <button class="btn btn-gold" type="button" style="font-size:11px;padding:6px 12px;" onclick="buildMailList()" title="Pulls owner names + mailing addresses from the county roll for the current filter, then downloads a direct-mail CSV">&#9993; Mail List CSV</button>
@@ -831,7 +835,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
   <div class="uw-modal-card">
   <button class="uw-modal-close" onclick="closeUnderwriter()" title="Close">&#10005;</button>
   <div class="section-title"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gold);vertical-align:-3px"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8" y2="18"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="16" y1="14" x2="16" y2="18"/></svg> Underwriter <span class="badge">Flip / Hold P&amp;L</span></div>
-  <div class="uw-hint">Every number below is a Miami-reality estimate from <em>your</em> inputs. Flip margins here are tight &mdash; negative profit shows in red on purpose. Costs use: buying 3%, selling 8% (6% comm + 2% close), 10% reno contingency, taxes 1.8%/yr, insurance $550/mo (2026 Miami-Dade non-homestead), utilities $350/mo, hard money 13.5% / 2pts / 70% LTV.</div>
+  <div class="uw-hint">Every number below is a Miami-reality estimate from <em>your</em> inputs. Flip margins here are tight &mdash; negative profit shows in red on purpose. Costs use: buying 3%, selling 8% (6% comm + 2% close), 10% reno contingency, taxes 1.8%/yr, insurance $550/mo (2026 Miami-Dade non-homestead), utilities $350/mo, hard money at your Rate Center terms (default 13.5% / 2pts) / 70% LTV.</div>
   <div class="uw-grid">
     <!-- LEFT INPUTS -->
     <div class="uw-left">
@@ -1108,17 +1112,35 @@ function fmtK(n){return n==null?'N/A':'$'+(n/1000).toFixed(0)+'K'}
 function getMao(arv){return arv*maoP/100} // kept for reference only; MAO not displayed
 // Realistic flip net profit for a 6-month hard-money hold.
 // purchase defaults to ~65% of ARV (typical distressed acquisition) when not supplied.
+// ── FINANCING TERMS — the Rate Center now DRIVES the flip model ──
+// Parses the 'Hard Money' row (e.g. "13.5% + 2 pts") and 'DSCR' row of the Rate Center card.
+// Clamped to sane bounds; unparseable text falls back to the 2026 defaults, so a stray edit
+// can never blow up every profit number.
+function _hmTerms(){
+  var t={rate:0.135,pts:0.02};
+  try{
+    var s=''+((typeof rcLoad==='function'?rcLoad():{})['Hard Money']||'');
+    var m=s.match(/(\d+(?:\.\d+)?)\s*%/); if(m){var r=parseFloat(m[1])/100; if(r>=0.05&&r<=0.25)t.rate=r;}
+    var p=s.match(/(\d+(?:\.\d+)?)(?:\s*-\s*\d+(?:\.\d+)?)?\s*pt/i); if(p){var pv=parseFloat(p[1])/100; if(pv>=0&&pv<=0.06)t.pts=pv;}
+  }catch(e){}
+  return t;
+}
+function _dscrRate(){
+  try{var s=''+((typeof rcLoad==='function'?rcLoad():{})['DSCR']||'');var m=s.match(/(\d+(?:\.\d+)?)\s*%/);if(m){var r=parseFloat(m[1])/100;if(r>=0.03&&r<=0.15)return r;}}catch(e){}
+  return 0.0725;
+}
 function estNetProfit(arv,repair,purchase){
   if(!arv)return null;                    // no ARV (incl. county leads at 0) -> no profit claim
   if(purchase==null)purchase=arv*0.65;
   repair=repair||0;
+  var hm=_hmTerms();
   var loan=purchase*0.70;                 // 70% LTV hard money
   return arv - purchase - repair
     - repair*0.10                         // 10% reno contingency
     - purchase*0.03                       // buying closing costs
     - arv*0.08                            // selling costs (6% commission + 2% closing)
-    - loan*0.135/12*6                     // hard money interest (13.5% APR, 6 mo)
-    - loan*0.02                           // hard money points (2 pts)
+    - loan*hm.rate/12*6                   // hard money interest (Rate Center, 6 mo)
+    - loan*hm.pts                         // hard money points (Rate Center)
     - 550*6 - 350*6                       // insurance ($550/mo, 2026 Miami-Dade) + utilities, 6 months
     - purchase*0.018/12*6;                // property taxes, 6 months
 }
@@ -1128,7 +1150,8 @@ function getProfit(arv,repair){return estNetProfit(arv,repair);}
 function dealROIpct(arv,repair){
   if(!arv)return null;
   var purchase=arv*0.65, loan=purchase*0.70; repair=repair||0;
-  var cashIn=(purchase-loan)+repair*1.10+purchase*0.03+loan*0.135/12*6+loan*0.02+550*6+350*6+purchase*0.018/12*6;
+  var hm=_hmTerms();
+  var cashIn=(purchase-loan)+repair*1.10+purchase*0.03+loan*hm.rate/12*6+loan*hm.pts+550*6+350*6+purchase*0.018/12*6;
   var p=estNetProfit(arv,repair);
   return cashIn>0?(p/cashIn*100):null;
 }
@@ -1150,7 +1173,7 @@ function isRecentSaleRow(r){
 function rentalMetrics(arv,rent){
   if(!rent||!arv)return null;
   var loan=arv*0.75;                          // 75% LTV DSCR
-  var mr=0.0725/12;                            // 7.25% 30yr
+  var mr=_dscrRate()/12;                       // DSCR rate from the Rate Center (default 7.25% 30yr)
   var pi=loan*mr/(1-Math.pow(1+mr,-360));      // monthly P&I
   var taxes=arv*0.018/12, ins=550;
   var piti=pi+taxes+ins;
@@ -1351,11 +1374,32 @@ function showTab(btn){
   if(id==='polk'){try{buildPolk();}catch(e){console.error('polk',e);}}
 }
 
+// ── MIAMI HOMESTEAD — apply the baked PA-verified homestead flag (window.MIA_HS) to every row/deal ──
+// Fixes the generator's stale/invented homestead flags: county exemption >= $25k = homesteaded (owner-occupied,
+// weak lead); $0 = non-homestead (rental/absentee/investor, +10 motivation & the real target).
+function applyHomestead(){
+  var H=window.MIA_HS; if(!H)return;
+  try{ALL_ROWS.forEach(function(r){var f=_folioOf({pa_url:r[16]});var h=f&&H[f];if(h)r._hs=h.h;});}catch(e){}
+  try{TOP10.forEach(function(d){var f=_folioOf(d);var h=f&&H[f];if(!h)return;
+    var was=d.has_homestead, now=(h.h===1); d.has_homestead=now;
+    if(was!==now){
+      // the baked d.score/d.flags assumed the old status — correct the +10 no-homestead weight and the printed
+      // flags string so the deal sheet can't say "Homestead: Yes" next to a "No Homestead" distress flag.
+      if(was===false&&now===true)d.score=(d.score||0)-10;
+      else if(was===true&&now===false)d.score=(d.score||0)+10;
+      if(typeof d.flags==='string')d.flags=(now
+        ? d.flags.replace(/\s*\|\s*No Homestead\b/gi,'').replace(/^No Homestead\s*\|?\s*/i,'')
+        : (/No Homestead/i.test(d.flags)?d.flags:d.flags+' | No Homestead'));
+    }
+  });}catch(e){}
+}
+
 // ── POLK COUNTY — snapshot lead list (non-homestead estate/trust/heirs SFH) ──
 // Data baked in polk-leads.js (window.POLK_LEADS / POLK_META) from the Polk PA map service.
 // Polk has NO open comp or code-violation feed, so these are targeting leads only (no ARV).
-var _polkFilter={market:'',tag:'',q:''};
+var _polkFilter={market:'',tag:'',own:'',q:''};
 function _polkAddr(l){return l.a+', '+l.c+' FL '+(l.z||'');}
+function _polkMail(l){return [l.m1,l.m3].filter(Boolean).join(', ');}                         // owner mailing address
 function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_polkAddr(l));}
 function polkPaUrl(l){return 'https://map.polkflpa.gov/';}                                   // Polk PA public search = the map viewer (search the parcel/address shown)
 function polkTaxUrl(l){return 'https://esearch.polk-tax.com/';}                              // Polk Tax Collector property search (By Address / By ID)
@@ -1363,13 +1407,16 @@ function polkProbateUrl(l){return 'https://pro.polkcountyclerk.net/PRO';}       
 function polkCodeUrl(l){return 'https://aca-prod.accela.com/POLKCO/Cap/CapHome.aspx?module=Enforcement&TabName=Home';} // Accela code-enforcement case search (by address)
 function polkRecordsUrl(l){return 'https://www.polkclerkfl.gov/187/Public-Records-Searches';}// Clerk official records — deeds, mortgages, liens
 function polkZillowUrl(l){return 'https://www.zillow.com/homes/'+encodeURIComponent(_polkAddr(l).replace(/\s+/g,'-'))+'_rb/';}
-function polkSkipUrl(l){return 'https://www.truepeoplesearch.com/results?name='+encodeURIComponent(l.o)+'&citystatezip='+encodeURIComponent(l.c+', FL');}
+function polkSkipUrl(l){var loc=l.oos&&l.m3?l.m3:(l.c+', FL'); return 'https://www.truepeoplesearch.com/results?name='+encodeURIComponent(l.o)+'&citystatezip='+encodeURIComponent(loc);}
 function polkTagStyle(tag){var m={probate:['#e8854a','Estate / probate'],trust:['#B5915A','Trust-owned'],entity:['#3DBE82','LLC / entity'],other:['#8a8478','Non-homestead']};return m[tag]||m.other;}
+// owner location: out-of-state (strongest), in-state absentee, or local
+function polkOwnLoc(l){ if(l.oos)return {k:'oos',t:'Out-of-state · '+(l.mst||'?'),c:'#7c76ff'}; if(l.abs)return {k:'abs',t:'Absentee (FL)',c:'#4fa3d1'}; return {k:'local',t:'Local owner',c:'#8a8478'}; }
 function polkFiltered(){
   return (window.POLK_LEADS||[]).filter(function(l){
     if(_polkFilter.market&&l.c!==_polkFilter.market)return false;
     if(_polkFilter.tag&&l.tag!==_polkFilter.tag)return false;
-    if(_polkFilter.q){var q=_polkFilter.q.toLowerCase();if((l.a+' '+l.o+' '+l.c).toLowerCase().indexOf(q)<0)return false;}
+    if(_polkFilter.own&&polkOwnLoc(l).k!==_polkFilter.own)return false;
+    if(_polkFilter.q){var q=_polkFilter.q.toLowerCase();if((l.a+' '+l.o+' '+l.c+' '+(l.m3||'')).toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
 }
@@ -1381,13 +1428,13 @@ function buildPolk(){
   if(ban&&!ban.dataset.done){ban.dataset.done='1';
     ban.innerHTML='<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:14px 18px;margin-bottom:16px;">'
       +'<div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:6px;">Polk County &mdash; motivated-seller snapshot</div>'
-      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+meta.count+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+'. Source: Polk County Property Appraiser &middot; snapshot '+meta.snapshot+'.</div>'
+      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+meta.count+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: Polk County Property Appraiser &middot; snapshot '+meta.snapshot+'.</div>'
       +'<div style="font-size:12px;color:#e8854a;margin-top:8px;">Polk publishes no open comp or code-violation feed, so these leads carry <strong>no ARV / comps or violation data</strong> &mdash; they are targeting leads (verify value &amp; condition before offering). Static snapshot; ask to refresh for the latest.</div></div>';
   }
-  var byTag={}; L.forEach(function(l){byTag[l.tag]=(byTag[l.tag]||0)+1;});
+  var byTag={},oos=0,abss=0; L.forEach(function(l){byTag[l.tag]=(byTag[l.tag]||0)+1;if(l.oos)oos++;else if(l.abs)abss++;});
   var mkts=meta.markets||[];
   var ps=document.getElementById('polkStats');
-  if(ps)ps.innerHTML=[{l:'Polk Leads',v:L.length,s:mkts.length+' submarkets'},{l:'Estate / Probate',v:(byTag.probate||0),s:'inherited / heirs'},{l:'Trust-owned',v:(byTag.trust||0),s:'non-homestead trusts'},{l:'LLC / Entity',v:(byTag.entity||0),s:'investor-owned'}]
+  if(ps)ps.innerHTML=[{l:'Polk Leads',v:L.length,s:mkts.length+' submarkets'},{l:'Out-of-state owners',v:oos,s:abss+' more absentee (FL)'},{l:'Estate / Probate',v:(byTag.probate||0),s:'inherited / heirs'},{l:'Trust / LLC',v:(byTag.trust||0)+(byTag.entity||0),s:'non-homestead entities'}]
     .map(function(c){return '<div class="stat-card"><div class="stat-lbl">'+c.l+'</div><div class="stat-val">'+c.v.toLocaleString()+'</div><div class="stat-sub">'+c.s+'</div></div>';}).join('');
   var ctl=document.getElementById('polkControls');
   if(ctl&&!ctl.dataset.done){ctl.dataset.done='1';
@@ -1395,7 +1442,10 @@ function buildPolk(){
       +'<select class="filter-sel" onchange="_polkFilter.market=this.value;renderPolk();"><option value="">All</option>'+mkts.map(function(m){return '<option>'+m+'</option>';}).join('')+'</select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Type</span>'
       +'<select class="filter-sel" onchange="_polkFilter.tag=this.value;renderPolk();"><option value="">All</option><option value="probate">Estate / probate</option><option value="trust">Trust-owned</option><option value="entity">LLC / entity</option></select>'
-      +'<input class="filter-sel" placeholder="Search address or owner" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:200px;">'
+      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Owner</span>'
+      +'<select class="filter-sel" onchange="_polkFilter.own=this.value;renderPolk();"><option value="">Anywhere</option><option value="oos">Out-of-state</option><option value="abs">Absentee (FL)</option><option value="local">Local</option></select>'
+      +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
+      +'<button class="btn btn-gold" style="font-size:11px;" title="Mail-merge letters to the owners in the current filter — uses the baked county mailing addresses" onclick="openLetterPicker(\'polk\')">&#9993; Letters to this list</button>'
       +'<button class="btn btn-dark" style="font-size:11px;" onclick="exportPolkCsv()">&#8681; Export CSV</button>';
   }
   renderPolk();
@@ -1403,7 +1453,12 @@ function buildPolk(){
 function polkWhy(l){
   var s=[]; var t=polkTagStyle(l.tag)[1];
   s.push(t+' owner');
+  if(l.oos)s.push('<strong style="color:#9d97ff;">Out-of-state owner</strong> — mails to '+(l.m3||l.mst));
+  else if(l.abs)s.push('<strong style="color:#7fbde0;">Absentee</strong> — owner mails to '+(l.m3||'a different FL address'));
   s.push('Non-homestead (not owner-occupied)');
+  if(l.held!=null&&l.held>=15)s.push('Long hold — owned '+l.held+' years (bought '+l.lsY+(l.lsP?' for '+fmt$(l.lsP):'')+')');
+  else if(l.held!=null)s.push('Owned '+l.held+' years (since '+l.lsY+')');
+  if(l.rt)s.push('<strong style="color:#e8854a;">Fresh non-sale transfer in '+l.rt+'</strong> — estate/trust likely being settled');
   if(l.mkt>=120000&&l.mkt<=300000)s.push('In the flip value band');
   if(l.bld&&l.mkt&&(l.bld/l.mkt)<0.5)s.push('Land-heavy — older/tear-down-leaning structure');
   if(l.lot&&l.lot>0.45)s.push('Larger lot ('+l.lot+' ac)');
@@ -1420,9 +1475,18 @@ function polkDossierHtml(l){
     +row('Building value',fmt$(l.bld))
     +row('Land value',fmt$(l.lnd!=null?l.lnd:Math.max(0,l.mkt-l.bld)))
     +row('Lot size',(l.lot||0)+' ac')
-    +row('Use',' Single-family (DOR 0100)')
+    +row('Use','Single-family (DOR 0100)')
     +row('Homestead','No — non-homestead')
     +row('Parcel',(l.st||l.pid))
+    +'</div>';
+  var ol=polkOwnLoc(l);
+  var owner='<div style="background:var(--bg-soft,var(--bg-card));border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:10px;">'
+    +'<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">Owner</div>'
+    +row('Name of record',l.o)
+    +row('Mailing',_polkMail(l)||'&mdash;')
+    +row('Owner location','<span style="color:'+ol.c+';font-weight:700;">'+ol.t+'</span>')
+    +(l.lsY?row('Last sale',(l.lsP?fmt$(l.lsP):'&mdash;')+' &middot; '+l.lsY+(l.held!=null?' ('+l.held+'y ago)':'')):'')
+    +(l.rt?row('Recent transfer','<span style="color:#e8854a;">Non-sale deed in '+l.rt+' &mdash; estate/trust settling</span>'):'')
     +'</div>';
   var why='<div style="margin-top:10px;"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:5px;">Why it&rsquo;s a lead <span style="color:var(--muted);">&middot; score '+l.sc+'</span></div>'
     +'<div style="font-size:12px;color:var(--ivory-soft);line-height:1.7;">'+polkWhy(l).map(function(x){return '&bull; '+x;}).join('<br>')+'</div></div>';
@@ -1440,7 +1504,7 @@ function polkDossierHtml(l){
       +_polkLink(polkMapsUrl(l),'Google Maps','Aerial / street view of the property')
       +_polkLink(polkZillowUrl(l),'Zillow','Check if it is currently listed')
     +'</div></div>';
-  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'+data+why+recLinks+ownLinks+'</div>';
+  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'+data+owner+why+recLinks+ownLinks+'</div>';
 }
 function polkToggleDetail(pid){var el=document.getElementById('polkD-'+pid);if(!el)return;var open=el.style.display!=='none'&&el.style.display!=='';el.style.display=open?'none':'block';var b=document.getElementById('polkT-'+pid);if(b)b.innerHTML=open?'Details &#9662;':'Hide &#9652;';}
 function renderPolk(){
@@ -1448,12 +1512,15 @@ function renderPolk(){
   if(!L.length){g.innerHTML='<div style="color:var(--muted);padding:20px;">No Polk leads match these filters.</div>';return;}
   var pip=(typeof getPipeline==='function')?getPipeline():{};
   g.innerHTML=L.slice(0,400).map(function(l){
-    var ts=polkTagStyle(l.tag), addr=l.a+', '+l.c+' '+(l.z||''), inPipe=!!pip[addr], pj=JSON.stringify(l.pid);
+    // pid is digits-only, so single-quoting is safe — JSON.stringify's double quotes would
+    // terminate the double-quoted onclick attribute and silently break the buttons.
+    var ts=polkTagStyle(l.tag), addr=l.a+', '+l.c+' '+(l.z||''), inPipe=!!pip[addr], pj="'"+l.pid+"'";
     return '<div class="deal-card" style="padding:18px;">'
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">'
         +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+' &middot; #'+(l.st||l.pid)+'</div></div>'
         +'<span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;white-space:nowrap;">'+ts[1]+'</span></div>'
-      +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 2px;">'+l.o+'</div>'
+      +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 4px;">'+l.o+'</div>'
+      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'
         +'<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>'
         +'<div class="metric-cell"><div class="metric-lbl">Building</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>'
@@ -1463,20 +1530,28 @@ function renderPolk(){
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkPaUrl(l)+'" target="_blank" rel="noopener">Polk PA</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkProbateUrl(l)+'" target="_blank" rel="noopener" title="Search the owner name for probate/estate cases">Probate</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkSkipUrl(l)+'" target="_blank" rel="noopener">Skip-trace</a>'
+        +'<button class="btn btn-outline" style="font-size:10px;padding:4px 8px;" title="Open the Underwriter — Polk has no auto-comps, so enter ARV/repair by hand (county value shown on the card is your anchor)" onclick="polkUnderwrite('+pj+')">UW</button>'
         +(inPipe?'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" disabled>&#10003; In Pipeline</button>':'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" onclick="polkToPipeline('+pj+',this)">+ Pipeline</button>')
       +'</div>'
       +'<div id="polkD-'+l.pid+'" style="display:none;">'+polkDossierHtml(l)+'</div>'
     +'</div>';
   }).join('')+(L.length>400?'<div style="grid-column:1/-1;color:var(--muted);font-size:12px;padding:12px;">Showing top 400 of '+L.length+' by lead score. Narrow with the filters above.</div>':'');
 }
+function polkUnderwrite(pid){
+  var l=(window.POLK_LEADS||[]).filter(function(x){return x.pid===pid;})[0]; if(!l)return;
+  // No auto-comps in Polk — open the modal blank so Ryan enters a hand-pulled ARV; county value anchors it.
+  runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:0});
+  try{toast('Polk has no auto-comps — enter ARV & repair by hand (county value: '+fmtK(l.mkt)+')');}catch(e){}
+}
 function polkToPipeline(pid,btn){
   var l=(window.POLK_LEADS||[]).filter(function(x){return x.pid===pid;})[0]; if(!l)return;
-  addToPipeline({address:l.a+', '+l.c+' '+(l.z||''), neighborhood:l.c+', Polk', arv:0, repair:0, _score:l.sc});
+  addToPipeline({address:l.a+', '+l.c+' '+(l.z||''), neighborhood:l.c+', Polk', arv:0, repair:0, _score:l.sc,
+    owner:l.o, mail_city:(l.m3||'').replace(/\s+[A-Za-z]{2}\s+\d.*$/,'').trim()||l.c, owner_state:l.mst||'FL'});
   if(btn){btn.textContent='✓ In Pipeline';btn.disabled=true;}
 }
 function exportPolkCsv(){
-  var L=polkFiltered(), rows=[['Address','City','Zip','Owner','Type','County Value','Taxable','Building Value','Lot Acres','Parcel ID']];
-  L.forEach(function(l){rows.push([l.a,l.c,l.z,l.o,polkTagStyle(l.tag)[1],l.mkt,l.tax,l.bld,l.lot,l.pid]);});
+  var L=polkFiltered(), rows=[['Address','City','Zip','Owner','Owner Mailing','Owner Location','Type','County Value','Taxable','Building Value','Lot Acres','Last Sale Year','Last Sale Price','Years Held','Parcel']];
+  L.forEach(function(l){rows.push([l.a,l.c,l.z,l.o,_polkMail(l),polkOwnLoc(l).t,polkTagStyle(l.tag)[1],l.mkt,l.tax,l.bld,l.lot,(l.lsY||''),(l.lsP||''),(l.held!=null?l.held:''),(l.st||l.pid)]);});
   var csv=rows.map(function(r){return r.map(function(c){return '"'+(''+c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='polk-leads-'+((window.POLK_META&&POLK_META.snapshot)||'')+'.csv';document.body.appendChild(a);a.click();a.remove();
 }
@@ -1490,6 +1565,7 @@ function initApp(){
   document.getElementById('headerDate').textContent=ds;
   document.getElementById('printDateLbl').textContent=ds;
   try{applyRepairReality();}catch(e){console.error('repair tiers',e);}
+  try{applyHomestead();}catch(e){console.error('homestead',e);} // PA-verified homestead → scoring/absentee/filter before first paint
   try{window._ownerSnap=_ownerCache();}catch(e){} // cached owner mailing data powers absentee scoring from the first paint
   // Build every section defensively so one failure can't abort the rest.
   ['buildOverview','buildDeals','buildAllTable','buildSales','buildViolations','buildPipeline'].forEach(function(fn){
@@ -1765,6 +1841,7 @@ function dealFlags(d){var vi=violInfo(d.address);var p=[];var _ja='onclick="goto
   if(_eo==='estate')p.push('<span style="background:rgba(214,116,200,.18);color:#e08ad2;font-size:10px;font-weight:800;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">ESTATE &middot; OWNER DECEASED</span>');
   else if(_eo==='le')p.push('<span style="background:rgba(214,116,200,.12);color:#d49ac8;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">LIFE ESTATE</span>');
   if(typeof _nameChanged==='function'&&!d._countySourced&&!d._soldLive&&d.owner&&_aoc&&_aoc.o&&_nameChanged(d.owner,_aoc.o))p.push('<span style="background:rgba(232,195,74,.16);color:#e8c34a;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">OWNER CHANGED &middot; POSSIBLE HEIR</span>');
+  if(d.has_homestead===false)p.push('<span title="No homestead exemption on the county roll — not owner-occupied (rental/investor/absentee)" style="background:rgba(61,190,130,.15);color:#3DBE82;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">NON-HOMESTEAD</span>');
   return p.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">'+p.join('')+'</div>':'';}
 // Plain-English BUY VERDICT: margin first (does it actually make money?), motivation as the "can you get it" modifier.
 function buyGrade(d){
@@ -1811,6 +1888,7 @@ function computeScore(d){
     if(_lo&&_nameChanged(d.owner,_lo))add(15,'Owner changed since lead list, no sale — possible heir ('+_lo+')');
   }
   if(d.has_homestead===false)add(10,'No homestead exemption');
+  else if(d.has_homestead===true)add(-12,'Owner-occupied (homesteaded) — weaker seller motivation');
   var c=(d.rehab_condition||'').toLowerCase();
   if(c.indexOf('gut')>=0)add(14,'Full-gut condition');else if(c.indexOf('heavy')>=0)add(11,'Heavy rehab needed');else if(c.indexOf('moderate')>=0)add(7,'Moderate rehab');else if(c.indexOf('light')>=0||c.indexOf('cosmetic')>=0)add(4,'Cosmetic / light rehab');
   if(d.last_sale_price>0&&d.market_value>0&&d.last_sale_price<d.market_value*0.45)add(10,'High equity (low cost basis)');
@@ -1834,7 +1912,7 @@ function computeScore(d){
   if(_rb)add(_rb,(_rb>0?'Est. ROI ~'+Math.round(dealROIpct(d.arv,d.repair))+'% (margin)':'Thin / negative margin'));
   return {score:Math.round(s),why:why};
 }
-function rowToDeal(r){return {address:r[1],neighborhood:r[2],owner:r[3],owner_state:r[4],beds:r[6],baths:r[7],beds_baths:(r[6]?r[6]+'bd':'')+(r[7]?'/'+r[7]+'ba':''),arv:r[8],repair:r[9],market_value:r[10],last_sale_price:r[11],year_built:r[12],held_years:r[13],sqft:r[18],rehab_condition:r[17],mail_city:r[19],outreach_type:r[20],pa_url:r[16],maps_url:r[15],_lat:r._lat,_lon:r._lon,_arvSrc:r._arvSrc,_arvN:r._arvN,_arvPpsf:r._arvPpsf,_arvConf:r._arvConf,_arvLo:r._arvLo,_arvHi:r._arvHi,_arvProx:r._arvProx,_repairAssumed:r._repairAssumed,_condUnverified:!!(r[17]&&!r._repairAssumed),last_sale_date:(r._soldLive?r._soldLive.date:undefined),_soldLive:r._soldLive};}
+function rowToDeal(r){return {address:r[1],neighborhood:r[2],owner:r[3],owner_state:r[4],beds:r[6],baths:r[7],beds_baths:(r[6]?r[6]+'bd':'')+(r[7]?'/'+r[7]+'ba':''),arv:r[8],repair:r[9],market_value:r[10],last_sale_price:r[11],year_built:r[12],held_years:r[13],sqft:r[18],rehab_condition:r[17],mail_city:r[19],outreach_type:r[20],pa_url:r[16],maps_url:r[15],_lat:r._lat,_lon:r._lon,has_homestead:(r._hs===1?true:(r._hs===0?false:undefined)),_arvSrc:r._arvSrc,_arvN:r._arvN,_arvPpsf:r._arvPpsf,_arvConf:r._arvConf,_arvLo:r._arvLo,_arvHi:r._arvHi,_arvProx:r._arvProx,_repairAssumed:r._repairAssumed,_condUnverified:!!(r[17]&&!r._repairAssumed),last_sale_date:(r._soldLive?r._soldLive.date:undefined),_soldLive:r._soldLive};}
 // County-flagged leads: live violation/lien properties NOT already in the lead set, with 3+ open cases or a recorded lien.
 var _countyLeads=null;
 function getCountyLeads(){
@@ -1914,6 +1992,8 @@ function countyDealCard(d,idx){
 // ── DEAL CARDS ──
 function buildDeals(){
   var deals=getTop50();
+  // PA-verified owner-occupied (homesteaded) leads are weak sellers — let Ryan hide them in one click.
+  if((document.getElementById('hideHsFilter')||{}).checked)deals=deals.filter(function(d){return d.has_homestead!==true;});
   var sortBy=(document.getElementById('dealSort')||{}).value||'score';
   // Sold / county no-comp deals sink to the bottom of financial sorts instead of ranking on hypothetical numbers.
   function finVal(d,fn){if((d._countySourced&&!d.arv)||isRecentDeal(d))return null;return fn(d.arv,d.repair);}
@@ -2050,6 +2130,8 @@ function filterTable(){
       else if(ot==='le')mo=(ei==='le');
       else if(ot==='entity')mo=(!ei&&/TRUST|TRS\b|LLC|INC\b/i.test(own));
       else if(ot==='oos')mo=!!(r[4]&&r[4]!=='FL');
+      else if(ot==='nonhomestead')mo=(r._hs===0);
+      else if(ot==='homestead')mo=(r._hs===1);
     }
     return mq&&mn&&mr&&mb&&ms&&mz&&ma&&msold&&mo;
   });
@@ -2126,7 +2208,9 @@ function renderTablePage(){
       '<td style="font-weight:700;color:var(--gold);">'+r[0]+'</td>'+
       '<td><a href="'+r[15]+'" target="_blank">'+r[1]+'</a></td>'+
       '<td>'+r[2]+'</td>'+
-      '<td style="font-size:11px;">'+r[3]+(r[4]?' ('+r[4]+')':'')+'</td>'+
+      '<td style="font-size:11px;">'+r[3]+(r[4]?' ('+r[4]+')':'')
+        +(r._hs===0?' <span title="No homestead exemption — not owner-occupied (PA-verified)" style="background:rgba(61,190,130,.15);color:#3DBE82;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;letter-spacing:.4px;white-space:nowrap;">NH</span>'
+         :(r._hs===1?' <span title="Homesteaded — owner lives here (PA-verified), weaker seller" style="background:rgba(138,132,120,.15);color:var(--muted);font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;letter-spacing:.4px;white-space:nowrap;">HSTD</span>':''))+'</td>'+
       '<td style="font-weight:700;text-align:center;color:var(--gold);">'+computeScore(rowToDeal(r)).score+'</td>'+
       '<td style="text-align:center;">'+(r[6]||'&mdash;')+'</td>'+
       '<td style="text-align:right;">'+(r[18]?r[18].toLocaleString():'&mdash;')+'</td>'+
@@ -2516,7 +2600,10 @@ function compListHtml(d,idx){
   var key=_normAddr(d.address);
   var excl=_compExcl()[key]||{};
   var full=_selectComps(_dealZips(d),d.sqft,d._lat,d._lon,d.year_built,null,_folioOf(d)); // full candidate list (excluded greyed below)
-  var mode=full.mode;
+  // Header/labels must describe the EFFECTIVE pool (with exclusions applied) — the one the ARV actually
+  // used — else unchecking comps can leave the table claiming a mode the ARV no longer has.
+  var eff=_selectComps(_dealZips(d),d.sqft,d._lat,d._lon,d.year_built,excl,_folioOf(d));
+  var mode=eff.mode||full.mode;
   if(!full.list.length)return '';
   var list=full.list.slice();
   if(mode==='prox') list.sort(function(a,b){return a.d-b.d;}); else list.sort(function(a,b){return (''+(b.s.date||'')).localeCompare(''+(a.s.date||''));});
@@ -2819,11 +2906,11 @@ function downloadFile(name,content,mime){
 // Export the All-Properties table exactly as filtered, plus any cached owner/mailing data.
 function exportTableCsv(){
   var cache=_ownerCache(),statuses=loadStatuses();
-  var headers=['Address','Neighborhood','Owner','Owner (county roll)','Mailing Street','Mailing City','Mailing State','Mailing Zip','Score','Beds','Sqft','Year Built','ARV','ARV Source','Repair Est','Est Net Profit','Condition','Status','County Cases','Lien','PA URL'];
+  var headers=['Address','Neighborhood','Owner','Owner (county roll)','Mailing Street','Mailing City','Mailing State','Mailing Zip','Homestead','Score','Beds','Sqft','Year Built','ARV','ARV Source','Repair Est','Est Net Profit','Condition','Status','County Cases','Lien','PA URL'];
   var rows=filteredRows.map(function(r){
     var d=rowToDeal(r);var f=_folioOf({pa_url:r[16]});var oc=(f&&cache[f])||{};
     var isCounty=r[21]==='county'&&!r._enriched; // enriched county leads export their real numbers
-    return [r[1],r[2],r[3],oc.o||'',oc.ma||'',oc.mc||'',oc.ms||'',oc.mz||'',computeScore(d).score,r[6]||'',r[18]||'',r[12]||'',isCounty?'':r[8],isCounty?'needs comp':(r._arvSrc||''),isCounty?'':r[9],(isCounty||isRecentSaleRow(r))?'':(getProfit(r[8],r[9])||''),r[17]||'',statuses[r[1]]||'unreviewed',r._cn||'',r._lien?'yes':'',r[16]||''];
+    return [r[1],r[2],r[3],oc.o||'',oc.ma||'',oc.mc||'',oc.ms||'',oc.mz||'',(r._hs===0?'no':(r._hs===1?'yes':'')),computeScore(d).score,r[6]||'',r[18]||'',r[12]||'',isCounty?'':r[8],isCounty?'needs comp':(r._arvSrc||''),isCounty?'':r[9],(isCounty||isRecentSaleRow(r))?'':(getProfit(r[8],r[9])||''),r[17]||'',statuses[r[1]]||'unreviewed',r._cn||'',r._lien?'yes':'',r[16]||''];
   });
   downloadFile('maco-properties-'+_today()+'.csv',toCsv(headers,rows));
 }
@@ -2992,16 +3079,20 @@ function openLetterPicker(source){
   }else if(source==='viols'){
     (window._violFiltered||[]).slice(0,200).forEach(function(v){cands.push({addr:v.address,nb:v.neighborhood||'',folio:v.folio||''});});
     if(!cands.length){toast('No properties in the current Code & Liens filter.');return;}
+  }else if(source==='polk'){
+    // Polk leads already carry the owner's mailing address from the PA snapshot — no county pull needed.
+    polkFiltered().slice(0,200).forEach(function(l){if(!l.m1)return;cands.push({addr:l.a+', '+l.c+' FL '+(l.z||''),nb:l.c+', Polk',folio:'',polk:l.pid,own:l.o});});
+    if(!cands.length){toast('No Polk leads with a mailing address in the current filter.');return;}
   }else{
     filteredRows.slice(0,200).forEach(function(r){cands.push({addr:r[1],nb:r[2]||'',folio:_folioOf({pa_url:r[16]})});});
     if(!cands.length){toast('No properties in the current filter.');return;}
   }
   var oc=window._ownerSnap||{};
   var rows=cands.map(function(c,i){
-    var own=c.folio&&oc[c.folio]?oc[c.folio].o:'';
+    var own=c.own||(c.folio&&oc[c.folio]?oc[c.folio].o:'');
     var ti=touchInfo(c.addr);
     return '<label style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid #e5e0d5;cursor:pointer;font-size:13.5px;">'
-      +'<input type="checkbox" class="lp-check" checked data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'" data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
+      +'<input type="checkbox" class="lp-check" checked data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'"'+(c.polk?' data-polk="'+c.polk+'"':'')+' data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
       +'<span style="flex:1;"><strong>'+_escHtml(c.addr)+'</strong> <span style="color:#888;">&middot; '+_escHtml(c.nb)+(own?' &middot; '+_escHtml(own):'')+'</span></span>'
       +(ti?'<span style="font-size:11px;color:#9a7b2d;white-space:nowrap;font-weight:700;">mailed '+ti.n+'&times; &middot; last '+ti.last+'</span>':'<span style="font-size:11px;color:#aaa;white-space:nowrap;">never mailed</span>')
       +'</label>';
@@ -3019,7 +3110,9 @@ function openLetterPicker(source){
       +'<button class="btn btn-gold" type="button" onclick="printSelectedLetters()">&#128396; Generate letters for selected</button>'
       +'<button class="btn btn-dark" type="button" onclick="openLetterEditor()">Edit template first</button>'
     +'</div>'
-    +(source!=='pipeline'&&filteredRows.length>200?'<div style="font-size:11px;color:#888;margin-top:8px;">Showing the first 200 of your filter — tighten the filter to reach the rest.</div>':'')
+    +(source==='polk'
+      ? (polkFiltered().length>200?'<div style="font-size:11px;color:#888;margin-top:8px;">Showing the first 200 Polk leads — tighten the filters to reach the rest.</div>':'')
+      : (source!=='pipeline'&&filteredRows.length>200?'<div style="font-size:11px;color:#888;margin-top:8px;">Showing the first 200 of your filter — tighten the filter to reach the rest.</div>':''))
     +'</div>';
   document.getElementById('printModal').classList.add('open');
   _lpCount();
@@ -3029,18 +3122,26 @@ function _lpCount(){
   var el=document.getElementById('lpCount'); if(el)el.textContent=n+' selected';
 }
 // Step 2: pull owners for ONLY the checked addresses, merge, and lay out one letter per page.
+// Polk leads carry their baked mailing address — normalize one to the same {o,ma,mc,ms,mz} shape the letters use.
+function _polkMailRec(pid){
+  var l=(window.POLK_LEADS||[]).filter(function(x){return x.pid===pid;})[0];
+  if(!l||!l.m1)return null;
+  var mm=(l.m3||'').match(/^(.*?)\s+([A-Za-z]{2})\s+(\d{5}(?:-\d+)?)$/);
+  return {o:l.o, ma:l.m1, mc:(mm?mm[1]:(l.m3||l.c)), ms:(mm?mm[2].toUpperCase():'FL'), mz:(mm?mm[3]:'')};
+}
 function printSelectedLetters(){
-  var picks=Array.prototype.slice.call(document.querySelectorAll('.lp-check:checked')).map(function(c){return {addr:c.dataset.addr,folio:c.dataset.folio,nb:c.dataset.nb};});
+  var picks=Array.prototype.slice.call(document.querySelectorAll('.lp-check:checked')).map(function(c){return {addr:c.dataset.addr,folio:c.dataset.folio,nb:c.dataset.nb,polk:c.dataset.polk||''};});
   if(!picks.length){var s0=document.getElementById('letterPickStatus');if(s0)s0.textContent='Nothing selected.';return;}
   var st=document.getElementById('letterPickStatus');
-  if(st)st.textContent='Pulling owner records…';
-  enrichOwners(picks.map(function(p){return p.folio;}).filter(Boolean),function(cache,failed){
+  var miaFolios=picks.filter(function(p){return !p.polk&&p.folio;}).map(function(p){return p.folio;});
+  if(st)st.textContent=miaFolios.length?'Pulling owner records…':'Building letters…';
+  var _finish=function(cache,failed){
     window._ownerSnap=cache;
     var tpl=_escHtml(letterTpl());
     var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
     var seen={},out=[],skipped=0,mailedAddrs=[];
     picks.forEach(function(p){
-      var oc=p.folio&&cache[p.folio];
+      var oc=p.polk?_polkMailRec(p.polk):(p.folio&&cache[p.folio]);
       if(!oc||!oc.o||!oc.ma){skipped++;return;}
       var key=oc.o+'|'+oc.ma;if(seen[key])return;seen[key]=1;
       mailedAddrs.push(p.addr);
@@ -3070,7 +3171,9 @@ function printSelectedLetters(){
     document.getElementById('printBody').innerHTML=
       '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?(failed?' ('+skipped+' missing — owner pull partly failed, Generate again to retry)':' ('+skipped+' skipped — no county mailing address)'):'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
       +out.join('');
-  },function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
+  };
+  if(miaFolios.length)enrichOwners(miaFolios,_finish,function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
+  else _finish(window._ownerSnap||{},false); // all-Polk selection: mailing is baked, no county pull needed
 }
 // ── ESTATE / DECEASED-OWNER SIGNALS — the county roll itself records deaths ──
 // When an owner dies the Property Appraiser retitles the parcel "SMITH JOHN EST OF" (estate on title,
@@ -3581,7 +3684,8 @@ function addToPipeline(deal){
   data[deal.address]={
     address:deal.address, neighborhood:deal.neighborhood, arv:deal.arv,
     repair:deal.repair||deal.repair_low||0, purchase:Math.round((deal.arv||0)*0.65),
-    score:(deal._score!=null?deal._score:(deal.score||0)), stage:'lead', followup:'', log:[], notes:'', added:new Date().toISOString()
+    score:(deal._score!=null?deal._score:(deal.score||0)), stage:'lead', followup:'', log:[], notes:'', added:new Date().toISOString(),
+    owner:deal.owner||'', mail_city:deal.mail_city||'', owner_state:deal.owner_state||'' // carry owner/mailing so pipeline skip-trace & letters have it
   };
   savePipeline(data);
   buildPipeline();
@@ -4550,6 +4654,12 @@ function rcStartEdit(valEl) {
     rcSave(label, v);
     valEl.setAttribute('data-value', v);
     valEl.textContent = v;
+    // Hard Money / DSCR terms feed the flip model — recompute every profit/ROI/max-offer on save.
+    if (label === 'Hard Money' || label === 'DSCR') {
+      try { if (typeof _rebuildSoon === 'function') _rebuildSoon(true); } catch (e) {}
+      try { toast('Rates saved — profit, ROI & max-offer numbers recomputed with ' + v); } catch (e) {}
+      try { renderRateCenter(); } catch (e) {}
+    }
   }
   input.onkeydown = function (e) {
     if (e.key === 'Enter' || e.keyCode === 13) { commit(); }
@@ -4584,9 +4694,8 @@ function renderRateCenter() {
   }
   var foot = document.getElementById('rcFoot');
   if (foot) {
-    // Honest label: this card is reference notes only — the deal math runs on its own fixed
-    // assumptions (13.5% + 2pts / 70% LTV hard money, 7.25% DSCR) shown in the Underwriter.
-    foot.textContent = 'Reference notes only — edits here do NOT change the deal math (model uses 13.5% + 2pts HM, 7.25% DSCR; adjust per-deal in the Underwriter)';
+    var hm=_hmTerms();
+    foot.textContent = 'These terms DRIVE the deal math — Hard Money ('+(hm.rate*100).toFixed(1)+'% + '+(hm.pts*100).toFixed(1)+' pts) and DSCR feed every Est. Net Profit, ROI & Max Offer (LTV fixed at 70%). Click a value to edit.';
   }
 }
 

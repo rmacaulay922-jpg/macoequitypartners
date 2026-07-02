@@ -42,3 +42,11 @@ UW_*.pdf
 /Deals*
 /Boynton*
 /Lake_Worth*
+
+# Local working/backup files — never ship
+portal.PRECLEAN-backup.html
+portal.bak-r8
+CLAUDE_CODE_PROMPT.md
+push_update.bat
+*.bak
+*.bak-*
