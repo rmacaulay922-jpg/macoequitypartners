@@ -244,7 +244,8 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 .table-controls{padding:16px 20px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);flex-wrap:wrap}
 .search-input{padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;flex:1;min-width:200px}
 .search-input:focus{border-color:var(--gold)}
-.filter-sel{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-card);cursor:pointer;outline:none}
+.filter-sel{padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:var(--bg-card);color:var(--ivory);cursor:pointer;outline:none}
+.filter-sel option{background:var(--bg-card);color:var(--ivory)} /* legible dropdown popup on the dark theme */
 .filter-sel:focus{border-color:var(--gold)}
 .tbl-count{font-size:12px;color:var(--muted);margin-left:auto}
 #propTable{width:100%;border-collapse:collapse;font-size:12.5px;font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-variant-numeric:tabular-nums;color:var(--ivory-soft)}
@@ -442,11 +443,11 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 #app [style*="font-size:10px"],header [style*="font-size:10px"]{font-size:11px!important}
 #app [style*="font-size:10.5px"],header [style*="font-size:10.5px"]{font-size:11.5px!important}
 /* ── INVESTOR MODE — hide the operator cockpit ── */
-body.investor-mode #marketSel{display:none!important}
-body.investor-mode #tabBar button[data-tab="all"],body.investor-mode #tabBar button[data-tab="construction"],body.investor-mode #tabBar button[data-tab="violations"],body.investor-mode #tabBar button[data-tab="pipeline"],body.investor-mode #tabBar button[data-tab="polk"]{display:none!important}
+/* market selector stays visible in investor mode — investors can browse markets too */
+body.investor-mode #tabBar button[data-tab="all"],body.investor-mode #tabBar button[data-tab="construction"],body.investor-mode #tabBar button[data-tab="violations"],body.investor-mode #tabBar button[data-tab="pipeline"]{display:none!important}
 body.investor-mode .status-pill-wrap{display:none!important}
-body.investor-mode [onclick*="addToPipeline"],body.investor-mode [onclick*="violToPipeline"]{display:none!important}
-body.investor-mode [onclick*="openLetterPicker"],body.investor-mode [onclick*="exportTableCsv"],body.investor-mode [onclick*="buildMailList"],body.investor-mode [onclick*="openDriveList"],body.investor-mode [onclick*="openLetterEditor"],body.investor-mode [onclick*="exportPipelineCsv"]{display:none!important}
+body.investor-mode [onclick*="addToPipeline"],body.investor-mode [onclick*="violToPipeline"],body.investor-mode [onclick*="polkToPipeline"]{display:none!important}
+body.investor-mode [onclick*="openLetterPicker"],body.investor-mode [onclick*="exportTableCsv"],body.investor-mode [onclick*="buildMailList"],body.investor-mode [onclick*="openDriveList"],body.investor-mode [onclick*="openLetterEditor"],body.investor-mode [onclick*="exportPipelineCsv"],body.investor-mode [onclick*="exportPolkCsv"]{display:none!important}
 body.investor-mode a[href*="truepeoplesearch"],body.investor-mode a[href*="fastpeoplesearch"],body.investor-mode a[href*="sunbiz"],body.investor-mode a[href*="miamidadeclerk.gov/ocs"]{display:none!important}
 body.investor-mode .mep-outreach{display:none!important}
 body.investor-mode .rc-hint{display:none!important}
@@ -1482,7 +1483,10 @@ var STAT_ICON_NAMES=['building','gauge','home','dollar','bars','sales'];
 // ── TABS ──
 function showTab(btn){
   var id=btn.dataset.tab;
-  if(document.body.classList.contains('investor-mode')&&OP_ONLY_TABS[id]){showTabByName('brief');return;}
+  if(document.body.classList.contains('investor-mode')&&OP_ONLY_TABS[id]){
+    var _mk=MARKETS[window._market||'miami']||MARKETS.miami;
+    if(!(_mk.kind==='leads'&&_mk.tabs[0]===id)){showTabByName(_landTabFor('investor'));return;} // allow only the active leads-market's Leads tab
+  }
   if(id==='brief'){try{buildBrief();}catch(e){}}
   document.querySelectorAll('.tab-content').forEach(function(el){el.classList.remove('active')});
   document.querySelectorAll('nav.tabs button').forEach(function(b){b.classList.remove('active')});
@@ -1512,8 +1516,9 @@ var LEE_REC={pa:'https://www.leepa.org/Search/PropertySearch.aspx',tax:'https://
 var COLLIER_REC={pa:'https://www.collierappraiser.com/',tax:'https://www.colliertax.com/search/',probate:'https://cceapps.collierclerk.com/eaccess/',code:'https://cvportal.colliercountyfl.gov/CityViewPortal/',records:'https://cceapps.collierclerk.com/publicaccess/'};
 var MARKETS={
   miami:  {label:'Miami-Dade',              kind:'deep',  tabs:['brief','overview','deals','all','construction','violations','pipeline']},
-  // broward/lee/collier registry rows removed until their lead files have real data —
-  // setMarket() falls back to miami for any stale saved key.
+  broward:{label:'Broward',                 kind:'leads', src:'BROWARD_LEADS', meta:'BROWARD_META', rec:BROWARD_REC, tabs:['polk','pipeline']},
+  lee:    {label:'Lee · Fort Myers',        kind:'leads', src:'LEE_LEADS',     meta:'LEE_META',     rec:LEE_REC,     tabs:['polk','pipeline']},
+  collier:{label:'Collier · Naples',        kind:'leads', src:'COLLIER_LEADS', meta:'COLLIER_META', rec:COLLIER_REC, tabs:['polk','pipeline']},
   polk:   {label:'Polk · Orlando corridor', kind:'leads', src:'POLK_LEADS',    meta:'POLK_META',    rec:POLK_REC,    tabs:['polk','pipeline']}
 };
 // Active leads-market accessors — the whole Leads tab reads through these, so switching markets
@@ -1775,15 +1780,19 @@ function setRole(r){
   }
   try{localStorage.setItem('mep_role',r);}catch(e){}
   applyRole();
-  try{showTabByName(r==='investor'?'brief':'overview');}catch(e){}
+  try{showTabByName(_landTabFor(r));}catch(e){}
 }
 function toggleRole(){setRole(_role()==='investor'?'operator':'investor');}
+function _landTabFor(role){
+  var mk=MARKETS[window._market||'miami']||MARKETS.miami;
+  if(mk.kind==='leads')return mk.tabs[0];              // leads market (Polk): the Leads tab is the whole view
+  return role==='investor'?'brief':'overview';         // Miami: Brief for investors, Overview for operators
+}
 function applyRole(){
   var r=_role();
   document.body.classList.toggle('investor-mode',r==='investor');
   var b=document.getElementById('roleBtn');
   if(b){b.textContent=(r==='investor')?'OPERATOR \u2192':'INVESTOR VIEW';b.title=(r==='investor')?'Switch to Ryan\u2019s operator cockpit (access code required once)':'Preview what investors see';}
-  if(r==='investor'){try{if((window._market||'miami')!=='miami')setMarket('miami',true);}catch(e){}}
   try{renderRateCenter();}catch(e){}
 }
 // The Brief: 3-5 deals that clear a defensible bar — live-comped, decent confidence, healthy
@@ -1863,7 +1872,7 @@ function initApp(){
   ['buildOverview','buildDeals','buildAllTable','buildSales','buildViolations','buildPipeline','buildBrief'].forEach(function(fn){
     try{window[fn]();}catch(e){console.error('init '+fn,e);}
   });
-  try{applyRole();if(_role()==='investor')showTabByName('brief');}catch(e){console.error('role',e);}
+  try{applyRole();showTabByName(_landTabFor(_role()));}catch(e){console.error('role',e);}
   // Feature modules self-initialize at end of script (renderRateCenter, calcUnderwriter);
   // market extras render lazily via showTab('market'). Re-run guarded in case auth path ran initApp early.
   setTimeout(function(){
