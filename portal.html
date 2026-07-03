@@ -14,7 +14,7 @@
   /* "Miami Ledger" dark — forest-black canvas, brass chrome, emerald/jade for money. The
      marketing site publishes in the light; the deal-finder works in the dark, same DNA. */
   --bg:#0B1410; --bg-deep:#070F0B; --bg-soft:#101C16; --bg-warm:#14241C; --bg-card:#122019;
-  --ivory:#F1EEE2; --ivory-soft:#D6DBCE; --muted:#8B968B; --faint:#5C6760;
+  --ivory:#F1EEE2; --ivory-soft:#D6DBCE; --muted:#A8B4A9; --faint:#7E8B81; /* lightened Jul 2026 — measured 5.5:1/2.9:1, now ~8:1/4.8:1 */
   --bronze:#B5915A; --bronze-soft:#CDA972; --bronze-deep:#6E5528;
   --rule:rgba(241,238,226,.10); --rule-strong:rgba(241,238,226,.20); --rule-bronze:rgba(181,145,90,.32);
   /* aliases used throughout portal */
@@ -195,7 +195,7 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 /* ARV TOOLTIP */
 .arv-tip{position:relative;display:inline-flex;align-items:center}
 .tip-icon{display:inline-block;width:14px;height:14px;background:var(--gold);color:var(--black);border-radius:50%;font-size:9px;font-weight:700;text-align:center;line-height:14px;cursor:help;margin-left:4px;flex-shrink:0}
-.tip-box{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:11px;line-height:1.5;padding:8px 12px;border-radius:6px;width:260px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.tip-box{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;line-height:1.5;padding:8px 12px;border-radius:6px;width:260px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.4)}
 .arv-tip:hover .tip-box{display:block}
 .arv-tip.open .tip-box{display:block}
 
@@ -213,9 +213,9 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 .metrics-row{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--border)}
 .metric-cell{padding:12px 16px;border-right:1px solid var(--border);text-align:center}
 .metric-cell:last-child{border-right:none}
-.metric-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;display:flex;align-items:center;justify-content:center;gap:2px}
+.metric-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;display:flex;align-items:center;justify-content:center;gap:2px}
 .metric-val{font-size:18px;font-weight:700}
-.metric-sub{font-size:10px;color:var(--muted)}
+.metric-sub{font-size:11.5px;color:var(--muted);line-height:1.4}
 .profit-val{color:var(--green)}
 .deal-flags{padding:10px 16px;font-size:11px;color:var(--muted);border-bottom:1px solid var(--border);line-height:1.6}
 .flag-badge{display:inline-block;background:#fef3c7;color:#92400e;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;margin:2px 2px 2px 0}
@@ -226,7 +226,7 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 
 /* STATUS PILL */
 .status-pill-wrap{position:relative}
-.status-pill{font-size:10px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:20px;cursor:pointer;border:none;user-select:none;text-transform:uppercase}
+.status-pill{font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 8px;border-radius:20px;cursor:pointer;border:none;user-select:none;text-transform:uppercase}
 .status-dropdown{display:none;position:absolute;right:0;top:100%;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:600;min-width:140px;overflow:hidden}
 .status-dropdown.open{display:block}
 .status-dropdown button{display:block;width:100%;padding:8px 12px;background:none;border:none;font-size:12px;text-align:left;cursor:pointer;color:var(--ivory);transition:background .15s}
@@ -436,6 +436,11 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
   #tab-overview [style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
   #ovMarketIntel table{display:block;overflow-x:auto;white-space:nowrap;max-width:100%;-webkit-overflow-scrolling:touch}
 }
+/* ── READABILITY FLOOR (Jul 2026) — no on-screen text below ~10.5px ── */
+#app [style*="font-size:9px"],header [style*="font-size:9px"]{font-size:10.5px!important}
+#app [style*="font-size:9.5px"],header [style*="font-size:9.5px"]{font-size:10.5px!important}
+#app [style*="font-size:10px"],header [style*="font-size:10px"]{font-size:11px!important}
+#app [style*="font-size:10.5px"],header [style*="font-size:10.5px"]{font-size:11.5px!important}
 /* ── INVESTOR MODE — hide the operator cockpit ── */
 body.investor-mode #marketSel{display:none!important}
 body.investor-mode #tabBar button[data-tab="all"],body.investor-mode #tabBar button[data-tab="construction"],body.investor-mode #tabBar button[data-tab="violations"],body.investor-mode #tabBar button[data-tab="pipeline"],body.investor-mode #tabBar button[data-tab="polk"]{display:none!important}
@@ -582,7 +587,7 @@ body.investor-mode #dealGrid button:disabled{display:none!important}
 .rc-val{font-size:13px;font-weight:600;color:var(--gold);cursor:pointer;text-align:right;padding:2px 6px;border-radius:6px;border:1px solid transparent;transition:background .15s,border-color .15s;min-width:80px;}
 .rc-val:hover{background:var(--bg-soft);border-color:var(--border);}
 .rc-input{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;color:var(--ivory);background:var(--bg-soft);border:1px solid var(--gold);border-radius:6px;padding:2px 6px;text-align:right;width:130px;outline:none;}
-.rc-foot{margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--faint);}
+.rc-foot{margin-top:14px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.5;}
 
 /* Quick Comp Lookup */
 .cl-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px;}
@@ -657,12 +662,10 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 }
 </style>
 <script src="polk-leads.js?v=4"></script>
-<script src="broward-leads.js?v=1"></script>
-<script src="lee-leads.js?v=1"></script>
-<script src="collier-leads.js?v=1"></script>
+<!-- Broward/Lee/Collier lead stubs UNPLUGGED until their county scrapes are baked (v11.9 runbook) -->
 <script src="mia-homestead.js?v=1"></script>
 <script src="mia-homestead-city.js?v=1"></script>
-<script src="crime-bands.js?v=1"></script>
+<!-- crime-bands.js unplugged — no honest per-county crime source baked yet -->
 </head>
 <body>
 
@@ -700,9 +703,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <select id="marketSel" class="filter-sel" onchange="setMarket(this.value)" title="Switch the market this portal shows — the choice is remembered" style="font-weight:700;letter-spacing:.03em;">
         <option value="miami">Market: Miami-Dade</option>
-        <option value="broward">Market: Broward</option>
-        <option value="lee">Market: Lee · Fort Myers</option>
-        <option value="collier">Market: Collier · Naples</option>
+        <!-- Broward / Lee / Collier options return when their lead data is baked -->
         <option value="polk">Market: Polk · Orlando corridor</option>
       </select>
       <div class="hdr-date" id="headerDate"></div>
@@ -1149,7 +1150,7 @@ var SALES=[{"date": "2026-04-08", "price": 715000, "sqft": 1669, "beds": 4, "bat
 var STATUS_VALS=['unreviewed','researching','contacted','negotiating','pursuing','pass'];
 var STATUS_LABELS=['Unreviewed','Researching','Contacted','Negotiating','Pursuing','Pass'];
 var STATUS_BG={unreviewed:'#e5e7eb',researching:'#2563eb',contacted:'#7c3aed',negotiating:'#d97706',pursuing:'#16a34a',pass:'#6b7280'};
-var STATUS_FG={unreviewed:'#6b7280',researching:'#fff',contacted:'#fff',negotiating:'#fff',pursuing:'#fff',pass:'#fff'};
+var STATUS_FG={unreviewed:'#39414d',researching:'#fff',contacted:'#fff',negotiating:'#fff',pursuing:'#fff',pass:'#fff'};
 var ARV_TIP='<span class="arv-tip"><span class="tip-icon">i</span><span class="tip-box">ARV from live county comps: the last 12 months of qualified same-size, similar-vintage sales, weighted by how CLOSE they are to this house (nearest sales count most) &times; living area. A ZIP can span a $200/sqft block and an $700/sqft block, so proximity matters. The &ldquo;likely&rdquo; range is the spread of those comps; low confidence = thin or scattered comps. Rows labeled &ldquo;assessed-derived&rdquo; have no usable comps yet &mdash; comp those by hand. If the sub-line says <strong>BAKED</strong>, live comps haven&rsquo;t loaded and the figure is an old un-verified estimate &mdash; don&rsquo;t act on it. Always verify with current MLS comps before submitting offers.</span></span>';
 
 var maoP=70;
@@ -1507,9 +1508,8 @@ var LEE_REC={pa:'https://www.leepa.org/Search/PropertySearch.aspx',tax:'https://
 var COLLIER_REC={pa:'https://www.collierappraiser.com/',tax:'https://www.colliertax.com/search/',probate:'https://cceapps.collierclerk.com/eaccess/',code:'https://cvportal.colliercountyfl.gov/CityViewPortal/',records:'https://cceapps.collierclerk.com/publicaccess/'};
 var MARKETS={
   miami:  {label:'Miami-Dade',              kind:'deep',  tabs:['brief','overview','deals','all','construction','violations','pipeline']},
-  broward:{label:'Broward',                 kind:'leads', src:'BROWARD_LEADS', meta:'BROWARD_META', rec:BROWARD_REC, tabs:['polk','pipeline']},
-  lee:    {label:'Lee · Fort Myers',        kind:'leads', src:'LEE_LEADS',     meta:'LEE_META',     rec:LEE_REC,     tabs:['polk','pipeline']},
-  collier:{label:'Collier · Naples',        kind:'leads', src:'COLLIER_LEADS', meta:'COLLIER_META', rec:COLLIER_REC, tabs:['polk','pipeline']},
+  // broward/lee/collier registry rows removed until their lead files have real data —
+  // setMarket() falls back to miami for any stale saved key.
   polk:   {label:'Polk · Orlando corridor', kind:'leads', src:'POLK_LEADS',    meta:'POLK_META',    rec:POLK_REC,    tabs:['polk','pipeline']}
 };
 // Active leads-market accessors — the whole Leads tab reads through these, so switching markets
@@ -2414,7 +2414,7 @@ function buildDeals(){
             '<div class="status-dropdown" id="sdrop-'+idx+'">'+dropBtns+'</div>'+
           '</div>'+
         '</div>'+
-        '<div class="deal-addr">'+d.address+(rs?' <span style="background:#e8854a;color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;vertical-align:middle;letter-spacing:.5px;">RECENTLY SOLD</span>':'')+'</div>'+
+        '<div class="deal-addr">'+d.address+(rs?' <span style="background:#e8854a;color:#14120d;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;vertical-align:middle;letter-spacing:.5px;">RECENTLY SOLD</span>':'')+'</div>'+
         '<div class="deal-meta">'+d.neighborhood+(d.beds_baths?' &middot; '+d.beds_baths:'')+' &middot; '+(d.sqft||0).toLocaleString()+' sqft'+(d._sqftVerified?'':' <span title="Square footage not yet county-verified this session" style="color:#e8854a;">(unverified)</span>')+(d.year_built?' &middot; Built '+d.year_built:'')+'</div>'+
         '<div class="deal-meta" style="margin-top:2px;">Owner: '+d.owner+(d.owner_state?' ('+d.owner_state+')':'')+(d.held_years!=null?' &middot; Held '+d.held_years+'y':'')+'</div>'+
         dealFlags(d)+
@@ -2584,8 +2584,10 @@ function renderTablePage(){
       ? '<span class="rehab-badge" style="background:rgba(224,102,74,.15);color:#e0664a;white-space:nowrap;">Needs comp</span>'
       : (rs
         ? '<span class="rehab-badge" style="background:#fde3c7;color:#b45309;white-space:nowrap;">Recently Sold</span>'
-        : '<span style="font-weight:700;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</span>');
-    var arvCell=isCounty?'<span style="color:var(--muted);">&mdash;</span>':fmtK(r[8]);
+        : (!_arvVerified(r)
+          ? '<span class="rehab-badge" style="background:rgba(232,133,74,.13);color:#e8854a;white-space:nowrap;" title="ARV is a baked estimate — no live comp match yet">Pending comps</span>'
+          : '<span style="font-weight:700;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</span>'));
+    var arvCell=isCounty?'<span style="color:var(--muted);">&mdash;</span>':((!rs&&!_arvVerified(r))?'<span style="color:#e8854a;" title="Baked estimate — not comp-verified yet">'+fmtK(r[8])+'*</span>':fmtK(r[8]));
     var repairCell=isCounty?'<span style="color:var(--muted);">&mdash;</span>':fmtK(r[9]);
     isCounty=r[21]==='county'; // condition badge below still shows the case count for all county rows
     var condCell=isCounty?'<span class="rehab-badge" style="background:rgba(232,133,74,.15);color:#e8854a;white-space:nowrap;">'+(r._cn||0)+' case'+((r._cn||0)!==1?'s':'')+(r._lien?' &middot; Lien':'')+'</span>':'<span class="rehab-badge '+rc+'">'+(r[17]||'&mdash;')+'</span>';
