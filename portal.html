@@ -662,10 +662,12 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 }
 </style>
 <script src="polk-leads.js?v=4"></script>
-<!-- Broward/Lee/Collier lead stubs UNPLUGGED until their county scrapes are baked (v11.9 runbook) -->
+<script src="broward-leads.js?v=1"></script>
+<script src="lee-leads.js?v=1"></script>
+<script src="collier-leads.js?v=1"></script>
 <script src="mia-homestead.js?v=1"></script>
 <script src="mia-homestead-city.js?v=1"></script>
-<!-- crime-bands.js unplugged — no honest per-county crime source baked yet -->
+<script src="crime-bands.js?v=1"></script>
 </head>
 <body>
 
@@ -703,7 +705,9 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <select id="marketSel" class="filter-sel" onchange="setMarket(this.value)" title="Switch the market this portal shows — the choice is remembered" style="font-weight:700;letter-spacing:.03em;">
         <option value="miami">Market: Miami-Dade</option>
-        <!-- Broward / Lee / Collier options return when their lead data is baked -->
+        <option value="broward">Market: Broward</option>
+        <option value="lee">Market: Lee · Fort Myers</option>
+        <option value="collier">Market: Collier · Naples</option>
         <option value="polk">Market: Polk · Orlando corridor</option>
       </select>
       <div class="hdr-date" id="headerDate"></div>
