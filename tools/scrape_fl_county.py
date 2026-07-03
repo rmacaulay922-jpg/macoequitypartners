@@ -37,6 +37,11 @@ def query(where, last_oid, geom=True):
     w=where+(' AND OBJECTID>%d'%last_oid if last_oid else '')
     body={'where':w,'outFields':'*','returnGeometry':'true' if geom else 'false','outSR':'4326',
           'f':'json','resultRecordCount':2000,'orderByFields':'OBJECTID'}
+    # FDOR (services9) throttles bursts and returns "Invalid query parameters" for MINUTES after a
+    # heavy pull (verified July 2026: Broward's pull works, then Lee/Collier are rejected; a single
+    # query succeeds again after a multi-minute cooldown). So back off in MINUTES, not seconds —
+    # ~7min of patient retrying lets a page outlast the throttle instead of giving up in 46s.
+    DELAYS=[20,60,120,240]                          # seconds between the 5 attempts
     for t in range(5):
         try:
             req=urllib.request.Request(SERVICE+'/query', data=urllib.parse.urlencode(body).encode(), headers=UA)
@@ -45,7 +50,8 @@ def query(where, last_oid, geom=True):
                 raise RuntimeError(d['error'].get('message','error'))
             return d
         except Exception as e:
-            print('   retry %d (%s)'%(t+1,str(e)[:60])); time.sleep(4+5*t)   # back off — services9 throttles bursts
+            print('   retry %d (%s)'%(t+1,str(e)[:60]))
+            if t < len(DELAYS): time.sleep(DELAYS[t])   # escalating minute-scale backoff
     return None   # terminal failure → caller breaks the loop and bakes what it has (resilient mid-crawl)
 
 def norm(s): return re.sub(r'[^A-Z0-9]','',(s or '').upper())

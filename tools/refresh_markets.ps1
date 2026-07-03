@@ -34,7 +34,12 @@ Say "python: $py"
 
 $counties = @('broward','lee','collier')
 $ok = @(); $failed = @()
+$first = $true
 foreach ($c in $counties) {
+  # FDOR throttles after a county's burst; give the service a few minutes to reset between counties
+  # so the next county doesn't start inside the throttle window (the scraper also backs off internally).
+  if (-not $first) { Say 'cooldown 240s before next county...'; Start-Sleep -Seconds 240 }
+  $first = $false
   Say "--- scraping $c ---"
   try {
     $out = & $py 'tools\scrape_fl_county.py' $c 2>&1 | Out-String
