@@ -444,7 +444,8 @@ footer{background:var(--black);border-top:1px solid #222;padding:14px 24px;font-
 #app [style*="font-size:10.5px"],header [style*="font-size:10.5px"]{font-size:11.5px!important}
 /* ── INVESTOR MODE — hide the operator cockpit ── */
 /* market selector stays visible in investor mode — investors can browse markets too */
-body.investor-mode #tabBar button[data-tab="all"],body.investor-mode #tabBar button[data-tab="construction"],body.investor-mode #tabBar button[data-tab="violations"],body.investor-mode #tabBar button[data-tab="pipeline"],body.investor-mode #tabBar button[data-tab="polk"]{display:none!important}
+body.investor-mode #tabBar button[data-tab="all"],body.investor-mode #tabBar button[data-tab="construction"],body.investor-mode #tabBar button[data-tab="violations"],body.investor-mode #tabBar button[data-tab="pipeline"]{display:none!important}
+/* The Leads tab stays visible to investors — it's the "review all the county's data" view (Brief = the curated top picks). Operator tools inside it (skip-trace/letters/CSV/pipeline) are still hidden by the rules above. */
 body.investor-mode .status-pill-wrap{display:none!important}
 body.investor-mode [onclick*="addToPipeline"],body.investor-mode [onclick*="violToPipeline"],body.investor-mode [onclick*="polkToPipeline"]{display:none!important}
 body.investor-mode [onclick*="openLetterPicker"],body.investor-mode [onclick*="exportTableCsv"],body.investor-mode [onclick*="buildMailList"],body.investor-mode [onclick*="openDriveList"],body.investor-mode [onclick*="openLetterEditor"],body.investor-mode [onclick*="exportPipelineCsv"],body.investor-mode [onclick*="exportPolkCsv"]{display:none!important}
@@ -1768,7 +1769,7 @@ function exportPolkCsv(){
 // default: a plain-English brief of the best comp-verified deals, operator machinery hidden.
 // Ryan unlocks operator mode once with the access code; the choice persists per-browser.
 var OP_CODE='Maco305';
-var OP_ONLY_TABS={all:1,construction:1,violations:1,pipeline:1,polk:1};
+var OP_ONLY_TABS={all:1,construction:1,violations:1,pipeline:1}; // polk (Leads) is now investor-reviewable per county
 function _role(){try{return localStorage.getItem('mep_role')||'investor';}catch(e){return 'investor';}}
 function _opUnlocked(){try{return localStorage.getItem('mep_op_unlocked')==='1';}catch(e){return false;}}
 function setRole(r){
