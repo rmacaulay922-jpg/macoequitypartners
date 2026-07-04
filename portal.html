@@ -714,7 +714,8 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       </select>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v12.0</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v12.1</div>
+      <button type="button" onclick="openAddrSearch()" style="background:var(--gold);border:1px solid var(--gold);border-radius:6px;color:#14120d;font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 11px;cursor:pointer;" title="Search any address across every market">&#9906; FIND ADDRESS</button>
       <button type="button" onclick="toggleGlossary(true)" style="background:none;border:1px solid var(--rule-strong);border-radius:6px;color:var(--gold);font-size:10px;letter-spacing:.08em;padding:4px 9px;cursor:pointer;" title="Every term on this site, in plain English">PLAIN ENGLISH</button>
       <button type="button" id="roleBtn" onclick="toggleRole()" style="background:none;border:1px solid var(--rule-strong);border-radius:6px;color:var(--muted);font-size:10px;letter-spacing:.08em;padding:4px 9px;cursor:pointer;">OPERATOR &rarr;</button>
     </div>
@@ -1107,6 +1108,92 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 </div>
 
 <!-- PRINT MODAL -->
+<div id="macoSearchModal" style="display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.74);" onclick="if(event.target===this)closeAddrSearch()">
+  <div style="max-width:740px;margin:5vh auto;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;max-height:88vh;display:flex;flex-direction:column;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;">
+      <div class="section-title" style="margin:0;">Find an address</div>
+      <button onclick="closeAddrSearch()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1;">&#10005;</button>
+    </div>
+    <input id="macoSearchInput" type="text" placeholder="Type any address or owner name&hellip;" oninput="renderAddrResults()" onkeydown="if(event.key==='Escape')closeAddrSearch()"
+      style="width:100%;padding:11px 14px;font-size:15px;background:var(--bg-soft,var(--black));color:var(--ivory);border:1px solid var(--rule-strong);border-radius:8px;outline:none;box-sizing:border-box;">
+    <div style="font-size:11.5px;color:var(--muted);margin:8px 2px 12px;">Searches every market at once &mdash; Miami-Dade properties and all lead markets (Broward, Fort Myers, Naples, Polk). Shows the full record for any match.</div>
+    <div id="macoSearchResults" style="overflow:auto;flex:1;"></div>
+  </div>
+</div>
+<script>
+var MKT_BADGE={miami:['Miami-Dade','#3DBE82'],broward:['Broward','#B5915A'],lee:['Fort Myers','#B5915A'],collier:['Naples','#B5915A'],polk:['Polk','#B5915A'],lake:['Clermont','#B5915A']};
+function openAddrSearch(){var m=document.getElementById('macoSearchModal');if(!m)return;m.style.display='block';document.body.style.overflow='hidden';var i=document.getElementById('macoSearchInput');if(i){setTimeout(function(){i.focus();},30);} renderAddrResults();}
+function closeAddrSearch(){var m=document.getElementById('macoSearchModal');if(m)m.style.display='none';document.body.style.overflow='';}
+// Every property across every loaded dataset, in one flat list.
+function _searchAssets(){
+  var res=[];
+  try{(window.ALL_ROWS||[]).forEach(function(r){ if(r&&r[1]) res.push({m:'miami',a:r[1],o:r[3],sub:r[2],val:r[8],sc:r[5],beds:r[6],sqft:r[18],yr:r[12],row:r,kind:'miami'}); });}catch(e){}
+  ['broward','lee','collier','polk','lake'].forEach(function(mk){
+    try{var reg=(window.MARKETS||{})[mk]; if(!reg)return; var arr=reg.src?window[reg.src]:null;
+      (arr||[]).forEach(function(l){ if(l&&l.a) res.push({m:mk,a:l.a,o:l.o,sub:l.c,val:l.mkt,sc:l.sc,tag:l.tag,mst:l.mst,oos:l.oos,abs:l.abs,held:l.held,lead:l,kind:'lead'}); });
+    }catch(e){}
+  });
+  return res;
+}
+function macoSearch(q){
+  q=(q||'').trim().toLowerCase(); if(q.length<3)return [];
+  var nq=q.replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+  var seen={},addr=[],own=[];
+  _searchAssets().forEach(function(x){
+    var a=(''+(x.a||'')).toLowerCase(), an=a.replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ');
+    var o=(''+(x.o||'')).toLowerCase();
+    var hitA=a.indexOf(q)>=0||an.indexOf(nq)>=0, hitO=o.indexOf(q)>=0;
+    if(!hitA&&!hitO)return;
+    var k=x.m+'|'+a+'|'+o; if(seen[k])return; seen[k]=1;
+    (hitA?addr:own).push(x);
+  });
+  return addr.concat(own).slice(0,60);
+}
+function renderAddrResults(){
+  var host=document.getElementById('macoSearchResults'); if(!host)return;
+  var q=(document.getElementById('macoSearchInput')||{}).value||'';
+  if(q.trim().length<3){ host.innerHTML='<div style="color:var(--muted);font-size:13px;padding:14px 2px;">Type at least 3 characters of an address (or an owner name).</div>'; window._macoRes=[]; return; }
+  var res=macoSearch(q); window._macoRes=res;
+  if(!res.length){ host.innerHTML='<div style="color:var(--muted);font-size:13px;padding:14px 2px;">No match for &ldquo;'+_escHtml(q)+'&rdquo; in any market. Check spelling, or the property may not be in the tracked datasets.</div>'; return; }
+  host.innerHTML='<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">'+res.length+' match'+(res.length!==1?'es':'')+(res.length>=60?' (showing first 60)':'')+'</div>'+res.map(function(x,i){
+    var mb=MKT_BADGE[x.m]||[x.m,'#B5915A'];
+    var badge='<span style="background:'+mb[1]+'22;color:'+mb[1]+';border:1px solid '+mb[1]+'55;border-radius:5px;padding:1px 8px;font-size:10px;font-weight:700;white-space:nowrap;">'+mb[0]+'</span>';
+    var line2, loc;
+    if(x.kind==='miami'){
+      loc=(x.sub||'')+(x.beds?' &middot; '+x.beds+'bd':'')+(x.sqft?' &middot; '+(x.sqft).toLocaleString()+' sqft':'')+(x.yr?' &middot; built '+x.yr:'');
+      line2='ARV '+(x.val?fmtK(x.val):'&mdash;')+' &middot; Deal score '+(x.sc!=null?x.sc:'&mdash;');
+    } else {
+      var loc2=[]; if(x.oos)loc2.push('<span style="color:#9d97ff;">Out-of-state'+(x.mst?' &middot; '+x.mst:'')+'</span>'); else if(x.abs)loc2.push('<span style="color:#7fbde0;">Absentee</span>');
+      if(x.held!=null)loc2.push('Held '+x.held+'y');
+      loc=(x.sub||'')+(loc2.length?' &middot; '+loc2.join(' &middot; '):'');
+      line2='County value '+(x.val?fmtK(x.val):'&mdash;')+' &middot; '+(x.tag?(x.tag==='probate'?'Estate/probate':x.tag==='entity'?'Entity-owned':x.tag==='trust'?'Trust-owned':x.tag):'')+' &middot; Lead score '+(x.sc!=null?x.sc:'&mdash;');
+    }
+    return '<div style="border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:8px;background:var(--bg-soft,rgba(0,0,0,.03));">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-weight:800;font-size:14px;">'+_escHtml(x.a)+'</div>'+badge+'</div>'
+      +'<div style="font-size:11.5px;color:var(--muted);margin:2px 0 3px;">'+loc+'</div>'
+      +'<div style="font-size:12px;color:var(--ivory-soft);">'+_escHtml(x.o||'')+'</div>'
+      +'<div style="font-size:11.5px;color:var(--muted);margin-top:3px;">'+line2+'</div>'
+      +'<div style="margin-top:9px;"><button class="btn btn-gold" style="font-size:11px;padding:5px 12px;" onclick="searchOpen('+i+')">View full record &rarr;</button></div>'
+    +'</div>';
+  }).join('');
+}
+function searchOpen(i){
+  var x=(window._macoRes||[])[i]; if(!x)return; closeAddrSearch();
+  try{
+    if(x.kind==='miami'){
+      if(typeof setMarket==='function')setMarket('miami');
+      if((typeof _role==='function'?_role():'operator')==='investor'){ try{runUnderwriter(rowToDeal(x.row));}catch(e){} }
+      else { try{gotoProperty(x.a);}catch(e){} }
+    } else {
+      if(typeof setMarket==='function')setMarket(x.m);
+      if(typeof showTabByName==='function')showTabByName('polk');
+      try{ _polkFilter={market:'',tag:'',own:'',q:x.a}; renderPolk(); }catch(e){}
+      setTimeout(function(){ try{ var pid=x.lead&&x.lead.pid; if(pid){ var el=document.getElementById('polkD-'+pid); if(el&&el.style.display!=='block')polkToggleDetail(pid); var t=document.getElementById('polkT-'+pid); if(t)t.scrollIntoView({block:'center'}); } }catch(e){} }, 350);
+    }
+  }catch(e){}
+}
+document.addEventListener('keydown',function(e){ if((e.key==='k'||e.key==='K')&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); openAddrSearch(); } });
+</script>
 <div id="glossaryModal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.72);" onclick="if(event.target===this)toggleGlossary(false)">
   <div style="max-width:640px;max-height:82vh;overflow:auto;margin:6vh auto;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:26px 28px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
