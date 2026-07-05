@@ -48,10 +48,19 @@ foreach ($c in $counties) {
   } catch { $failed += $c; Say "$c FAILED ($($_.Exception.Message))" }
 }
 
+# Lake County (Clermont) - different server, quote-free scraper (see scrape_lake_clermont.py).
+Say 'cooldown 120s, then Lake (Clermont)...'
+Start-Sleep -Seconds 120
+try {
+  $out = & $py 'tools\scrape_lake_clermont.py' 2>&1 | Out-String
+  Add-Content -Path $log -Value $out.TrimEnd()
+  if ($LASTEXITCODE -eq 0) { $ok += 'clermont'; Say 'clermont OK' } else { $failed += 'clermont'; Say "clermont FAILED (exit $LASTEXITCODE)" }
+} catch { $failed += 'clermont'; Say "clermont FAILED ($($_.Exception.Message))" }
+
 # Commit only the lead files that actually changed.
-$changed = (& git status --porcelain -- 'broward-leads.js' 'lee-leads.js' 'collier-leads.js') | Where-Object { $_ }
+$changed = (& git status --porcelain -- 'broward-leads.js' 'lee-leads.js' 'collier-leads.js' 'lake-leads.js') | Where-Object { $_ }
 if ($changed) {
-  & git add broward-leads.js lee-leads.js collier-leads.js
+  & git add broward-leads.js lee-leads.js collier-leads.js lake-leads.js
   $when = Get-Date -Format 'yyyy-MM-dd'
   $which = if ($ok.Count) { $ok -join '/' } else { 'no counties' }
   $msg = "Weekly market refresh ($when) - $which"
@@ -63,5 +72,5 @@ if ($changed) {
 }
 
 if ($failed.Count) { Say ("NOTE: failed this run: {0} (FDOR server is flaky; next Wednesday will retry)." -f ($failed -join ', ')) }
-Say 'REMINDER: Polk needs a manual browser refresh; Miami-Dade is already live.'
+Say 'REMINDER: Polk (incl Davenport) needs a manual browser refresh; Miami-Dade is already live.'
 Say '===== weekly refresh end ====='
