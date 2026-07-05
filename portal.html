@@ -716,7 +716,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       </select>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v12.2</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v12.3</div>
       <button type="button" onclick="openAddrSearch()" style="background:var(--gold);border:1px solid var(--gold);border-radius:6px;color:#14120d;font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 11px;cursor:pointer;" title="Search any address across every market">&#9906; FIND ADDRESS</button>
       <button type="button" onclick="toggleGlossary(true)" style="background:none;border:1px solid var(--rule-strong);border-radius:6px;color:var(--gold);font-size:10px;letter-spacing:.08em;padding:4px 9px;cursor:pointer;" title="Every term on this site, in plain English">PLAIN ENGLISH</button>
       <button type="button" id="roleBtn" onclick="toggleRole()" style="background:none;border:1px solid var(--rule-strong);border-radius:6px;color:var(--muted);font-size:10px;letter-spacing:.08em;padding:4px 9px;cursor:pointer;">OPERATOR &rarr;</button>
@@ -801,7 +801,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <div class="section-title">Top Deals by Deal Score <span class="badge" id="dealsBadge">50</span></div>
     <div class="arv-callout">
       <span style="font-size:18px;">&#9888;</span>
-      <span>ARV is comp-based (recent neighborhood $/sqft &times; living area), <strong>not</strong> PA assessed value. Est. Net Profit assumes <strong>buying at ~65% of ARV</strong> on a hard-money flip over the Rate Center timeline (default 6 months) with all closing, holding &amp; selling costs. Always verify with current MLS comps before making offers.</span>
+      <span>ARV is comp-based (recent neighborhood $/sqft &times; living area), <strong>not</strong> PA assessed value. Est. Net Profit assumes <strong>buying at ~65% of ARV</strong> on a hard-money flip over the Rate Center timeline (default 7 months) with all closing, holding &amp; selling costs. Always verify with current MLS comps before making offers.</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
       <button class="btn btn-gold" type="button" onclick="refreshDeals()" style="font-size:12px;padding:7px 14px;">&#8635; Refresh county data</button>
@@ -842,7 +842,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <div id="allLeadsView">
       <div class="arv-callout">
         <span style="font-size:18px;">&#128202;</span>
-        <span>Every scored lead from the Miami-Dade pull (<strong>lead list baked May 2026</strong> &mdash; sqft/ARV/owner facts refresh from live county feeds each load). ARV is comp-based; <strong>Est. Net Profit</strong> assumes buying at ~65% of ARV on a hard-money flip over the Rate Center timeline (default 6 months). Sort by any column, or hit <strong>Underwrite</strong> on a row to model the deal &amp; change terms.</span>
+        <span>Every scored lead from the Miami-Dade pull (<strong>lead list baked May 2026</strong> &mdash; sqft/ARV/owner facts refresh from live county feeds each load). ARV is comp-based; <strong>Est. Net Profit</strong> assumes buying at ~65% of ARV on a hard-money flip over the Rate Center timeline (default 7 months). Sort by any column, or hit <strong>Underwrite</strong> on a row to model the deal &amp; change terms.</span>
       </div>
       <div class="table-wrap">
         <div class="table-controls">
@@ -929,7 +929,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <button type="button" class="uw-link" onclick="uwOpenConstruction()">Use Construction Estimator &rarr;</button>
 
       <label class="uw-fieldlbl" for="uw-reno-months">Reno + Hold (months)</label>
-      <input id="uw-reno-months" class="uw-input" type="number" value="6" min="1" oninput="calcUnderwriter()">
+      <input id="uw-reno-months" class="uw-input" type="number" value="7" min="1" oninput="calcUnderwriter()">
 
       <label class="uw-fieldlbl">Financing</label>
       <div class="uw-radios">
@@ -1313,9 +1313,9 @@ function _hmTerms(){
   }catch(e){}
   return t;
 }
-function _flipMonths(){ // 'Flip timeline' Rate Center row -> months for the card-level flip model (default 6)
+function _flipMonths(){ // 'Flip timeline' Rate Center row -> months for the card-level flip model (default 7; audit found 6 optimistic for mid-2026)
   try{var s=''+((typeof rcLoad==='function'?rcLoad():{})['Flip timeline']||'');var m=s.match(/(\d+(?:\.\d+)?)/);if(m){var v=parseFloat(m[1]);if(v>=3&&v<=18)return v;}}catch(e){}
-  return 6;
+  return 7;
 }
 function _convRate(){ // 'Conventional' Rate Center row → decimal rate (default 7.1%)
   try{var s=''+((typeof rcLoad==='function'?rcLoad():{})['Conventional']||'');var m=s.match(/(\d+(?:\.\d+)?)\s*%/);if(m){var r=parseFloat(m[1])/100;if(r>=0.03&&r<=0.12)return r;}}catch(e){}
@@ -1554,10 +1554,13 @@ var STAT_ICON_NAMES=['building','gauge','home','dollar','bars','sales'];
     setTimeout(initApp,0);return; // defer so module-level vars/functions (PIPE_STAGES, modules) are ready
   }
   function doLogin(){
-    var pw=document.getElementById('pwInput').value;
+    var pw=document.getElementById('pwInput').value.trim();
     var err=document.getElementById('loginErr');
-    if(pw==='Miami123'){
+    var who=ACCESS_CODES[pw];
+    if(who){
       sessionStorage.setItem('mep_auth','1');
+      try{localStorage.setItem('mep_who',who);localStorage.setItem('mep_who_code',pw);}catch(e){}
+      try{_beacon('login',who+' ('+pw+')');}catch(e){}
       document.getElementById('loginGate').style.display='none';
       document.getElementById('app').style.display='flex';
       initApp();
@@ -1570,6 +1573,48 @@ var STAT_ICON_NAMES=['building','gauge','home','dollar','bars','sales'];
   document.getElementById('loginBtn').addEventListener('click',doLogin);
   document.getElementById('pwInput').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
 })();
+
+// ── ACCESS CODES — each investor gets their own code so logins are attributable.
+// Miami123 stays as the general/legacy code. Ask Claude to add/rename codes per investor.
+var ACCESS_CODES={
+  'Miami123':'General',
+  'MACO-01':'Investor 01','MACO-02':'Investor 02','MACO-03':'Investor 03',
+  'MACO-04':'Investor 04','MACO-05':'Investor 05'
+};
+// ── ENGAGEMENT BEACONS — logins & interest clicks email Ryan through the site's existing
+// FormSubmit pipeline (no accounts, no cookies, nothing stored server-side). Operator
+// browsers (mep_op_unlocked) never send, and login pings are deduped to 1/browser/day.
+var BEACON_URL='https://formsubmit.co/ajax/rmac@macoequitypartners.com';
+function _beacon(event, detail){
+  try{
+    if(localStorage.getItem('mep_op_unlocked')==='1')return; // Ryan's own browsers stay silent
+    if(event==='login'){
+      var k='mep_bcn_login_'+new Date().toISOString().slice(0,10);
+      if(localStorage.getItem(k))return; try{localStorage.setItem(k,'1');}catch(e){}
+    }
+    fetch(BEACON_URL,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({_subject:'[Portal] '+event+': '+detail,_template:'table',_captcha:'false',
+        event:event,detail:detail,investor:(localStorage.getItem('mep_who')||'unknown'),
+        when:new Date().toLocaleString()})}).catch(function(){});
+  }catch(e){}
+}
+// Interest capture: logs the click to Ryan's inbox even if the visitor has no mail app.
+function ctaSend(addr, area, btn){
+  var who=localStorage.getItem('mep_who')||'unknown';
+  if(btn){btn.disabled=true;btn.textContent='Sending\u2026';}
+  fetch(BEACON_URL,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({_subject:'[Portal] INTERESTED: '+addr,_template:'table',_captcha:'false',
+      property:addr,area:area||'',investor:who,when:new Date().toLocaleString()})})
+  .then(function(r){if(!r.ok)throw 0;return r.json();})
+  .then(function(){
+    if(btn){btn.textContent='\u2713 Sent \u2014 Ryan will reach out';}
+    try{toast('Got it \u2014 Ryan has been notified about '+addr);}catch(e){}
+  })
+  .catch(function(){ // network/service hiccup -> fall back to the visitor's mail app
+    if(btn){btn.disabled=false;btn.innerHTML='&#9993; I\u2019m Interested \u2014 Talk to Ryan';}
+    location.href='mailto:rmac@macoequitypartners.com?subject='+encodeURIComponent('Interested in '+addr+' (Maco portal)');
+  });
+}
 
 // ── TABS ──
 function showTab(btn){
@@ -2345,9 +2390,8 @@ document.addEventListener('click',function(e){
 },true);
 // Investor CTA — the one action an outside investor needs (Jul 2026 audit: no conversion path existed).
 function ctaBtn(d,style){
-  var subj='Interested in '+d.address+' (Maco portal)';
-  var body='Hi Ryan,\n\nI saw '+d.address+(d.neighborhood?' in '+d.neighborhood:'')+' on the Maco deal portal and I\'d like to talk about it.\n\n- ';
-  return '<a class="btn btn-gold mep-cta" style="'+(style||'')+'" href="mailto:rmac@macoequitypartners.com?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body)+'" onclick="event.stopPropagation()">&#9993; I\'m Interested &mdash; Talk to Ryan</a>';
+  // Posts interest straight to Ryan's inbox (works even with no mail app); ctaSend falls back to mailto.
+  return '<button type="button" class="btn btn-gold mep-cta" style="'+(style||'')+'" onclick="event.stopPropagation();ctaSend(\''+pcJs(d.address)+'\',\''+pcJs(d.neighborhood||'')+'\',this)">&#9993; I\'m Interested &mdash; Talk to Ryan</button>';
 }
 function svPhoto(d,idx){
   return '<div id="dealphoto-'+idx+'" style="height:150px;position:relative;background:#181612 center/cover no-repeat;border-bottom:1px solid var(--border);border-radius:var(--card-radius) var(--card-radius) 0 0;overflow:hidden;">'
@@ -5211,7 +5255,7 @@ function initMarketExtras(){
 
 var RC_DEFAULTS = [
   ['Hard Money', '13.5% + 2 pts'],
-  ['Flip timeline', '6 months'],
+  ['Flip timeline', '7 months'],
   ['DSCR', '7.25% 30yr'],
   ['Conventional', '7.1% 30yr'],
   ['Bridge', '11% + 1-2 pts'],
