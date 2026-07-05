@@ -664,6 +664,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 }
 </style>
 <script src="polk-leads.js?v=5"></script>
+<script src="lake-leads.js?v=1"></script>
 <script src="broward-leads.js?v=1"></script>
 <script src="lee-leads.js?v=1"></script>
 <script src="collier-leads.js?v=1"></script>
@@ -710,11 +711,12 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
         <option value="broward">Market: Broward</option>
         <option value="lee">Market: Lee · Fort Myers</option>
         <option value="collier">Market: Collier · Naples</option>
+        <option value="lake">Market: Lake · Clermont</option>
         <option value="polk">Market: Polk · Orlando corridor</option>
       </select>
       <div class="hdr-date" id="headerDate"></div>
       <div class="hdr-date" id="dataVintage" title="Vintage of the underlying property &amp; comp data" style="color:var(--gold);border-left:1px solid var(--rule-strong);padding-left:1.2rem;">County data: connecting&hellip;</div>
-      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v12.1</div>
+      <div class="hdr-date" id="buildTag" title="Portal build — if this number doesn't match the latest update, hard-refresh (Ctrl+Shift+R)" style="border-left:1px solid var(--rule-strong);padding-left:1.2rem;">v12.2</div>
       <button type="button" onclick="openAddrSearch()" style="background:var(--gold);border:1px solid var(--gold);border-radius:6px;color:#14120d;font-size:10px;font-weight:700;letter-spacing:.08em;padding:4px 11px;cursor:pointer;" title="Search any address across every market">&#9906; FIND ADDRESS</button>
       <button type="button" onclick="toggleGlossary(true)" style="background:none;border:1px solid var(--rule-strong);border-radius:6px;color:var(--gold);font-size:10px;letter-spacing:.08em;padding:4px 9px;cursor:pointer;" title="Every term on this site, in plain English">PLAIN ENGLISH</button>
       <button type="button" id="roleBtn" onclick="toggleRole()" style="background:none;border:1px solid var(--rule-strong);border-radius:6px;color:var(--muted);font-size:10px;letter-spacing:.08em;padding:4px 9px;cursor:pointer;">OPERATOR &rarr;</button>
@@ -1141,8 +1143,8 @@ function macoSearch(q){
   var seen={},addr=[],own=[];
   _searchAssets().forEach(function(x){
     var a=(''+(x.a||'')).toLowerCase(), an=a.replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ');
-    var o=(''+(x.o||'')).toLowerCase();
-    var hitA=a.indexOf(q)>=0||an.indexOf(nq)>=0, hitO=o.indexOf(q)>=0;
+    var o=(''+(x.o||'')).toLowerCase(), su=(''+(x.sub||'')).toLowerCase();
+    var hitA=a.indexOf(q)>=0||an.indexOf(nq)>=0||su.indexOf(q)>=0, hitO=o.indexOf(q)>=0;
     if(!hitA&&!hitO)return;
     var k=x.m+'|'+a+'|'+o; if(seen[k])return; seen[k]=1;
     (hitA?addr:own).push(x);
@@ -1599,12 +1601,14 @@ var POLK_REC={pa:'https://map.polkflpa.gov/',tax:'https://esearch.polk-tax.com/'
 // Broward/Lee/Collier record portals — landing pages verified; deep-link formats can be refined later.
 var BROWARD_REC={pa:'https://web.bcpa.net/bcpaclient/#/Record-Search',tax:'https://broward.county-taxes.com/public/search/property_tax',probate:'https://www.browardclerk.org/Web2/CaseSearchECA/',code:'https://webapps6.broward.org/CodeComplianceSearch/',records:'https://officialrecords.broward.org/AcclaimWeb/'};
 var LEE_REC={pa:'https://www.leepa.org/Search/PropertySearch.aspx',tax:'https://www.leetc.com/taxes/property-taxes',probate:'https://www.leeclerk.org/records/probate',code:'https://www.leegov.com/dcd/codeenforcement',records:'https://or.leeclerk.org/LandmarkWeb'};
+var LAKE_REC={pa:'https://www.lakecopropappr.com/',tax:'https://www.laketax.com/',probate:'https://lakecountyclerk.org/',code:'https://www.lakecountyfl.gov/offices/code_enforcement/',records:'https://lakecountyclerk.org/official_records/'};
 var COLLIER_REC={pa:'https://www.collierappraiser.com/',tax:'https://www.colliertax.com/search/',probate:'https://cceapps.collierclerk.com/eaccess/',code:'https://cvportal.colliercountyfl.gov/CityViewPortal/',records:'https://cceapps.collierclerk.com/publicaccess/'};
 var MARKETS={
   miami:  {label:'Miami-Dade',              kind:'deep',  tabs:['brief','overview','deals','all','construction','violations','pipeline']},
   broward:{label:'Broward',                 kind:'leads', src:'BROWARD_LEADS', meta:'BROWARD_META', rec:BROWARD_REC, tabs:['brief','polk','pipeline']},
   lee:    {label:'Lee · Fort Myers',        kind:'leads', src:'LEE_LEADS',     meta:'LEE_META',     rec:LEE_REC,     tabs:['brief','polk','pipeline']},
   collier:{label:'Collier · Naples',        kind:'leads', src:'COLLIER_LEADS', meta:'COLLIER_META', rec:COLLIER_REC, tabs:['brief','polk','pipeline']},
+  lake:   {label:'Lake · Clermont',         kind:'leads', src:'LAKE_LEADS',    meta:'LAKE_META',    rec:LAKE_REC,    tabs:['brief','polk','pipeline']},
   polk:   {label:'Polk · Orlando corridor', kind:'leads', src:'POLK_LEADS',    meta:'POLK_META',    rec:POLK_REC,    tabs:['brief','polk','pipeline']}
 };
 // Active leads-market accessors — the whole Leads tab reads through these, so switching markets
@@ -1698,7 +1702,7 @@ function polkCodeUrl(l){return _LREC('code');}      // code-enforcement case sea
 function polkRecordsUrl(l){return _LREC('records');}// clerk official records — deeds, mortgages, liens
 function polkZillowUrl(l){return 'https://www.zillow.com/homes/'+encodeURIComponent(_polkAddr(l).replace(/\s+/g,'-'))+'_rb/';}
 function polkSkipUrl(l){var loc=l.oos&&l.m3?l.m3:(l.c+', FL'); return 'https://www.truepeoplesearch.com/results?name='+encodeURIComponent(l.o)+'&citystatezip='+encodeURIComponent(loc);}
-function polkTagStyle(tag){var m={probate:['#e8854a','Estate / probate'],trust:['#B5915A','Trust-owned'],entity:['#3DBE82','LLC / entity'],other:['#8a8478','Non-homestead']};return m[tag]||m.other;}
+function polkTagStyle(tag){var m={probate:['#e8854a','Estate / probate'],le:['#d49ac8','Life estate'],trust:['#B5915A','Trust-owned'],entity:['#3DBE82','LLC / entity'],other:['#8a8478','Non-homestead']};return m[tag]||m.other;}
 // owner location: out-of-state (strongest), in-state absentee, or local
 function polkOwnLoc(l){ if(l.oos)return {k:'oos',t:'Out-of-state · '+(l.mst||'?'),c:'#7c76ff'}; if(l.abs)return {k:'abs',t:'Absentee (FL)',c:'#4fa3d1'}; return {k:'local',t:'Local owner',c:'#8a8478'}; }
 function polkFiltered(){
@@ -1732,7 +1736,7 @@ function buildPolk(){
     ctl.innerHTML='<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Market</span>'
       +'<select class="filter-sel" onchange="_polkFilter.market=this.value;renderPolk();"><option value="">All</option>'+mkts.map(function(m){return '<option>'+m+'</option>';}).join('')+'</select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Type</span>'
-      +'<select class="filter-sel" onchange="_polkFilter.tag=this.value;renderPolk();"><option value="">All</option><option value="probate">Estate / probate</option><option value="trust">Trust-owned</option><option value="entity">LLC / entity</option></select>'
+      +'<select class="filter-sel" onchange="_polkFilter.tag=this.value;renderPolk();"><option value="">All</option><option value="probate">Estate / probate</option><option value="le">Life estate</option><option value="trust">Trust-owned</option><option value="entity">LLC / entity</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Owner</span>'
       +'<select class="filter-sel" onchange="_polkFilter.own=this.value;renderPolk();"><option value="">Anywhere</option><option value="oos">Out-of-state</option><option value="abs">Absentee (FL)</option><option value="local">Local</option></select>'
       +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
