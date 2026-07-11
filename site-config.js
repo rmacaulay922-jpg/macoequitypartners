@@ -57,8 +57,8 @@ window.MACO = (function () {
       notes: [
         'Keep your $50 monthly rate for as long as your subscription remains continuously active.'
       ],
-      cta: 'Book a Demo',
-      href: 'demo.html'
+      cta: 'Start Free Trial',
+      href: 'trial.html'
     },
     {
       id: 'standard',
@@ -77,8 +77,8 @@ window.MACO = (function () {
         'Product support'
       ],
       notes: [],
-      cta: 'Book a Demo',
-      href: 'demo.html'
+      cta: 'Start Free Trial',
+      href: 'trial.html'
     },
     {
       id: 'market-select',
@@ -101,8 +101,8 @@ window.MACO = (function () {
         'Additional supported markets: ' + ADD_MARKET_PRICE + '.',
         NEW_MARKET_SETUP
       ],
-      cta: 'Book a Demo',
-      href: 'demo.html'
+      cta: 'Start Free Trial',
+      href: 'trial.html'
     }
   ];
 
@@ -285,8 +285,10 @@ window.MACO = (function () {
     track('pricing_viewed', { location: containerId });
   }
 
-  function renderReports(containerId) {
+  // opts.showPrices=false renders the SAMPLE view (prices live only on pricing.html).
+  function renderReports(containerId, opts) {
     var box = el(containerId); if (!box) return;
+    var showPrices = !(opts && opts.showPrices === false);
     box.innerHTML = REPORTS.map(function (r) {
       var items = r.includes.map(function (i) {
         return '<li>' + esc(i) + '</li>';
@@ -294,7 +296,8 @@ window.MACO = (function () {
       return '<article class="report">' +
         '<div class="report__head">' +
           '<h3 class="report__name">' + esc(r.name) + '</h3>' +
-          '<div class="report__price">' + esc(r.price) + '</div>' +
+          (showPrices ? '<div class="report__price">' + esc(r.price) + '</div>'
+                      : '<div class="report__price" style="font-size:11px;letter-spacing:.1em">SAMPLE</div>') +
         '</div>' +
         '<p class="report__desc">' + esc(r.desc) + '</p>' +
         '<ul class="report__list">' + items + '</ul>' +

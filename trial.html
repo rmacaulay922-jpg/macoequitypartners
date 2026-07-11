@@ -79,7 +79,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
       <div class="steps">
         <div class="step"><span class="n">01 —</span><span class="t"><b>Drop your email.</b> That's the whole form.</span></div>
         <div class="step"><span class="n">02 —</span><span class="t"><b>Your access code arrives within one business day.</b> Every trial is set up by hand — you get a code from us, not a drip campaign.</span></div>
-        <div class="step"><span class="n">03 —</span><span class="t"><b>Run it for 7 days.</b> If it earns a place in your process, it's $40/mo. If not, the code expires and you'll never hear from us again.</span></div>
+        <div class="step"><span class="n">03 —</span><span class="t"><b>Run it for 7 days.</b> If it earns a place in your process, pick a plan on <a href="pricing.html" style="color:#E8501F;text-decoration:underline">the pricing page</a>. If not, the code expires and you'll never hear from us again.</span></div>
       </div>
     </div>
 
@@ -100,14 +100,15 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
           <label for="f-plan">I WANT</label>
           <select id="f-plan" name="plan">
             <option value="trial" selected>The 7-day free trial</option>
-            <option value="investor">Investor — $40/mo (skip the trial)</option>
-            <option value="principal">Principal — $50/mo (skip the trial)</option>
+            <option value="founding">Founding Member plan (skip the trial)</option>
+            <option value="standard">Standard Access plan (skip the trial)</option>
+            <option value="market-select">Market Select plan (skip the trial)</option>
           </select>
           <label for="f-msg">ANYTHING WE SHOULD KNOW? (OPTIONAL)</label>
           <textarea id="f-msg" name="message" rows="2" placeholder="Market you work, what you're hunting for…"></textarea>
           <button type="submit" class="btn-primary" style="width:100%;margin-top:18px;font:700 13px 'Schibsted Grotesk',sans-serif;padding:14px 0">Send me my access code →</button>
         </form>
-        <div class="fine">Paid plans are billed monthly — cancel anytime, and your first month is refundable within 7 days of the first charge. <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></div>
+        <div class="fine">Paid plans are billed monthly — every price is on <a href="pricing.html">the pricing page</a>. Cancel anytime; your first month is refundable within 7 days of the first charge. <a href="terms.html">Terms</a> · <a href="privacy.html">Privacy</a></div>
       </div>
       <div id="sent-block" style="display:none">
         <div style="font:800 20px 'Schibsted Grotesk',sans-serif;color:#E8501F">Request received.</div>
@@ -129,7 +130,11 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
   // ?plan=investor|principal preselects the ask; ?sent=1 swaps in the confirmation.
   var plan = (q.get('plan') || '').toLowerCase();
   var sel = document.getElementById('f-plan');
-  if (sel && (plan === 'investor' || plan === 'principal')) sel.value = plan;
+  var known = {founding:1, standard:1, 'market-select':1};
+  // legacy links from before the tier rename still preselect a paid plan
+  if (plan === 'investor') plan = 'founding';
+  if (plan === 'principal') plan = 'standard';
+  if (sel && known[plan]) sel.value = plan;
   if (q.get('sent') === '1') {
     document.getElementById('form-block').style.display = 'none';
     document.getElementById('sent-block').style.display = 'block';
