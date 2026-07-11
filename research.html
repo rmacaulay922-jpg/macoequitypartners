@@ -18,6 +18,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
+<link rel="stylesheet" href="da.css">
+<script src="site-config.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -171,24 +173,38 @@ html.anim .rv.on{opacity:1;transform:none}
 <body>
 <div class="az-page">
 
-<!-- ============ NAV ============ -->
-<nav class="az-nav">
-  <div class="az-nav-left">
-    <a href="index.html"><img src="logo-full.png" alt="Maco Equity Partners"></a>
-    <span class="az-badge">Research</span>
+<!-- ============ NAV (shared) ============ -->
+<nav class="da-nav" id="daNav" aria-label="Primary">
+  <div class="da-nav__brand">
+    <a href="index.html" aria-label="Maco Equity Partners — home"><img src="logo-full.png" alt="Maco Equity Partners"></a>
+    <span class="da-badge">Deal Analyzer</span>
   </div>
-  <div class="az-nav-links">
-    <a href="firm.html">The Firm</a>
-    <a href="index.html#how">How it works</a>
-    <a href="index.html#map">Live map</a>
+  <div class="da-nav__links">
+    <a href="index.html#product">Product</a>
+    <a href="index.html#how">How It Works</a>
+    <a href="markets.html">Markets</a>
     <a href="index.html#pricing">Pricing</a>
-    <a href="research.html" class="active">Research</a>
+    <a href="reports.html">Reports</a>
+    <a href="research.html" class="active" aria-current="page">Research</a>
+    <a href="firm.html">Firm</a>
   </div>
-  <div class="az-nav-right">
-    <a class="az-login" href="portal.html">Log in</a>
-    <a class="az-btn az-btn--primary" href="firm.html#contact">Start free trial</a>
+  <div class="da-nav__actions">
+    <a class="da-nav__login" href="portal.html" data-track="login_click">Deal Analyzer Login</a>
+    <a class="da-btn da-btn--primary" href="demo.html" data-track="book_demo_click">Book a 20-Minute Demo</a>
+    <button class="da-nav__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="daMobile"><span></span><span></span><span></span></button>
   </div>
 </nav>
+<div class="da-mobile" id="daMobile">
+  <a href="index.html#product">Product</a>
+  <a href="index.html#how">How It Works</a>
+  <a href="markets.html">Markets</a>
+  <a href="index.html#pricing">Pricing</a>
+  <a href="reports.html">Reports</a>
+  <a href="research.html">Research</a>
+  <a href="firm.html">Firm</a>
+  <a href="portal.html" data-track="login_click">Deal Analyzer Login</a>
+  <a class="da-btn da-btn--primary" href="demo.html" data-track="book_demo_click">Book a 20-Minute Demo</a>
+</div>
 
 <!-- ============ HERO ============ -->
 <header class="az-hero" style="padding-bottom:48px">
@@ -275,37 +291,42 @@ html.anim .rv.on{opacity:1;transform:none}
   <a class="az-jrow rv" href="post-palm-beach-industrial.html"><span class="t">Palm Beach Industrial</span><span class="go">→</span></a>
 </section>
 
-<!-- ============ SUBSCRIBE (DARK) ============ -->
+<!-- ============ RUN THE TOOLS (DARK) ============ -->
 <section class="az-engine">
-  <span class="az-label">Get reports in your inbox</span>
-  <h2>Quarterly. Sourced. <span>Free of varnish.</span></h2>
-  <p>New reports land quarterly across both verticals. Ask for the research list — or run the engine behind it yourself.</p>
+  <span class="az-label">Run the tools behind the research</span>
+  <h2>See how Maco reads <span>the local market.</span></h2>
+  <p>The research is the same discipline behind the product. See it work on a live deal — we walk the platform, score a property, and underwrite it with editable assumptions.</p>
   <div class="az-hero-cta" style="margin-top:26px">
-    <a class="az-btn az-btn--primary" href="mailto:rmac@macoequitypartners.com?subject=Research%20list">Request the research list <span class="az-arrow">→</span></a>
-    <a class="az-btn az-btn--ghost" style="color:#F1F1EC;border-color:rgba(241,241,236,.35)" href="index.html">Open the Deal Analyzer <span class="az-arrow">→</span></a>
+    <a class="az-btn az-btn--primary" href="demo.html" data-track="book_demo_click">Book a Demo <span class="az-arrow">→</span></a>
+    <a class="az-btn az-btn--ghost" style="color:#F1F1EC;border-color:rgba(241,241,236,.35)" href="index.html#pricing">Explore Pricing <span class="az-arrow">→</span></a>
   </div>
+  <p style="margin-top:18px;font:400 12px 'IBM Plex Mono',monospace;color:#93968F">Prefer email? <a href="mailto:rmac@macoequitypartners.com?subject=Research%20list" style="color:#E8501F">Request the research list &rarr;</a></p>
 </section>
 
-<!-- ============ FOOTER ============ -->
-<footer class="az-footer">
-  <div>
-    <span class="az-label">Maco Equity Partners — Underwritten with rigor · Executed with discipline</span><br>
-    <span class="az-label az-label--mute">Not investment advice · ARV comp-based · © 2026</span>
+<!-- ============ FOOTER (shared) ============ -->
+<footer class="da-footer">
+  <div class="da-footer__cols">
+    <div class="da-footer__brand">
+      <img src="logo-full-light.png" alt="Maco Equity Partners">
+      <p>Local deal intelligence for South Florida investors — built by people who actually evaluate deals.</p>
+    </div>
+    <div><h5>Product</h5><a href="index.html#how">How It Works</a><a href="markets.html">Markets</a><a href="index.html#pricing">Pricing</a><a href="reports.html">Reports</a><a href="portal.html" data-track="login_click">Deal Analyzer Login</a></div>
+    <div><h5>Resources</h5><a href="research.html">Research</a><a href="methodology.html">Methodology</a><a href="index.html#pricing">FAQ</a></div>
+    <div><h5>Company</h5><a href="firm.html">The Firm</a><a href="firm.html#disciplines">Partnerships</a><a href="firm.html#contact">Submit a Deal</a><a href="firm.html#contact">Contact</a></div>
   </div>
-  <div class="az-flinks">
-    <a href="index.html">Deal Analyzer</a>
-    <a href="firm.html">The Firm</a>
-    <a href="blog.html">Journal</a>
-    <a href="portal.html">Log in</a>
-    <a href="privacy.html">Privacy</a>
-    <a href="terms.html">Terms</a>
-    <a href="disclosures.html">Disclosures</a>
+  <div class="da-footer__legal">
+    <span>© 2026 Maco Equity Partners LLC · Not investment advice · Estimates from public records — independently verify before acting.</span>
+    <span style="display:flex;gap:18px;flex-wrap:wrap"><a href="privacy.html" style="display:inline">Privacy</a><a href="terms.html" style="display:inline">Terms</a><a href="disclosures.html" style="display:inline">Disclosures</a></span>
   </div>
 </footer>
 
 </div>
 <script>
 (function(){
+  var nav=document.getElementById('daNav'),burger=nav&&nav.querySelector('.da-nav__burger'),mob=document.getElementById('daMobile');
+  if(burger){burger.addEventListener('click',function(){var o=nav.getAttribute('data-open')==='1';nav.setAttribute('data-open',o?'0':'1');burger.setAttribute('aria-expanded',o?'false':'true');});
+    if(mob)mob.addEventListener('click',function(e){if(e.target.closest('a')){nav.setAttribute('data-open','0');burger.setAttribute('aria-expanded','false');}});}
+  try{ if(window.MACO){ MACO.wireTracking(); } }catch(e){}
   try{
     document.documentElement.classList.add('anim');
     var io=new IntersectionObserver(function(es){

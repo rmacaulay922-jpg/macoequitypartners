@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>À La Carte Reports | Maco Deal Analyzer</title>
+<meta name="description" content="Buy an individual property or market analysis when you need it — from $15. Property snapshots, comps and estimated value, full underwriting, analyst-reviewed acquisition reports and custom market reports. No subscription required.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://macoequitypartners.com/reports.html">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Maco Equity Partners">
+<meta property="og:title" content="À La Carte Reports — Maco Deal Analyzer">
+<meta property="og:description" content="Individual property and market analysis from $15. No subscription required.">
+<meta property="og:url" content="https://macoequitypartners.com/reports.html">
+<meta property="og:image" content="https://macoequitypartners.com/logo-full.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="da.css">
+<script src="site-config.js"></script>
+</head>
+<body>
+<div class="da-page">
+<a class="da-skip" href="#main">Skip to content</a>
+
+<!-- ============ NAV ============ -->
+<nav class="da-nav" id="daNav" aria-label="Primary">
+  <div class="da-nav__brand">
+    <a href="index.html" aria-label="Maco Equity Partners — home"><img src="logo-full.png" alt="Maco Equity Partners"></a>
+    <span class="da-badge">Deal Analyzer</span>
+  </div>
+  <div class="da-nav__links">
+    <a href="index.html#product">Product</a>
+    <a href="index.html#how">How It Works</a>
+    <a href="markets.html">Markets</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="reports.html" class="active" aria-current="page">Reports</a>
+    <a href="research.html">Research</a>
+    <a href="firm.html">Firm</a>
+  </div>
+  <div class="da-nav__actions">
+    <a class="da-nav__login" href="portal.html" data-track="login_click">Deal Analyzer Login</a>
+    <a class="da-btn da-btn--primary" href="demo.html" data-track="book_demo_click">Book a 20-Minute Demo</a>
+    <button class="da-nav__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="daMobile"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+<div class="da-mobile" id="daMobile">
+  <a href="index.html#product">Product</a>
+  <a href="index.html#how">How It Works</a>
+  <a href="markets.html">Markets</a>
+  <a href="index.html#pricing">Pricing</a>
+  <a href="reports.html">Reports</a>
+  <a href="research.html">Research</a>
+  <a href="firm.html">Firm</a>
+  <a href="portal.html" data-track="login_click">Deal Analyzer Login</a>
+  <a class="da-btn da-btn--primary" href="demo.html" data-track="book_demo_click">Book a 20-Minute Demo</a>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="da-section" id="main" style="padding-top:56px">
+  <span class="da-eyebrow">À La Carte Reports</span>
+  <h1 class="da-title" style="margin:14px 0 14px;max-width:860px">Need analysis without <span class="hl">another subscription?</span></h1>
+  <p class="da-lead">Purchase an individual property or market analysis when you need it. Clear deliverables, accessible pricing and no long-term commitment.</p>
+</header>
+
+<!-- ============ REPORT CARDS ============ -->
+<section class="da-section">
+  <div class="report-grid" id="report-grid"><!-- rendered from site-config.js --></div>
+  <p class="da-fineprint" id="reports-footnote" style="margin-top:16px"></p>
+  <p class="da-disclaimer" id="report-disclaimer" style="margin-top:12px"></p>
+</section>
+
+<!-- ============ REQUEST FORM ============ -->
+<section class="da-section" id="request">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start" class="req-grid">
+    <div>
+      <span class="da-eyebrow">Request a Report</span>
+      <h2 class="da-title" style="margin:14px 0 14px">Tell us the property or market. <span class="hl">We&rsquo;ll scope it.</span></h2>
+      <p class="da-lead">No payment is collected here. We confirm scope and price by email, then deliver the report. Turnaround depends on the report and the data available.</p>
+      <ul class="plan__features" style="margin-top:20px;max-width:440px">
+        <li>Clear, defined deliverables</li>
+        <li>Scope agreed before any work begins</li>
+        <li>Bulk property analysis available by quote</li>
+      </ul>
+    </div>
+    <div>
+      <div class="da-sent" id="sentBanner" style="margin-bottom:14px">Thanks — your report request has been received. We&rsquo;ll follow up to confirm scope and price.</div>
+      <form class="da-form" data-maco-form action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST"
+            onfocusin="if(!this._s){this._s=1;try{MACO.track('report_request_started')}catch(e){}}"
+            onsubmit="try{MACO.track('report_request_submitted')}catch(e){}">
+        <input type="hidden" name="_subject" value="New report request — Maco Deal Analyzer">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_template" value="table">
+        <input type="hidden" name="_next" value="https://macoequitypartners.com/reports.html?sent=1#request">
+        <div class="da-2col">
+          <div><label for="r-name">Name</label><input id="r-name" name="name" type="text" required></div>
+          <div><label for="r-email">Email</label><input id="r-email" name="email" type="email" required></div>
+        </div>
+        <div class="da-2col">
+          <div><label for="r-phone">Phone (optional)</label><input id="r-phone" name="phone" type="tel"></div>
+          <div><label for="r-type">Report type</label>
+            <select id="r-type" name="report_type">
+              <option value="Property Snapshot">Property Snapshot — $15</option>
+              <option value="Comparable Sales &amp; Estimated Value Report">Comparable Sales &amp; Estimated Value — $29</option>
+              <option value="Full Deal Underwriting">Full Deal Underwriting — $49</option>
+              <option value="Analyst-Reviewed Acquisition Report">Analyst-Reviewed Acquisition — $79</option>
+              <option value="Custom Market Opportunity Report">Custom Market Opportunity — From $99</option>
+              <option value="Bulk / multiple properties">Bulk / multiple properties — by quote</option>
+            </select>
+          </div>
+        </div>
+        <div><label for="r-addr">Property address or requested market</label><input id="r-addr" name="address_or_market" type="text" placeholder="123 Main St, Miami / or a ZIP or metro" required></div>
+        <div class="da-2col">
+          <div><label for="r-strategy">Investment strategy</label>
+            <select id="r-strategy" name="strategy">
+              <option>Fix &amp; flip</option><option>Buy &amp; hold / rental</option>
+              <option>Wholesale</option><option>BRRRR</option><option>Undecided</option>
+            </select>
+          </div>
+          <div><label for="r-turn">Requested turnaround</label>
+            <select id="r-turn" name="turnaround">
+              <option>Standard</option><option>Within 3 business days</option><option>Rush (ask)</option>
+            </select>
+          </div>
+        </div>
+        <div class="da-3col">
+          <div><label for="r-price">Expected purchase price (optional)</label><input id="r-price" name="expected_price" type="text" placeholder="$"></div>
+          <div><label for="r-reno">Renovation estimate (optional)</label><input id="r-reno" name="reno_estimate" type="text" placeholder="$"></div>
+          <div><label for="r-fin">Financing type (optional)</label>
+            <select id="r-fin" name="financing">
+              <option value="">—</option><option>Cash</option><option>Hard money</option>
+              <option>Conventional</option><option>Private / partner</option><option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div><label for="r-notes">Additional notes</label><textarea id="r-notes" name="notes"></textarea></div>
+        <div class="da-check">
+          <input id="r-agree" name="acknowledged" type="checkbox" value="Yes — acknowledged" required>
+          <label for="r-agree">I understand this report is provided for investment screening only and is <strong>not an appraisal, title report, inspection or legal opinion</strong>, and that I must independently verify all material information.</label>
+        </div>
+        <div><button class="da-btn da-btn--primary da-btn--lg" type="submit">Request This Report <span aria-hidden="true">&rarr;</span></button></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSING ============ -->
+<section class="da-section da-section--dark">
+  <h2 class="da-title" style="color:#F1F1EC;max-width:720px;margin-bottom:14px">Running lots of deals? <span class="hl">Subscribe and analyze unlimited properties.</span></h2>
+  <div class="da-hero__cta">
+    <a class="da-btn da-btn--primary da-btn--lg" href="demo.html" data-track="book_demo_click">Book a 20-Minute Demo <span aria-hidden="true">&rarr;</span></a>
+    <a class="da-btn da-btn--outline da-btn--lg" href="index.html#pricing" style="color:#F1F1EC;border-color:rgba(241,241,236,.4)">Explore Pricing</a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="da-footer">
+  <div class="da-footer__cols">
+    <div class="da-footer__brand">
+      <img src="logo-full-light.png" alt="Maco Equity Partners">
+      <p>Local deal intelligence for South Florida investors — built by people who actually evaluate deals.</p>
+    </div>
+    <div><h5>Product</h5><a href="index.html#how">How It Works</a><a href="markets.html">Markets</a><a href="index.html#pricing">Pricing</a><a href="reports.html">Reports</a><a href="portal.html" data-track="login_click">Deal Analyzer Login</a></div>
+    <div><h5>Resources</h5><a href="research.html">Research</a><a href="methodology.html">Methodology</a><a href="index.html#pricing">FAQ</a></div>
+    <div><h5>Company</h5><a href="firm.html">The Firm</a><a href="firm.html#disciplines">Partnerships</a><a href="firm.html#contact">Submit a Deal</a><a href="firm.html#contact">Contact</a></div>
+  </div>
+  <div class="da-footer__legal">
+    <span>© 2026 Maco Equity Partners LLC · Not investment advice · Estimates from public records — independently verify before acting.</span>
+    <span style="display:flex;gap:18px;flex-wrap:wrap"><a href="privacy.html" style="display:inline">Privacy</a><a href="terms.html" style="display:inline">Terms</a><a href="disclosures.html" style="display:inline">Disclosures</a></span>
+  </div>
+</footer>
+</div>
+
+<script>
+(function(){
+  var nav=document.getElementById('daNav'),burger=nav&&nav.querySelector('.da-nav__burger'),mob=document.getElementById('daMobile');
+  if(burger){burger.addEventListener('click',function(){var o=nav.getAttribute('data-open')==='1';nav.setAttribute('data-open',o?'0':'1');burger.setAttribute('aria-expanded',o?'false':'true');});
+    if(mob)mob.addEventListener('click',function(e){if(e.target.closest('a')){nav.setAttribute('data-open','0');burger.setAttribute('aria-expanded','false');}});}
+  try{
+    if(window.MACO){
+      MACO.renderReports('report-grid');
+      var fn=document.getElementById('reports-footnote'); if(fn) fn.textContent=MACO.reportsFootnote;
+      var rd=document.getElementById('report-disclaimer'); if(rd) rd.textContent=MACO.reportDisclaimer;
+      document.querySelectorAll('form[data-maco-form]').forEach(function(f){f.action=MACO.formEndpoint;});
+      MACO.prefillFromQuery();
+      MACO.showSentBanner('sentBanner');
+      MACO.wireTracking();
+    }
+  }catch(e){}
+  try{document.documentElement.classList.add('anim');var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.06});document.querySelectorAll('.da-section,.report').forEach(function(el){el.classList.add('rv');io.observe(el);});}catch(e){document.querySelectorAll('.rv').forEach(function(el){el.classList.add('on');});}
+})();
+</script>
+<style>@media (max-width:860px){.req-grid{grid-template-columns:1fr!important;gap:28px!important}}</style>
+</body>
+</html>

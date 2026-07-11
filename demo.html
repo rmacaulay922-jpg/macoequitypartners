@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo — See the Deal Analyzer Work | Maco Equity Partners</title>
+<meta name="description" content="An interactive, no-login demo of the Maco Equity Partners off-market Deal Analyzer: what the engine reads nightly, how it scores distress, the live South Florida map, and the underwriter that grades every flip.">
+<link rel="canonical" href="https://macoequitypartners.com/demo.html">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://macoequitypartners.com/demo.html">
+<meta property="og:site_name" content="Maco Equity Partners">
+<meta property="og:title" content="Live Demo — See the Deal Analyzer Work">
+<meta property="og:description" content="Interactive demo: what the engine reads, how it scores, the live map, and the underwriter that grades every flip. No login needed.">
+<meta property="og:image" content="https://macoequitypartners.com/logo-full.png">
+<meta name="twitter:card" content="summary_large_image">
+<script defer data-domain="macoequitypartners.com" src="https://plausible.io/js/script.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#E9E9E4;color:#131512;font-family:'Schibsted Grotesk',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{display:block}
+::selection{background:#E8501F;color:#fff}
+.wrap{max-width:1800px;margin:0 auto;background:#F7F7F4;box-shadow:0 2px 18px rgba(19,21,18,.08);min-height:100vh}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.label{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#131512}
+.label--mute{color:#6B6F6A}
+.kicker{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#E8501F}
+.badge{font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:3px 7px;border-radius:2px;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:8px;font:700 11.5px 'Schibsted Grotesk',sans-serif;padding:12px 20px;border-radius:3px;cursor:pointer;border:0;transition:background .15s,transform .15s;text-align:center}
+.btn:hover{transform:translateY(-1px)}
+.btn--primary{background:#E8501F;color:#fff}.btn--primary:hover{background:#C43A1A}
+.btn--dark{background:#131512;color:#fff}
+.btn--ghost{background:transparent;color:#131512;border:1px solid rgba(19,21,18,.28)}
+.arrow{font-family:'IBM Plex Mono',monospace;font-weight:500}
+.sec{padding:64px 44px;border-bottom:1px solid rgba(19,21,18,.14)}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.sec h2{font:800 clamp(26px,3.2vw,40px)/1.06 'Schibsted Grotesk',sans-serif;letter-spacing:-.025em}
+.sec h2 span{color:#E8501F}
+.sec .lead{font:400 15px/1.6 'Schibsted Grotesk',sans-serif;color:#4A4E49;max-width:660px;margin-top:14px}
+.step-tag{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#E8501F;text-transform:uppercase}
+.nav{position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:14px 44px;background:rgba(247,247,244,.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(19,21,18,.14)}
+.nav-l{display:flex;align-items:center;gap:14px}.nav-l img{height:44px;width:auto}
+.nav-links{display:flex;gap:26px;font:500 12px 'Schibsted Grotesk',sans-serif;color:#6B6F6A}
+.nav-links a:hover{color:#131512}.nav-links a.active{color:#131512;font-weight:700}
+.nav-r{display:flex;gap:10px;align-items:center}
+.nav-login{font:600 11.5px 'Schibsted Grotesk',sans-serif;padding:9px 16px;color:#131512}.nav-login:hover{color:#E8501F}
+.hero{padding:74px 44px 52px;border-bottom:1px solid rgba(19,21,18,.14)}
+.hero-top{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.hero h1{font:800 clamp(42px,6vw,74px)/0.98 'Schibsted Grotesk',sans-serif;letter-spacing:-.03em;max-width:1000px}
+.hero h1 span{color:#E8501F}
+.hero p{font:400 17px/1.55 'Schibsted Grotesk',sans-serif;color:#4A4E49;max-width:600px;margin:20px 0 28px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+.demo-jump{display:flex;gap:8px;flex-wrap:wrap;margin-top:34px}
+.demo-jump a{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:8px 12px;border-radius:3px}
+.demo-jump a:hover{border-color:#E8501F;color:#E8501F}
+.pipe{display:grid;grid-template-columns:1.1fr 1.5fr;gap:16px;margin-top:34px}
+.term{background:#131512;border-radius:6px;padding:20px 22px;color:#F1F1EC;font-family:'IBM Plex Mono',monospace;min-height:290px}
+.term-bar{display:flex;gap:6px;margin-bottom:16px}
+.term-bar i{width:10px;height:10px;border-radius:50%;display:block;background:#3a3c38}
+.term-line{font:400 12px/1.9 'IBM Plex Mono',monospace;color:#C6C8C2;white-space:pre-wrap}
+.term-line b{color:#E8501F;font-weight:600}.term-line .ok{color:#6ab98a}
+.signals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.sig{background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:4px;padding:16px}
+.sig b{display:block;font:800 30px 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em;color:#131512}
+.sig .n{font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9A9E97;margin-top:2px}
+.sig .d{font:400 11px/1.45 'Schibsted Grotesk',sans-serif;color:#6B6F6A;margin-top:8px}
+.map-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;margin-top:26px}
+#demoMap{height:520px;border-radius:6px;border:1px solid rgba(19,21,18,.18);background:#c3d0ce;overflow:hidden}
+#demoMap .pin{cursor:pointer;transition:opacity .2s}
+.map-side{display:flex;flex-direction:column;gap:14px}
+.slider-card{background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:4px;padding:16px 18px}
+.slider-card label{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6B6F6A;display:block;margin-bottom:10px}
+.slider-card input[type=range]{width:100%;accent-color:#E8501F}
+.pin-panel{background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:4px;padding:18px 20px;flex:1}
+.pin-panel .addr{font:700 17px 'Schibsted Grotesk',sans-serif}
+.pin-panel .hood{font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9A9E97;margin-top:3px}
+.score-ring{display:flex;align-items:center;gap:14px;margin:16px 0}
+.score-ring .num{font:800 40px 'Schibsted Grotesk',sans-serif;color:#E8501F;line-height:1}
+.score-ring .cap{font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6B6F6A}
+.bd-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid rgba(19,21,18,.12);font:400 12px 'Schibsted Grotesk',sans-serif;color:#4A4E49}
+.bd-row b{font:700 12px 'IBM Plex Mono',monospace;color:#E8501F}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#6B6F6A;margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.pin-hint{font:400 12px/1.5 'Schibsted Grotesk',sans-serif;color:#9A9E97}
+.pinTip{background:transparent!important;border:0!important;box-shadow:none!important;color:#fff!important;font:800 11px 'Schibsted Grotesk',sans-serif!important;padding:0!important}
+.pinTip::before{display:none!important}
+.leaflet-container{font-family:'Schibsted Grotesk',sans-serif}
+.uw{display:grid;grid-template-columns:1fr 1.1fr;gap:18px;margin-top:26px}
+.uw-inputs{background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:5px;padding:22px 24px}
+.uw-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.uw-preset{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.06em;padding:7px 11px;border:1px solid rgba(19,21,18,.2);border-radius:3px;cursor:pointer;background:#fff;color:#4A4E49}
+.uw-preset.active{background:#131512;color:#fff;border-color:#131512}
+.uw-field{margin-bottom:16px}
+.uw-field label{display:flex;justify-content:space-between;font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6B6F6A;margin-bottom:7px}
+.uw-field label b{color:#131512;font-size:13px}
+.uw-field input[type=range]{width:100%;accent-color:#E8501F}
+.uw-out{background:#131512;color:#F1F1EC;border-radius:5px;padding:24px 26px;display:flex;flex-direction:column}
+.uw-grade{display:flex;align-items:center;gap:16px;padding-bottom:18px;border-bottom:1px solid rgba(241,241,236,.14);margin-bottom:16px}
+.grade-badge{width:74px;height:74px;border-radius:10px;display:flex;align-items:center;justify-content:center;font:800 40px 'Schibsted Grotesk',sans-serif;flex-shrink:0;background:#E8501F;color:#fff}
+.uw-grade .gt{font:800 22px 'Schibsted Grotesk',sans-serif}
+.uw-grade .gw{font:400 12px/1.5 'Schibsted Grotesk',sans-serif;color:#C6C8C2;margin-top:4px}
+.uw-lines{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
+.uw-line .k{font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#93968F}
+.uw-line .v{font:800 24px 'Schibsted Grotesk',sans-serif;margin-top:2px}
+.uw-note{font:400 11px/1.5 'Schibsted Grotesk',sans-serif;color:#93968F;margin-top:18px;padding-top:14px;border-top:1px solid rgba(241,241,236,.14)}
+.dossier{display:grid;grid-template-columns:1.4fr 1fr;margin-top:26px;border:1px solid rgba(19,21,18,.18);border-radius:6px;overflow:hidden;background:#FDFDFB}
+.dossier-main{padding:26px 28px}
+.dossier-side{background:#F3EFE7;border-left:1px solid rgba(19,21,18,.14);padding:26px 24px;position:relative}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}
+.chip{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:5px 9px;border-radius:3px;background:rgba(232,80,31,.12);color:#C43A1A}
+.chip.mut{background:rgba(19,21,18,.07);color:#6B6F6A}
+.d-row{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid rgba(19,21,18,.1);font:400 13px 'Schibsted Grotesk',sans-serif;color:#4A4E49}
+.d-row b{font:700 13px 'Schibsted Grotesk',sans-serif;color:#131512}
+.intel{font:400 13px/1.65 'Schibsted Grotesk',sans-serif;color:#4A4E49;background:rgba(232,80,31,.06);border-left:3px solid #E8501F;padding:12px 15px;border-radius:0 4px 4px 0;margin-top:14px}
+.locked{filter:blur(6px);user-select:none;pointer-events:none}
+.lock-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px;background:linear-gradient(180deg,rgba(243,239,231,.2),rgba(243,239,231,.88))}
+.lock-over .lk{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6B6F6A}
+.cta{background:#131512;color:#F1F1EC;padding:74px 44px;text-align:center;border-bottom:1px solid rgba(19,21,18,.14)}
+.cta h2{font:800 clamp(30px,4vw,50px)/1.03 'Schibsted Grotesk',sans-serif;letter-spacing:-.025em;max-width:820px;margin:12px auto 14px}
+.cta h2 span{color:#E8501F}
+.cta p{font:400 15px/1.6 'Schibsted Grotesk',sans-serif;color:#C6C8C2;max-width:560px;margin:0 auto 26px}
+.cta-cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.footer{padding:30px 44px 40px;display:flex;justify-content:space-between;gap:22px;flex-wrap:wrap;align-items:center}
+.flinks{display:flex;gap:20px;flex-wrap:wrap;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6B6F6A}
+.flinks a:hover{color:#E8501F}
+@media(max-width:980px){.pipe,.map-grid,.uw,.dossier{grid-template-columns:1fr}.signals{grid-template-columns:1fr 1fr}.nav-links{display:none}.sec,.hero,.cta{padding-left:22px;padding-right:22px}.nav{padding:12px 22px}.footer{padding:26px 22px 34px}#demoMap{height:380px}}
+@media(max-width:560px){.signals,.uw-lines{grid-template-columns:1fr}.grade-badge{width:60px;height:60px;font-size:32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="nav">
+  <div class="nav-l">
+    <a href="index.html"><img src="logo-full.png" alt="Maco Equity Partners"></a>
+    <span class="badge">Live Demo</span>
+  </div>
+  <div class="nav-links">
+    <a href="firm.html">The Firm</a>
+    <a href="#data" class="active">How it works</a>
+    <a href="#map">Live map</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="research.html">Research</a>
+  </div>
+  <div class="nav-r">
+    <a class="nav-login" href="portal.html">Log in</a>
+    <a class="btn btn--primary" href="firm.html#contact">Start free trial</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-top">
+    <span class="kicker">Interactive Demo · No login needed</span>
+    <span class="badge">Sample data · South Florida</span>
+  </div>
+  <h1>See the engine work. <span>Live.</span></h1>
+  <p>This is the same off-market Deal Analyzer we buy with — walk through exactly what it reads every night, how it scores distress, where the deals surface on the map, and how the underwriter grades a flip. Everything below is interactive.</p>
+  <div class="hero-cta">
+    <a class="btn btn--dark" href="#underwrite">Run the underwriter <span class="arrow">&darr;</span></a>
+    <a class="btn btn--ghost" href="#map">Explore the map <span class="arrow">&darr;</span></a>
+  </div>
+  <div class="demo-jump">
+    <a href="#data">1 · What it reads</a>
+    <a href="#map">2 · Scoring + map</a>
+    <a href="#underwrite">3 · The underwriter</a>
+    <a href="#dossier">4 · Sample dossier</a>
+  </div>
+</header>
+
+<section class="sec" id="data">
+  <div class="sechead">
+    <div><span class="step-tag">01 — What the engine reads</span><h2>Every parcel. <span>Every night.</span></h2></div>
+    <span class="label label--mute">County records &rarr; signals &rarr; score</span>
+  </div>
+  <p class="lead">Each night the engine reads thousands of Miami-Dade county records and turns raw ownership data into motivation signals — the same signals that tell us who might sell below market.</p>
+  <div class="pipe">
+    <div class="term"><div class="term-bar"><i></i><i></i><i></i></div><div id="termBody"></div></div>
+    <div class="signals" id="signals"></div>
+  </div>
+</section>
+
+<section class="sec" id="map">
+  <div class="sechead">
+    <div><span class="step-tag">02 — Scoring + map</span><h2>Distress becomes a <span>score.</span></h2></div>
+    <span class="label label--mute">Click any pin · drag the slider</span>
+  </div>
+  <p class="lead">Every signal adds points. The result is a 0–100 deal score, plotted across South Florida from Homestead to the Broward line. Click a pin to see exactly why it scored — then use the slider to surface only the strongest.</p>
+  <div class="map-grid">
+    <div id="demoMap"><svg viewBox="0 0 520 460" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
+      <rect x="0" y="0" width="520" height="460" fill="#c3d0ce"/>
+      <path d="M0,30 L400,30 C392,90 385,140 378,185 C360,240 320,290 290,320 C275,350 262,378 255,400 C250,420 245,435 240,460 L0,460 Z" fill="#E7E4D9"/>
+      <path d="M415,120 L431,123 L426,252 L411,248 C409,200 412,155 415,120 Z" fill="#E7E4D9"/>
+      <path d="M400,30 C392,90 385,140 378,185 C360,240 320,290 290,320 C275,350 262,378 255,400 C250,420 245,435 240,460" fill="none" stroke="#b3bebb" stroke-width="1.5"/>
+      <line x1="150" y1="30" x2="150" y2="460" stroke="rgba(19,21,18,.045)" stroke-width="1" stroke-dasharray="3 6"/>
+      <line x1="300" y1="30" x2="300" y2="460" stroke="rgba(19,21,18,.045)" stroke-width="1" stroke-dasharray="3 6"/>
+      <text x="472" y="250" fill="#8a9a97" class="mono" font-size="10" letter-spacing="3" text-anchor="middle" transform="rotate(-90 472 250)">ATLANTIC OCEAN</text>
+      <text x="352" y="345" fill="#93a3a0" class="mono" font-size="8" letter-spacing="1">BISCAYNE BAY</text>
+      <text x="120" y="410" fill="#9A9E97" class="mono" font-size="9" letter-spacing="1">HOMESTEAD</text>
+      <text x="336" y="170" fill="#9A9E97" class="mono" font-size="9" letter-spacing="1">MIAMI</text>
+      <text x="270" y="112" fill="#9A9E97" class="mono" font-size="9" letter-spacing="1">HIALEAH</text>
+      <g id="pinLayer"></g>
+    </svg></div>
+    <div class="map-side">
+      <div class="slider-card">
+        <label>Surface top deals — score &ge; <span id="thVal" class="mono" style="color:#E8501F">55</span></label>
+        <input id="thresh" type="range" min="40" max="90" value="55">
+        <div class="legend"><span><i style="background:#E8501F"></i>80–100 hot</span><span><i style="background:#E8854A"></i>65–79 warm</span><span><i style="background:#9A9E97"></i>&lt;65 watch</span></div>
+      </div>
+      <div class="pin-panel" id="pinPanel"><div class="pin-hint">Click a pin on the map to see its score breakdown — owner, hold length, age, and title signals, each adding points.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="underwrite">
+  <div class="sechead">
+    <div><span class="step-tag">03 — The underwriter</span><h2>Would this flip <span>make money?</span></h2></div>
+    <span class="label label--mute">Drag the inputs · grade updates live</span>
+  </div>
+  <p class="lead">This is the exact model in the portal: a 65%-of-ARV buy, hard money at 13.5% + 2 points, a 7-month hold, 8% sale costs, and a 10% reno contingency. Load a sample deal, then drag the purchase price and watch the buy grade flip.</p>
+  <div class="uw">
+    <div class="uw-inputs">
+      <div class="uw-presets" id="uwPresets"></div>
+      <div class="uw-field"><label>After-Repair Value (ARV) <b id="arvL">$385,000</b></label><input id="arv" type="range" min="150000" max="900000" step="5000" value="385000"></div>
+      <div class="uw-field"><label>Repair estimate <b id="repL">$62,000</b></label><input id="rep" type="range" min="10000" max="250000" step="1000" value="62000"></div>
+      <div class="uw-field"><label>Your purchase price <b id="buyL">$188,250</b></label><input id="buy" type="range" min="100000" max="800000" step="1000" value="188250"><div class="mono" style="font-size:10px;color:#9A9E97;margin-top:6px">Max Allowable Offer (65% of ARV &minus; repair): <span id="maoL" style="color:#E8501F">—</span></div></div>
+    </div>
+    <div class="uw-out">
+      <div class="uw-grade"><div class="grade-badge" id="gBadge">B</div><div><div class="gt" id="gTitle">Solid</div><div class="gw" id="gWhy">—</div></div></div>
+      <div class="uw-lines">
+        <div class="uw-line"><div class="k">Net profit</div><div class="v" id="oProfit">—</div></div>
+        <div class="uw-line"><div class="k">Margin (% of ARV)</div><div class="v" id="oMargin">—</div></div>
+        <div class="uw-line"><div class="k">Cash-on-cash ROI</div><div class="v" id="oRoi">—</div></div>
+        <div class="uw-line"><div class="k">All-in cost</div><div class="v" id="oCost">—</div></div>
+      </div>
+      <div class="uw-note">Sample figures for illustration. In the portal, ARV is comped from real recorded sales nearby and repair is estimated from the property's condition and square footage — then Ryan walks it before any offer.</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="dossier">
+  <div class="sechead">
+    <div><span class="step-tag">04 — The dossier</span><h2>One deal, <span>fully worked.</span></h2></div>
+    <span class="label label--mute">Sample · owner details scrubbed</span>
+  </div>
+  <p class="lead">When a deal scores well, the engine builds a dossier: who owns it, why they might sell, the distress on record, the numbers, and the first move. Here's a sample — the contact and outreach layer unlocks with a trial.</p>
+  <div class="dossier">
+    <div class="dossier-main">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div><div style="font:800 22px 'Schibsted Grotesk',sans-serif">1180 SW 8th Terrace</div><div class="mono" style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#9A9E97;margin-top:4px">Cutler Bay · 33157 · 3bd/2ba · 1,612 sqft · built 1962</div></div>
+        <div style="text-align:right"><div style="font:800 34px 'Schibsted Grotesk',sans-serif;color:#E8501F;line-height:1">88</div><div class="mono" style="font-size:8px;letter-spacing:.12em;color:#6B6F6A">DEAL SCORE</div></div>
+      </div>
+      <div class="chips"><span class="chip">Estate on title</span><span class="chip">Out-of-state heir (GA)</span><span class="chip">Owned 31 years</span><span class="chip">No homestead</span><span class="chip mut">2 code liens</span></div>
+      <div class="d-row"><span>County market value</span><b>$392,000</b></div>
+      <div class="d-row"><span>ARV — comped from 6 nearby sales</span><b>$438,000</b></div>
+      <div class="d-row"><span>Repair estimate (heavy)</span><b>$74,000</b></div>
+      <div class="d-row"><span>Max allowable offer (65% ARV &minus; repair)</span><b>$210,700</b></div>
+      <div class="d-row"><span>Projected net profit</span><b style="color:#4a9a6b">&asymp; $58,400</b></div>
+      <div class="intel"><b>Field intel:</b> Two lien searches ('22, '24) suggest two sale attempts that stalled — a motivated heir. Roof permitted 2021 (saves ~$18K on repair). Wholesale exit is the clean play at this basis.</div>
+    </div>
+    <div class="dossier-side">
+      <span class="lk mono">Owner &amp; outreach</span>
+      <div class="locked" aria-hidden="true">
+        <div class="d-row" style="border:0"><span>Owner of record</span><b>Estate of J. R——</b></div>
+        <div class="d-row"><span>Mailing address</span><b>Atlanta, GA 303—</b></div>
+        <div class="d-row"><span>Skip-traced phone</span><b>(770) ———-————</b></div>
+        <div class="d-row"><span>Heir / executor</span><b>———————</b></div>
+        <div class="intel" style="margin-top:12px">Priority action: skip-trace the estate beneficiaries; certified letter to the GA executor leading with a cash, quick-close offer.</div>
+      </div>
+      <div class="lock-over">
+        <span class="lk">Locked — trial required</span>
+        <div style="font:700 16px 'Schibsted Grotesk',sans-serif;max-width:220px">Owner contact, skip-trace &amp; outreach unlock with a free trial</div>
+        <a class="btn btn--primary" href="firm.html#contact">Unlock with free trial <span class="arrow">&rarr;</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <span class="kicker">Start free — no card</span>
+  <h2>This is one deal. The engine surfaces them <span>every night.</span></h2>
+  <p>Full South Florida map and scores, three dossier credits, and the live underwriter — free for 7 days, no credit card required.</p>
+  <div class="cta-cta">
+    <a class="btn btn--primary" href="firm.html#contact">Start free trial <span class="arrow">&rarr;</span></a>
+    <a class="btn btn--ghost" style="color:#F1F1EC;border-color:rgba(241,241,236,.35)" href="index.html#pricing">See pricing <span class="arrow">&rarr;</span></a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div>
+    <span class="label">Maco Equity Partners — Underwritten with rigor · Executed with discipline</span><br>
+    <span class="label label--mute">Demo uses sample data · Not investment advice · ARV comp-based · © 2026</span>
+  </div>
+  <div class="flinks">
+    <a href="index.html">Deal Analyzer</a>
+    <a href="firm.html">The Firm</a>
+    <a href="research.html">Research</a>
+    <a href="portal.html">Log in</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="disclosures.html">Disclosures</a>
+  </div>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var fmtK=function(n){var a=Math.abs(n);if(a>=1000000)return '$'+(n/1000000).toFixed(2)+'M';if(a>=1000)return '$'+Math.round(n/1000)+'K';return '$'+Math.round(n);};
+  var fmtD=function(n){return '$'+Math.round(n).toLocaleString('en-US');};
+
+  var termLines=[
+    {t:"$ maco-engine --nightly-run",d:0},
+    {t:"reading Miami-Dade county roll ...",d:1,ok:1},
+    {t:"  parcels scanned ........ 8,412",d:1},
+    {t:"  single-family, non-homestead, in flip band",d:0},
+    {t:"scanning title & clerk records ...",d:1,ok:1},
+    {t:"  estates / probate ...... 214",d:0},
+    {t:"  tax & code liens ....... 173",d:0},
+    {t:"  code violations ........ 402",d:0},
+    {t:"  long-term holds (20y+) . 1,905",d:0},
+    {t:"scoring distress + motivation ...",d:1,ok:1},
+    {t:"  properties scored ...... 2,387",d:0},
+    {t:"ranking tonight's surface ...",d:1,ok:1},
+    {t:"done. top deals ready.",d:0,ok:1}
+  ];
+  var tb=document.getElementById('termBody'),li=0;
+  function typeLine(){
+    if(li>=termLines.length){setTimeout(function(){tb.innerHTML='';li=0;typeLine();},4200);return;}
+    var L=termLines[li++],el=document.createElement('div');el.className='term-line';
+    var txt=L.t.replace(/(\d[\d,]*)/g,'<b>$1</b>');
+    el.innerHTML=(L.ok?'<span class="ok">&#10003;</span> ':'')+txt;
+    tb.appendChild(el);tb.scrollTop=tb.scrollHeight;
+    setTimeout(typeLine, L.d?700:260);
+  }
+  var signalData=[
+    {n:214,l:'Estates / probate',d:'Owner deceased — heirs control the sale.'},
+    {n:173,l:'Tax & code liens',d:'Money owed against the property.'},
+    {n:402,l:'Code violations',d:'Deferred maintenance on the record.'},
+    {n:1905,l:'Long-term holds',d:'Owned 20+ years — deep equity.'},
+    {n:1240,l:'Out-of-state owners',d:'Landlord lives far from the asset.'},
+    {n:2387,l:'Scored tonight',d:'Ranked, underwritten, ready.'}
+  ];
+  var sg=document.getElementById('signals');
+  signalData.forEach(function(s){var d=document.createElement('div');d.className='sig';d.innerHTML='<b data-target="'+s.n+'">0</b><div class="n">'+s.l+'</div><div class="d">'+s.d+'</div>';sg.appendChild(d);});
+  function countUp(el){var t=+el.dataset.target,st=null;function step(ts){if(!st)st=ts;var p=Math.min((ts-st)/1100,1);el.textContent=Math.round(t*p).toLocaleString('en-US');if(p<1)requestAnimationFrame(step);else el.textContent=t.toLocaleString('en-US');}requestAnimationFrame(step);}
+  typeLine();document.querySelectorAll('.sig b').forEach(countUp);
+
+  var PROPS=[
+    {a:"334 NW 12 St",h:"Homestead",lat:25.472,lng:-80.472,oos:"GA",held:34,yb:1959,title:"estate",hs:false},
+    {a:"1180 SW 8 Ter",h:"Cutler Bay",lat:25.579,lng:-80.348,oos:"GA",held:31,yb:1962,title:"estate",hs:false},
+    {a:"9930 SW 73 St",h:"Kendall",lat:25.686,lng:-80.352,oos:null,held:27,yb:1972,title:"trust",hs:false},
+    {a:"12685 SW 82 Ave",h:"Pinecrest",lat:25.668,lng:-80.312,oos:"MN",held:32,yb:1968,title:"none",hs:false},
+    {a:"6420 SW 78 St",h:"South Miami",lat:25.706,lng:-80.293,oos:null,held:18,yb:1980,title:"llc",hs:false},
+    {a:"820 SW 9 Ave",h:"Little Havana · Miami",lat:25.767,lng:-80.216,oos:"NY",held:29,yb:1951,title:"estate",hs:false},
+    {a:"455 E 41 St",h:"Hialeah",lat:25.858,lng:-80.287,oos:null,held:24,yb:1965,title:"trust",hs:false},
+    {a:"10240 NW 52 Ter",h:"Doral",lat:25.818,lng:-80.352,oos:"CA",held:14,yb:1994,title:"llc",hs:false},
+    {a:"18715 NW 27 Ave",h:"Miami Gardens",lat:25.941,lng:-80.243,oos:null,held:26,yb:1969,title:"none",hs:false},
+    {a:"2130 NE 165 St",h:"North Miami Beach",lat:25.929,lng:-80.161,oos:"IL",held:22,yb:1961,title:"trust",hs:false},
+    {a:"640 NE 210 St",h:"Golden Glades (Broward line)",lat:25.962,lng:-80.196,oos:"NJ",held:20,yb:1972,title:"none",hs:false}
+  ];
+  function scoreOf(p){
+    var s=0,why=[];
+    if(p.oos){s+=22;why.push([22,'Out-of-state owner ('+p.oos+')']);}
+    var h=p.held||0;
+    if(h>=30){s+=18;why.push([18,'Owned 30+ years (deep equity)']);}
+    else if(h>=20){s+=14;why.push([14,'Owned 20+ years']);}
+    else if(h>=15){s+=10;why.push([10,'Owned 15+ years']);}
+    else if(h>=10){s+=6;why.push([6,'Owned 10+ years']);}
+    var age=p.yb?(2026-p.yb):0;
+    if(age>=55){s+=14;why.push([14,'Home 55+ yrs old']);}
+    else if(age>=45){s+=10;why.push([10,'Home 45+ yrs old']);}
+    else if(age>=35){s+=6;why.push([6,'Home 35+ yrs old']);}
+    else if(age>=25){s+=3;why.push([3,'Home 25+ yrs old']);}
+    if(p.title==='estate'){s+=20;why.push([20,'Estate on title — heirs control it']);}
+    else if(p.title==='trust'){s+=12;why.push([12,'Trust owner']);}
+    else if(p.title==='llc'){s+=12;why.push([12,'LLC / entity owner']);}
+    if(!p.hs){s+=8;why.push([8,'No homestead exemption']);}
+    return {s:Math.min(99,s+18),why:why};
+  }
+  PROPS.forEach(function(p){var r=scoreOf(p);p.score=r.s;p.why=r.why;});
+  function pinColor(s){return s>=80?'#E8501F':(s>=65?'#E8854A':'#9A9E97');}
+
+  function proj(lat,lng){return [30+(lng+80.58)/0.52*460, 30+(26.00-lat)/0.60*400];}
+  var NS='http://www.w3.org/2000/svg',pinLayer=document.getElementById('pinLayer'),svgPins=[];
+  PROPS.forEach(function(p,i){
+    var xy=proj(p.lat,p.lng);
+    var g=document.createElementNS(NS,'g');g.setAttribute('class','pin');g.setAttribute('transform','translate('+xy[0]+','+xy[1]+')');g.setAttribute('data-s',p.score);
+    if(p.score>=80){var h=document.createElementNS(NS,'circle');h.setAttribute('r',20);h.setAttribute('fill',pinColor(p.score));h.setAttribute('opacity','.16');g.appendChild(h);}
+    var c=document.createElementNS(NS,'circle');c.setAttribute('r',13);c.setAttribute('fill',pinColor(p.score));c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','2');g.appendChild(c);
+    var t=document.createElementNS(NS,'text');t.setAttribute('text-anchor','middle');t.setAttribute('dy','4');t.setAttribute('fill','#fff');t.setAttribute('font-family',"'Schibsted Grotesk',sans-serif");t.setAttribute('font-weight','800');t.setAttribute('font-size','11');t.textContent=p.score;g.appendChild(t);
+    g.addEventListener('click',function(){showPin(i);});
+    pinLayer.appendChild(g);svgPins.push(g);
+  });
+  function showPin(i){
+    var p=PROPS[i];
+    var rows=p.why.map(function(w){return '<div class="bd-row"><span>'+w[1]+'</span><b>+'+w[0]+'</b></div>';}).join('');
+    document.getElementById('pinPanel').innerHTML='<div class="addr">'+p.a+'</div><div class="hood">'+p.h+'</div><div class="score-ring"><div class="num">'+p.score+'</div><div><div class="cap">Deal score</div><div style="font:400 12px sans-serif;color:#6B6F6A">'+(p.score>=80?'Hot — surface now':(p.score>=65?'Warm — worth a look':'Watch'))+'</div></div></div><div class="label label--mute" style="margin:4px 0 2px">Why it scored</div>'+rows;
+  }
+  document.getElementById('thresh').addEventListener('input',function(){var th=+this.value;document.getElementById('thVal').textContent=th;svgPins.forEach(function(g){g.style.opacity=(+g.getAttribute('data-s')>=th)?'1':'.12';});});
+  showPin(1);
+
+  var HM_RATE=0.135,HM_PTS=0.02,HOLD=7;
+  function netProfit(arv,repair,buy){if(!arv)return null;var loan=buy*0.70;return arv-buy-repair-repair*0.10-buy*0.03-arv*0.08-loan*HM_RATE/12*HOLD-loan*HM_PTS-550*HOLD-350*HOLD-buy*0.018/12*HOLD;}
+  function cashIn(arv,repair,buy){var loan=buy*0.70;return (buy-loan)+repair*1.10+buy*0.03+loan*HM_RATE/12*HOLD+loan*HM_PTS+550*HOLD+350*HOLD+buy*0.018/12*HOLD;}
+  function grade(arv,repair,buy){
+    var p=netProfit(arv,repair,buy),margin=p/arv*100;
+    if(p<=0||margin<4)return {g:'D',t:'Pass',c:'#e0664a',w:'Too thin at this basis — only '+Math.round(margin)+'% of ARV. Steal it well below, or pass.'};
+    if(margin<7.5)return {g:'C',t:'Thin',c:'#e8a14a',w:'Slim spread (~'+Math.round(margin)+'% of ARV) — needs a real discount to work.'};
+    if(margin<11)return {g:'B',t:'Solid',c:'#E8501F',w:'Healthy flip spread (~'+Math.round(margin)+'% of ARV). A real deal.'};
+    return {g:'A',t:'Strong',c:'#4a9a6b',w:'Fat spread (~'+Math.round(margin)+'% of ARV). Move on it.'};
+  }
+  var PRESETS=[{n:'Estate · Homestead',arv:385000,rep:62000},{n:'OOS trust · Cutler Bay',arv:465000,rep:78000},{n:'LLC-owned · Hialeah',arv:410000,rep:95000}];
+  var pc=document.getElementById('uwPresets');
+  PRESETS.forEach(function(pr,i){var b=document.createElement('div');b.className='uw-preset'+(i===0?' active':'');b.textContent=pr.n;b.onclick=function(){document.querySelectorAll('.uw-preset').forEach(function(x){x.classList.remove('active');});b.classList.add('active');document.getElementById('arv').value=pr.arv;document.getElementById('rep').value=pr.rep;document.getElementById('buy').value=Math.round((pr.arv*0.65-pr.rep)/1000)*1000;renderUW();};pc.appendChild(b);});
+  function renderUW(){
+    var arv=+document.getElementById('arv').value,rep=+document.getElementById('rep').value,buy=+document.getElementById('buy').value,mao=arv*0.65-rep;
+    document.getElementById('arvL').textContent=fmtD(arv);
+    document.getElementById('repL').textContent=fmtD(rep);
+    document.getElementById('buyL').textContent=fmtD(buy);
+    document.getElementById('maoL').textContent=fmtD(mao);
+    var p=netProfit(arv,rep,buy),margin=p/arv*100,roi=p/cashIn(arv,rep,buy)*100,g=grade(arv,rep,buy);
+    document.getElementById('oProfit').textContent=fmtK(p);
+    document.getElementById('oProfit').style.color=p>0?'#F1F1EC':'#e0664a';
+    document.getElementById('oMargin').textContent=Math.round(margin)+'%';
+    document.getElementById('oRoi').textContent=(roi>0?Math.round(roi):0)+'%';
+    document.getElementById('oCost').textContent=fmtK(buy+rep);
+    var gb=document.getElementById('gBadge');gb.textContent=g.g;gb.style.background=g.c;gb.style.color=(g.g==='C'?'#131512':'#fff');
+    document.getElementById('gTitle').textContent=g.t;document.getElementById('gTitle').style.color=g.c;
+    document.getElementById('gWhy').textContent=g.w;
+  }
+  ['arv','rep','buy'].forEach(function(id){document.getElementById(id).addEventListener('input',renderUW);});
+  renderUW();
+})();
+</script>
+</body>
+</html>
