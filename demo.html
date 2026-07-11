@@ -19,6 +19,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -71,8 +73,9 @@ img{display:block}
 .sig .n{font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9A9E97;margin-top:2px}
 .sig .d{font:400 11px/1.45 'Schibsted Grotesk',sans-serif;color:#6B6F6A;margin-top:8px}
 .map-grid{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;margin-top:26px}
-#demoMap{height:520px;border-radius:6px;border:1px solid rgba(19,21,18,.18);background:#c3d0ce;overflow:hidden}
-#demoMap .pin{cursor:pointer;transition:opacity .2s}
+#demoMap{height:520px;border-radius:6px;border:1px solid rgba(19,21,18,.18);background:#dfe3e0}
+.pinTip{background:transparent!important;border:0!important;box-shadow:none!important;color:#fff!important;font:800 11px 'Schibsted Grotesk',sans-serif!important;padding:0!important}
+.pinTip::before{display:none!important}
 .map-side{display:flex;flex-direction:column;gap:14px}
 .slider-card{background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:4px;padding:16px 18px}
 .slider-card label{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6B6F6A;display:block;margin-bottom:10px}
@@ -192,20 +195,7 @@ img{display:block}
   </div>
   <p class="lead">Every signal adds points. The result is a 0–100 deal score, plotted across South Florida from Homestead to the Broward line. Click a pin to see exactly why it scored — then use the slider to surface only the strongest.</p>
   <div class="map-grid">
-    <div id="demoMap"><svg viewBox="0 0 520 460" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" style="display:block">
-      <rect x="0" y="0" width="520" height="460" fill="#c3d0ce"/>
-      <path d="M0,30 L400,30 C392,90 385,140 378,185 C360,240 320,290 290,320 C275,350 262,378 255,400 C250,420 245,435 240,460 L0,460 Z" fill="#E7E4D9"/>
-      <path d="M415,120 L431,123 L426,252 L411,248 C409,200 412,155 415,120 Z" fill="#E7E4D9"/>
-      <path d="M400,30 C392,90 385,140 378,185 C360,240 320,290 290,320 C275,350 262,378 255,400 C250,420 245,435 240,460" fill="none" stroke="#b3bebb" stroke-width="1.5"/>
-      <line x1="150" y1="30" x2="150" y2="460" stroke="rgba(19,21,18,.045)" stroke-width="1" stroke-dasharray="3 6"/>
-      <line x1="300" y1="30" x2="300" y2="460" stroke="rgba(19,21,18,.045)" stroke-width="1" stroke-dasharray="3 6"/>
-      <text x="472" y="250" fill="#8a9a97" class="mono" font-size="10" letter-spacing="3" text-anchor="middle" transform="rotate(-90 472 250)">ATLANTIC OCEAN</text>
-      <text x="352" y="345" fill="#93a3a0" class="mono" font-size="8" letter-spacing="1">BISCAYNE BAY</text>
-      <text x="120" y="410" fill="#9A9E97" class="mono" font-size="9" letter-spacing="1">HOMESTEAD</text>
-      <text x="336" y="170" fill="#9A9E97" class="mono" font-size="9" letter-spacing="1">MIAMI</text>
-      <text x="270" y="112" fill="#9A9E97" class="mono" font-size="9" letter-spacing="1">HIALEAH</text>
-      <g id="pinLayer"></g>
-    </svg></div>
+    <div id="demoMap"></div>
     <div class="map-side">
       <div class="slider-card">
         <label>Surface top deals — score &ge; <span id="thVal" class="mono" style="color:#E8501F">55</span></label>
@@ -385,24 +375,31 @@ img{display:block}
   PROPS.forEach(function(p){var r=scoreOf(p);p.score=r.s;p.why=r.why;});
   function pinColor(s){return s>=80?'#E8501F':(s>=65?'#E8854A':'#9A9E97');}
 
-  function proj(lat,lng){return [30+(lng+80.58)/0.52*460, 30+(26.00-lat)/0.60*400];}
-  var NS='http://www.w3.org/2000/svg',pinLayer=document.getElementById('pinLayer'),svgPins=[];
-  PROPS.forEach(function(p,i){
-    var xy=proj(p.lat,p.lng);
-    var g=document.createElementNS(NS,'g');g.setAttribute('class','pin');g.setAttribute('transform','translate('+xy[0]+','+xy[1]+')');g.setAttribute('data-s',p.score);
-    if(p.score>=80){var h=document.createElementNS(NS,'circle');h.setAttribute('r',20);h.setAttribute('fill',pinColor(p.score));h.setAttribute('opacity','.16');g.appendChild(h);}
-    var c=document.createElementNS(NS,'circle');c.setAttribute('r',13);c.setAttribute('fill',pinColor(p.score));c.setAttribute('stroke','#fff');c.setAttribute('stroke-width','2');g.appendChild(c);
-    var t=document.createElementNS(NS,'text');t.setAttribute('text-anchor','middle');t.setAttribute('dy','4');t.setAttribute('fill','#fff');t.setAttribute('font-family',"'Schibsted Grotesk',sans-serif");t.setAttribute('font-weight','800');t.setAttribute('font-size','11');t.textContent=p.score;g.appendChild(t);
-    g.addEventListener('click',function(){showPin(i);});
-    pinLayer.appendChild(g);svgPins.push(g);
-  });
+  var map,markers=[];
+  function initMap(){
+    if(typeof L==='undefined'){setTimeout(initMap,80);return;}
+    map=L.map('demoMap',{scrollWheelZoom:false}).setView([25.66,-80.30],10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(map);
+    PROPS.forEach(function(p,i){
+      var mk=L.circleMarker([p.lat,p.lng],{radius:13,color:'#fff',weight:2,fillColor:pinColor(p.score),fillOpacity:.95});
+      mk.bindTooltip(String(p.score),{permanent:true,direction:'center',className:'pinTip'});
+      mk.on('click',function(){showPin(i);});
+      mk.addTo(map);markers.push(mk);
+    });
+    applyThresh();showPin(1);
+  }
+  function applyThresh(){
+    var th=+document.getElementById('thresh').value;
+    document.getElementById('thVal').textContent=th;
+    PROPS.forEach(function(p,i){var m=markers[i];if(!m)return;if(p.score>=th){if(!map.hasLayer(m))m.addTo(map);}else{if(map.hasLayer(m))map.removeLayer(m);}});
+  }
   function showPin(i){
     var p=PROPS[i];
     var rows=p.why.map(function(w){return '<div class="bd-row"><span>'+w[1]+'</span><b>+'+w[0]+'</b></div>';}).join('');
     document.getElementById('pinPanel').innerHTML='<div class="addr">'+p.a+'</div><div class="hood">'+p.h+'</div><div class="score-ring"><div class="num">'+p.score+'</div><div><div class="cap">Deal score</div><div style="font:400 12px sans-serif;color:#6B6F6A">'+(p.score>=80?'Hot — surface now':(p.score>=65?'Warm — worth a look':'Watch'))+'</div></div></div><div class="label label--mute" style="margin:4px 0 2px">Why it scored</div>'+rows;
   }
-  document.getElementById('thresh').addEventListener('input',function(){var th=+this.value;document.getElementById('thVal').textContent=th;svgPins.forEach(function(g){g.style.opacity=(+g.getAttribute('data-s')>=th)?'1':'.12';});});
-  showPin(1);
+  document.getElementById('thresh').addEventListener('input',applyThresh);
+  initMap();
 
   var HM_RATE=0.135,HM_PTS=0.02,HOLD=7;
   function netProfit(arv,repair,buy){if(!arv)return null;var loan=buy*0.70;return arv-buy-repair-repair*0.10-buy*0.03-arv*0.08-loan*HM_RATE/12*HOLD-loan*HM_PTS-550*HOLD-350*HOLD-buy*0.018/12*HOLD;}
