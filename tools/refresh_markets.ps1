@@ -34,27 +34,59 @@
 #     so Polk must be refreshed from a real Chrome session.
 #
 # ASCII ONLY - Windows PowerShell 5.1 mis-parses non-ASCII in a no-BOM .ps1.
+#
+# !!! CONTAINER TRAP (root cause of the 2026-07-11 "silent failure" misdiagnosis):
+# Claude desktop sessions run inside an MSIX app container that VIRTUALIZES
+# %LOCALAPPDATA%. A shell inside Claude reads/writes a private copy at
+#   AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Local\Maco\
+# while the 7am scheduled task (outside the container) uses the REAL
+#   C:\Users\rmaca\AppData\Local\Maco\
+# The two histories DIVERGE: from a Claude shell the task looks like it never
+# logs, and manual runs from a Claude shell update the WRONG state file.
+#   - To READ the real log/state from a Claude session: schtasks /run /tn
+#     "MacoLogPeek" (runs tools\peek_real_log.bat outside the container, copies
+#     both files to tools\real_refresh_*.txt).
+#   - To RUN a refresh manually from a Claude session: schtasks /run /tn
+#     "Maco Market Refresh" - NEVER run this .ps1 directly from a Claude shell.
 # ----------------------------------------------------------------------------
 param(
   [Parameter(Mandatory=$true)]
-  [ValidateSet('broward','lee','collier','clermont','auto')]
+  [ValidateSet('miami','broward','lee','collier','clermont','auto')]
   [string]$Market
 )
 $ErrorActionPreference = 'Continue'
 $repo = 'C:\Users\rmaca\OneDrive\Documents\GitHub\macoequitypartners'
-$logDir = Join-Path $env:LOCALAPPDATA 'Maco'
+# Hardcoded, NOT $env:LOCALAPPDATA - no scheduled-task run ever landed a log line
+# while interactive runs always did (checked 2026-07-11: 224 log lines, zero from
+# any 7am run, yet the 7/10 7am run demonstrably committed lake-leads.js). Until
+# the vanishing-write cause is confirmed, every write here must be env-independent
+# and every failure must land SOMEWHERE we can read.
+$logDir = 'C:\Users\rmaca\AppData\Local\Maco'
 if (-not (Test-Path $logDir)) { New-Item -ItemType Directory -Path $logDir -Force | Out-Null }
 $log = Join-Path $logDir 'refresh.log'
+$fallbackLog = Join-Path $repo 'tools\refresh_task_debug.log'
 function Say($m) {
   $line = "{0}  [{1}] {2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Market, $m
-  Add-Content -Path $log -Value $line
+  try { Add-Content -Path $log -Value $line -ErrorAction Stop }
+  catch { try { Add-Content -Path $fallbackLog -Value ("MAINLOG-FAIL {0} :: {1}" -f $_.Exception.Message, $line) } catch {} }
   Write-Output $line
 }
+# Boot breadcrumb: records the run context FIRST, so a run that dies early still
+# leaves evidence of where it ran and what environment it saw.
+$bootLine = "{0}  [boot] market={1} user={2} localappdata={3} cwd={4} ps={5}" -f `
+  (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Market, $env:USERNAME, $env:LOCALAPPDATA, (Get-Location).Path, $PSVersionTable.PSVersion
+try { Add-Content -Path $log -Value $bootLine -ErrorAction Stop }
+catch { try { Add-Content -Path $fallbackLog -Value ("BOOT-FALLBACK {0} :: {1}" -f $_.Exception.Message, $bootLine) } catch {} }
 
 # --- refresh state -----------------------------------------------------------
 # One line per market: name|lastSuccess|lastAttempt. Plain text on purpose -
 # PS 5.1's ConvertFrom-Json has no -AsHashtable, so JSON here is more trouble
 # than it is worth.
+# NOTE: 'miami' is EXPLICIT-ONLY (refresh_miami.bat / -Market miami) until the first
+# county-wide bake is verified. It must NOT join the daily auto rotation yet: as a
+# never-attempted market it would sort stalest and win the pick EVERY morning, and
+# a whole-county FDOR pull (topn 3000) is a much bigger bite of the rate budget
+# than the 600-row county farms this rotation was tuned for.
 $ALL_MARKETS = @('broward','lee','collier','clermont')
 $stateFile = Join-Path $logDir 'refresh_state.txt'
 $today = Get-Date -Format 'yyyy-MM-dd'
@@ -71,7 +103,8 @@ function Read-State {
 }
 function Save-State($h) {
   $lines = foreach ($k in ($h.Keys | Sort-Object)) { '{0}|{1}|{2}' -f $k, $h[$k].success, $h[$k].attempt }
-  Set-Content -Path $stateFile -Value $lines -Encoding ASCII
+  try { Set-Content -Path $stateFile -Value $lines -Encoding ASCII -ErrorAction Stop }
+  catch { try { Add-Content -Path $fallbackLog -Value ("STATE-FAIL {0} :: {1}" -f $_.Exception.Message, ($lines -join ' / ')) } catch {} }
 }
 function Set-MarketState($m, $succeeded) {
   $h = Read-State

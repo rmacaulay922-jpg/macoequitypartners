@@ -50,3 +50,10 @@ CLAUDE_CODE_PROMPT.md
 push_update.bat
 *.bak
 *.bak-*
+
+# Refresh-task local artifacts (snapshots of the real log/state + debug fallback)
+tools/real_refresh_log.txt
+tools/real_refresh_state.txt
+tools/refresh_task_debug.log
+tools/steer_state_once.bat
+tools/__pycache__/
