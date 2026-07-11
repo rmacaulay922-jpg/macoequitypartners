@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Off-Market Deal Analyzer · Maco Equity Partners</title>
+<meta name="robots" content="noindex, nofollow">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -668,6 +669,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 <script src="broward-leads.js?v=1"></script>
 <script src="lee-leads.js?v=1"></script>
 <script src="collier-leads.js?v=1"></script>
+<script src="miami-leads.js?v=1"></script>
 <script src="mia-homestead.js?v=1"></script>
 <script src="mia-homestead-city.js?v=1"></script>
 <script src="crime-bands.js?v=1"></script>
@@ -682,8 +684,8 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <img src="/logo-mark-light.png" alt="Maco Equity Partners">
       <div class="login-wordmark">Maco <span class="accent">·</span> Equity Partners</div>
     </div>
-    <div class="login-eyebrow">Investor Access</div>
-    <h1 class="login-heading">Off-Market Deal <em>Intelligence</em></h1>
+    <div class="login-eyebrow">Member Access</div>
+    <h1 class="login-heading">Off-Market Deal <em>Analyzer</em></h1>
     <div class="login-input-wrap">
       <label class="login-label" for="pwInput">Access Code</label>
       <input type="password" id="pwInput" placeholder="Enter your access code" autocomplete="off">
@@ -692,6 +694,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </button>
     <div id="loginErr"></div>
+    <div style="margin-top:16px;font-size:11.5px;color:rgba(244,241,234,.55)">No code yet? <a href="trial.html" style="color:#27A268;text-decoration:underline">Start a free 7-day trial</a> — no card required.</div>
   </div>
 </div>
 
@@ -707,7 +710,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <div style="display:flex;align-items:center;gap:1.5rem">
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <select id="marketSel" class="filter-sel" onchange="setMarket(this.value)" title="Switch the market this portal shows — the choice is remembered" style="font-weight:700;letter-spacing:.03em;">
-        <option value="miami">Market: Miami-Dade</option>
+        <option value="miami">Market: Miami-Dade · Kendall/Pinecrest farm</option>
         <option value="broward">Market: Broward</option>
         <option value="lee">Market: Lee · Fort Myers</option>
         <option value="collier">Market: Collier · Naples</option>
@@ -1556,32 +1559,75 @@ var STAT_ICON_NAMES=['building','gauge','home','dollar','bars','sales'];
   function doLogin(){
     var pw=document.getElementById('pwInput').value.trim();
     var err=document.getElementById('loginErr');
-    var who=ACCESS_CODES[pw];
-    if(who){
+    var entry=ACCESS_CODES[pw];
+    function fail(msg){
+      err.textContent=msg;
+      var card=document.getElementById('loginCard');
+      card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+    }
+    if(entry){
+      var who=(typeof entry==='string')?entry:entry.who;
+      var kind=(typeof entry==='string')?'investor':(entry.kind||'investor');
+      if(kind==='trial'){
+        // 7-day clock starts at FIRST login on this device.
+        var tk='mep_trial_'+pw, t0=null;
+        try{t0=localStorage.getItem(tk);}catch(e){}
+        if(!t0){t0=String(Date.now());try{localStorage.setItem(tk,t0);}catch(e){}}
+        if(Date.now()-parseInt(t0,10)>TRIAL_MS){
+          try{_beacon('trial-expired',who+' ('+pw+')');}catch(e){}
+          fail('Trial expired — keep it for $40/mo at macoequitypartners.com/trial.html');
+          return;
+        }
+      }
       sessionStorage.setItem('mep_auth','1');
-      try{localStorage.setItem('mep_who',who);localStorage.setItem('mep_who_code',pw);}catch(e){}
+      try{localStorage.setItem('mep_who',who);localStorage.setItem('mep_who_code',pw);localStorage.setItem('mep_kind',kind);}catch(e){}
+      // Paying subscribers and trialists bought the engine, not the brief:
+      // land them in the operator cockpit (beacons stay ON — only mep_op_unlocked silences).
+      if(kind==='subscriber'||kind==='trial'){
+        try{localStorage.setItem('mep_role','operator');}catch(e){}
+      }
       try{_beacon('login',who+' ('+pw+')');}catch(e){}
       document.getElementById('loginGate').style.display='none';
       document.getElementById('app').style.display='flex';
       initApp();
     }else{
-      err.textContent='Invalid access code';
-      var card=document.getElementById('loginCard');
-      card.classList.remove('shake');void card.offsetWidth;card.classList.add('shake');
+      fail('Invalid access code');
     }
   }
   document.getElementById('loginBtn').addEventListener('click',doLogin);
   document.getElementById('pwInput').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()});
 })();
 
-// ── ACCESS CODES — each investor gets their own code so logins are attributable.
-// Miami123 stays as the general/legacy code. Ask Claude to add/rename codes per investor.
+// ── ACCESS CODES — each code carries {who, kind} so logins are attributable AND routed.
+// kinds: 'investor'   = capital partner -> lands in the Investor Brief (default role)
+//        'subscriber' = paid Deal Analyzer ($40/$50) -> operator cockpit, beacons stay ON
+//        'trial'      = Deal Analyzer trial -> operator cockpit, expires 7 days after
+//                       FIRST use on that device (client-side; keeps honest people honest)
+// Miami123 stays as the general/legacy code. Ask Claude to add/rename/retire codes.
+// Issue trial codes one per person (DA-TRIAL-xx) so expiry + attribution stay per-user.
 var ACCESS_CODES={
-  'Miami123':'General',
-  'RYAN-01':'Ryan (Principal)',
-  'MACO-01':'Investor 01','MACO-02':'Investor 02','MACO-03':'Investor 03',
-  'MACO-04':'Investor 04','MACO-05':'Investor 05'
+  'Miami123':{who:'General',kind:'investor'},
+  'RYAN-01':{who:'Ryan (Principal)',kind:'investor'},
+  'MACO-01':{who:'Investor 01',kind:'investor'},'MACO-02':{who:'Investor 02',kind:'investor'},
+  'MACO-03':{who:'Investor 03',kind:'investor'},'MACO-04':{who:'Investor 04',kind:'investor'},
+  'MACO-05':{who:'Investor 05',kind:'investor'},
+  'DA-SUB-01':{who:'Subscriber 01',kind:'subscriber'},'DA-SUB-02':{who:'Subscriber 02',kind:'subscriber'},
+  'DA-SUB-03':{who:'Subscriber 03',kind:'subscriber'},'DA-SUB-04':{who:'Subscriber 04',kind:'subscriber'},
+  'DA-SUB-05':{who:'Subscriber 05',kind:'subscriber'},'DA-SUB-06':{who:'Subscriber 06',kind:'subscriber'},
+  'DA-SUB-07':{who:'Subscriber 07',kind:'subscriber'},'DA-SUB-08':{who:'Subscriber 08',kind:'subscriber'},
+  'DA-SUB-09':{who:'Subscriber 09',kind:'subscriber'},'DA-SUB-10':{who:'Subscriber 10',kind:'subscriber'},
+  'DA-TRIAL-01':{who:'Trial 01',kind:'trial'},'DA-TRIAL-02':{who:'Trial 02',kind:'trial'},
+  'DA-TRIAL-03':{who:'Trial 03',kind:'trial'},'DA-TRIAL-04':{who:'Trial 04',kind:'trial'},
+  'DA-TRIAL-05':{who:'Trial 05',kind:'trial'},'DA-TRIAL-06':{who:'Trial 06',kind:'trial'},
+  'DA-TRIAL-07':{who:'Trial 07',kind:'trial'},'DA-TRIAL-08':{who:'Trial 08',kind:'trial'},
+  'DA-TRIAL-09':{who:'Trial 09',kind:'trial'},'DA-TRIAL-10':{who:'Trial 10',kind:'trial'},
+  'DA-TRIAL-11':{who:'Trial 11',kind:'trial'},'DA-TRIAL-12':{who:'Trial 12',kind:'trial'},
+  'DA-TRIAL-13':{who:'Trial 13',kind:'trial'},'DA-TRIAL-14':{who:'Trial 14',kind:'trial'},
+  'DA-TRIAL-15':{who:'Trial 15',kind:'trial'},'DA-TRIAL-16':{who:'Trial 16',kind:'trial'},
+  'DA-TRIAL-17':{who:'Trial 17',kind:'trial'},'DA-TRIAL-18':{who:'Trial 18',kind:'trial'},
+  'DA-TRIAL-19':{who:'Trial 19',kind:'trial'},'DA-TRIAL-20':{who:'Trial 20',kind:'trial'}
 };
+var TRIAL_MS=7*24*3600*1000;
 // ── ENGAGEMENT BEACONS — logins & interest clicks email Ryan through the site's existing
 // FormSubmit pipeline (no accounts, no cookies, nothing stored server-side). Operator
 // browsers (mep_op_unlocked) never send, and login pings are deduped to 1/browser/day.
@@ -1649,8 +1695,10 @@ var BROWARD_REC={pa:'https://web.bcpa.net/bcpaclient/#/Record-Search',tax:'https
 var LEE_REC={pa:'https://www.leepa.org/Search/PropertySearch.aspx',tax:'https://www.leetc.com/taxes/property-taxes',probate:'https://www.leeclerk.org/records/probate',code:'https://www.leegov.com/dcd/codeenforcement',records:'https://or.leeclerk.org/LandmarkWeb'};
 var LAKE_REC={pa:'https://www.lakecopropappr.com/',tax:'https://www.laketax.com/',probate:'https://lakecountyclerk.org/',code:'https://www.lakecountyfl.gov/offices/code_enforcement/',records:'https://lakecountyclerk.org/official_records/'};
 var COLLIER_REC={pa:'https://www.collierappraiser.com/',tax:'https://www.colliertax.com/search/',probate:'https://cceapps.collierclerk.com/eaccess/',code:'https://cvportal.colliercountyfl.gov/CityViewPortal/',records:'https://cceapps.collierclerk.com/publicaccess/'};
-var MARKETS={
+var MIAMI_REC={pa:'https://apps.miamidadepa.gov/PropertySearch/',tax:'https://miamidade.county-taxes.com/public/search/property_tax',probate:'https://www2.miamidadeclerk.gov/ocs/Search.aspx',code:'https://www.miamidade.gov/permits/code-compliance.page',records:'https://onlineservices.miamidadeclerk.gov/officialrecords/'};
+  var MARKETS={
   miami:  {label:'Miami-Dade',              kind:'deep',  tabs:['brief','overview','deals','all','construction','violations','pipeline']},
+  miamicw:{label:'Miami-Dade · County-wide',  kind:'leads', src:'MIAMI_LEADS', meta:'MIAMI_META', rec:MIAMI_REC, tabs:['brief','polk','pipeline']},
   broward:{label:'Broward',                 kind:'leads', src:'BROWARD_LEADS', meta:'BROWARD_META', rec:BROWARD_REC, tabs:['brief','polk','pipeline']},
   lee:    {label:'Lee · Fort Myers',        kind:'leads', src:'LEE_LEADS',     meta:'LEE_META',     rec:LEE_REC,     tabs:['brief','polk','pipeline']},
   collier:{label:'Collier · Naples',        kind:'leads', src:'COLLIER_LEADS', meta:'COLLIER_META', rec:COLLIER_REC, tabs:['brief','polk','pipeline']},
@@ -1909,8 +1957,12 @@ var OP_CODE='Maco305';
 var OP_ONLY_TABS={all:1,construction:1,violations:1,pipeline:1}; // polk (Leads) is now investor-reviewable per county
 function _role(){try{return localStorage.getItem('mep_role')||'investor';}catch(e){return 'investor';}}
 function _opUnlocked(){try{return localStorage.getItem('mep_op_unlocked')==='1';}catch(e){return false;}}
+// Subscribers/trialists logged in with a DA-* code get the cockpit without Ryan's
+// operator code (their kind is stamped at login). Beacon silencing still keys on
+// mep_op_unlocked only, so their activity keeps reporting.
+function _subOp(){try{var k=localStorage.getItem('mep_kind');return k==='subscriber'||k==='trial';}catch(e){return false;}}
 function setRole(r){
-  if(r==='operator'&&!_opUnlocked()){
+  if(r==='operator'&&!_opUnlocked()&&!_subOp()){
     var c=prompt('Operator access code:');
     if(c==null)return;
     if(c!==OP_CODE){alert('Wrong code.');return;}
@@ -1930,7 +1982,7 @@ function applyRole(){
   var r=_role();
   document.body.classList.toggle('investor-mode',r==='investor');
   var b=document.getElementById('roleBtn');
-  if(b){b.textContent=(r==='investor')?'OPERATOR \u2192':'INVESTOR VIEW';b.title=(r==='investor')?'Switch to Ryan\u2019s operator cockpit (access code required once)':'Preview what investors see';}
+  if(b){b.textContent=(r==='investor')?'OPERATOR \u2192':'INVESTOR VIEW';b.title=(r==='investor')?(_subOp()?'Switch to the operator cockpit':'Switch to Ryan\u2019s operator cockpit (access code required once)'):'Preview the plain-English brief view';}
   try{renderRateCenter();}catch(e){}
 }
 // The Brief: 3-5 deals that clear a defensible bar — live-comped, decent confidence, healthy
@@ -2086,7 +2138,19 @@ function initApp(){
     }
   }catch(e){console.error('hstd-city merge',e);}
   // Restore the remembered market (Miami-Dade default) — hides the other market's tabs before first paint.
-  try{setMarket(localStorage.getItem('mep_market')||'miami',true);}catch(e){console.error('market',e);}
+  try{
+    var _saved=localStorage.getItem('mep_market');
+    if(window.MIAMI_LEADS&&MIAMI_LEADS.length){
+      var _sel=document.getElementById('marketSel');
+      if(_sel&&!_sel.querySelector('option[value="miamicw"]')){
+        var _o=document.createElement('option');_o.value='miamicw';_o.textContent='Market: Miami-Dade · County-wide';
+        var _farm=_sel.querySelector('option[value="miami"]');
+        if(_farm&&_farm.nextSibling)_sel.insertBefore(_o,_farm.nextSibling);else _sel.appendChild(_o);
+      }
+      if(!_saved)_saved='miamicw';
+    }
+    setMarket(_saved||'miami',true);
+  }catch(e){console.error('market',e);}
   ['buildOverview','buildDeals','buildAllTable','buildSales','buildViolations','buildPipeline','buildBrief'].forEach(function(fn){
     try{window[fn]();}catch(e){console.error('init '+fn,e);}
   });

@@ -30,6 +30,10 @@ COUNTIES={
  'broward':{'co':16,'label':'Broward','var':'BROWARD','out':'broward-leads.js','zpre':('330','331','333')},
  'lee':    {'co':46,'label':'Lee','var':'LEE','out':'lee-leads.js','zpre':('339','341','340')},
  'collier':{'co':21,'label':'Collier','var':'COLLIER','out':'collier-leads.js','zpre':('341','342','339')},
+ # Miami-Dade = FDOR county 23 (alphabetical: Broward 16, Collier 21, Dade 23 — verified against zip mix).
+ # Whole-county coverage: Homestead (330xx) up to the Broward line (331/332xx). Larger cap than the
+ # single-county farms because the user wants the full county surfaced, not a 600-row slice.
+ 'miami':  {'co':23,'label':'Miami-Dade','var':'MIAMI','out':'miami-leads.js','zpre':('330','331','332'),'topn':3000},
 }
 
 def query(where, last_oid, geom=True):
@@ -164,7 +168,7 @@ def run(key):
           'bld':max(0,just-just_land),'lnd':just_land,'lot':round(num(a.get('LND_SQFOOT'))/43560,2),
           'held':held,'lsY':(sy if sy>1900 else None),'lsP':sp or None,'rt':None,
           'pid':fol,'st':fol,'lat':lat,'lng':lng})
-    cands.sort(key=lambda x:(-x['sc'],-x['mkt'])); cands=cands[:600]
+    cands.sort(key=lambda x:(-x['sc'],-x['mkt'])); cands=cands[:c.get('topn',600)]
     markets=sorted(set(x['c'] for x in cands))
     meta={'county':c['label'],'count':len(cands),'snapshot':(asmt+' roll' if asmt else str(NOW)),'markets':markets}
     js=('// %s County motivated-seller leads — generated %s by scrape_fl_county.py from the FDOR statewide roll.\n'%(c['label'],NOW)
@@ -176,5 +180,5 @@ def run(key):
 
 if __name__=='__main__':
     if len(sys.argv)<2 or sys.argv[1] not in COUNTIES:
-        print('usage: python scrape_fl_county.py [broward|lee|collier]'); sys.exit(1)
+        print('usage: python scrape_fl_county.py [broward|lee|collier|miami]'); sys.exit(1)
     run(sys.argv[1])

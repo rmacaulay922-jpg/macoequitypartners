@@ -1,22 +1,30 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="utf-8">
-<meta name="description" content="The off-market deal engine we buy with — now yours to run. Live Florida county records (estates, recorded liens, code violations, long-term holds) scored into ranked, underwritten deals across six counties. Free 7-day trial, no card.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Off-Market Deal Analyzer for South Florida Investors | Maco</title>
+<meta name="description" content="Find, rank and underwrite South Florida off-market real estate opportunities using local public records, comparable sales, editable underwriting and investor pipeline tools.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://macoequitypartners.com/">
 <link rel="icon" type="image/png" href="favicon.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Maco Equity Partners">
-<meta property="og:title" content="Maco Equity Partners — Off-Market Deal Analyzer">
-<meta property="og:description" content="The off-market deal engine we buy with — now yours to run. Live Florida county records (estates, recorded liens, code violations, long-term holds) scored into ranked, underwritten deals across six counties. Free 7-day trial, no card.">
+<meta property="og:title" content="Maco Deal Analyzer — Off-Market Deal Intelligence for South Florida">
+<meta property="og:description" content="Maco reads county records, ownership history, code cases, liens and recorded sales, then ranks potential opportunities and helps you estimate the deal before you chase it.">
 <meta property="og:url" content="https://macoequitypartners.com/">
 <meta property="og:image" content="https://macoequitypartners.com/logo-full.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Maco Equity Partners — Off-Market Deal Analyzer">
-<meta name="twitter:description" content="The off-market deal engine we buy with — now yours to run. Live Florida county records (estates, recorded liens, code violations, long-term holds) scored into ranked, underwritten deals across six counties. Free 7-day trial, no card.">
+<meta name="twitter:title" content="Maco Deal Analyzer — Off-Market Deal Intelligence">
+<meta name="twitter:description" content="Rank, comp and underwrite South Florida off-market opportunities from one local platform. Book a 20-minute demo.">
 <meta name="twitter:image" content="https://macoequitypartners.com/logo-full.png">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Maco Equity Partners — Off-Market Deal Analyzer | Florida</title>
+<link rel="stylesheet" href="da.css">
+<script src="site-config.js"></script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"Maco Equity Partners","url":"https://macoequitypartners.com/","logo":"https://macoequitypartners.com/logo-full.png","email":"rmac@macoequitypartners.com","areaServed":"Florida, United States","description":"A South Florida real estate investment firm and maker of the Maco Deal Analyzer, an off-market deal-intelligence platform built on local public records."}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Maco Deal Analyzer","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://macoequitypartners.com/","description":"Off-market real estate deal intelligence for South Florida investors. Reads county records, ownership history, code cases, liens and recorded sales, then ranks opportunities and helps estimate value and underwrite deals.","provider":{"@type":"Organization","name":"Maco Equity Partners"},"offers":[{"@type":"Offer","name":"Founding Member","price":"50","priceCurrency":"USD"},{"@type":"Offer","name":"Standard Access","price":"75","priceCurrency":"USD"},{"@type":"Offer","name":"Market Select","price":"85","priceCurrency":"USD"}]}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -938,18 +946,42 @@ svg.leaflet-image-layer.leaflet-interactive path {
   .sig-cell:hover { background: rgba(232,80,31,.05); }
   .leaflet-container { background: #EDEDE8 !important; font-family: 'IBM Plex Mono', monospace !important; }
   @keyframes pinPulse { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2); opacity: 0; } }
+
+  /* ---- Mobile: keep Log in + trial reachable; stack everything else ---- */
+  @media (max-width: 860px) {
+    .nav-bar { padding: 12px 20px !important; gap: 10px; }
+    .nav-links { display: none !important; }
+    .nav-tag { display: none !important; }
+    .hero-wrap { flex-direction: column !important; align-items: stretch !important; padding: 34px 20px 24px !important; gap: 26px; }
+    .hero-wrap h1 { font-size: 44px !important; }
+    .hero-wrap > div:first-child > div:last-child { flex-wrap: wrap; }
+    .hero-stats { flex-direction: row !important; text-align: left !important; gap: 20px !important; flex-wrap: wrap; padding-bottom: 0 !important; }
+    .signal-pad { padding: 0 20px 26px !important; }
+    .signal-head { flex-direction: column; gap: 4px; }
+    #signal-band { grid-template-columns: repeat(2, 1fr) !important; }
+    #signal-band .sig-cell { border-left: none !important; border-top: 1px solid rgba(19,21,18,.12); }
+    #signal-band .sig-cell:nth-child(-n+2) { border-top: none; }
+    .board-head { padding: 28px 20px 0 !important; }
+    .map-grid { grid-template-columns: 1fr !important; margin: 0 20px !important; }
+    .map-grid #map { height: 420px !important; }
+    #dossier-panel { border-left: none !important; border-top: 1px solid rgba(19,21,18,.18); }
+    .price-head { padding: 28px 20px 0 !important; }
+    .price-grid { grid-template-columns: 1fr !important; padding: 16px 20px 8px !important; }
+    .price-grid > div { margin-top: 6px; }
+    .site-footer { padding: 18px 20px !important; }
+  }
 </style>
 </head>
 <body>
 <div class="page">
 
   <!-- ============ NAV ============ -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 44px;border-bottom:1px solid rgba(19,21,18,.14)">
+  <div class="nav-bar" style="display:flex;align-items:center;justify-content:space-between;padding:12px 44px;border-bottom:1px solid rgba(19,21,18,.14)">
     <div style="display:flex;align-items:center;gap:14px">
       <img src="assets/da-01.png" alt="Maco Equity Partners" style="height:46px;width:auto;display:block">
-      <span style="font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:3px 7px;border-radius:2px">DEAL ANALYZER</span>
+      <span class="nav-tag" style="font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:3px 7px;border-radius:2px">DEAL ANALYZER</span>
     </div>
-    <div style="display:flex;gap:28px;font:500 12px 'Schibsted Grotesk',sans-serif;color:#6B6F6A">
+    <div class="nav-links" style="display:flex;gap:28px;font:500 12px 'Schibsted Grotesk',sans-serif;color:#6B6F6A">
       <span>The Firm</span><span>How it works</span><span>Live map</span><span>Pricing</span><span>Research</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
@@ -959,7 +991,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <!-- ============ HERO ============ -->
-  <div style="display:flex;justify-content:space-between;align-items:flex-end;padding:52px 44px 34px">
+  <div class="hero-wrap" style="display:flex;justify-content:space-between;align-items:flex-end;padding:52px 44px 34px">
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
         <span style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.2em;color:#E8501F">THE OFF-MARKET DEAL ANALYZER · SOUTH FLORIDA</span>
@@ -973,7 +1005,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
         <span style="font:400 10.5px 'IBM Plex Mono',monospace;color:#9A9E97">NO CREDIT CARD · NO AUTO-BILL</span>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;font:400 11px 'IBM Plex Mono',monospace;color:#6B6F6A;text-align:right;padding-bottom:6px">
+    <div class="hero-stats" style="display:flex;flex-direction:column;gap:10px;font:400 11px 'IBM Plex Mono',monospace;color:#6B6F6A;text-align:right;padding-bottom:6px">
       <span><b style="color:#131512;font:700 20px 'Schibsted Grotesk',sans-serif">38,976</b> TRACKED RECORDS</span>
       <span><b style="color:#131512;font:700 20px 'Schibsted Grotesk',sans-serif">2,387</b> SCORED LIVE</span>
       <span><b style="color:#E8501F;font:700 20px 'Schibsted Grotesk',sans-serif">6</b> FL COUNTIES</span>
@@ -981,8 +1013,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <!-- ============ SIGNAL DATA BAND ============ -->
-  <div style="padding:0 44px 34px;border-bottom:1px solid rgba(19,21,18,.14)">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+  <div class="signal-pad" style="padding:0 44px 34px;border-bottom:1px solid rgba(19,21,18,.14)">
+    <div class="signal-head" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
       <span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.18em;color:#131512">WHAT THE ENGINE READS — STRAIGHT FROM COUNTY RECORDS</span>
       <span id="signal-vintage" style="font:400 10px 'IBM Plex Mono',monospace;color:#9A9E97">EVERY SIGNAL FEEDS THE SCORE · COUNTS VERIFIED JUL 11, 2026</span>
     </div>
@@ -997,13 +1029,13 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <!-- ============ LIVE MAP + DOSSIER PANEL ============ -->
-  <div style="padding:34px 44px 0">
-    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px">
+  <div class="board-head" style="padding:34px 44px 0">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;flex-wrap:wrap;gap:6px">
       <span style="font:800 26px 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em">The deal board — sampled from the live engine</span>
       <span style="font:400 10px 'IBM Plex Mono',monospace;color:#9A9E97">3 SAMPLE DOSSIERS OPEN · DRAG, ZOOM, CLICK A PIN</span>
     </div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 400px;margin:0 44px;border:1px solid rgba(19,21,18,.18);border-radius:5px;overflow:hidden">
+  <div class="map-grid" style="display:grid;grid-template-columns:1fr 400px;margin:0 44px;border:1px solid rgba(19,21,18,.18);border-radius:5px;overflow:hidden">
     <div style="position:relative">
       <div id="map" style="height:640px;background:#EDEDE8"></div>
       <div style="position:absolute;left:12px;top:12px;z-index:900;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#131512;background:rgba(253,253,251,.92);border:1px solid rgba(19,21,18,.16);padding:7px 11px;border-radius:3px">MIAMI-DADE SAMPLE <span style="color:#9A9E97">— FULL SIX-COUNTY BOARD IN THE PORTAL</span></div>
@@ -1017,35 +1049,35 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <!-- ============ PRICING ============ -->
-  <div style="display:flex;justify-content:space-between;align-items:baseline;padding:34px 44px 0">
+  <div class="price-head" style="display:flex;justify-content:space-between;align-items:baseline;padding:34px 44px 0;flex-wrap:wrap;gap:6px">
     <span style="font:800 26px 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em">Keep it after the trial</span>
     <span style="font:400 10px 'IBM Plex Mono',monospace;color:#9A9E97">CANCEL ANYTIME · NO CONTRACT</span>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px 44px 8px">
+  <div class="price-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:16px 44px 8px">
     <div style="border:1.5px solid #E8501F;border-radius:5px;padding:22px 24px;background:#FDFDFB;position:relative">
       <div style="position:absolute;top:-9px;left:20px;font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;background:#E8501F;color:#fff;padding:3px 8px">START HERE</div>
       <div style="font:800 15px 'Schibsted Grotesk',sans-serif">Trial</div>
       <div style="font:800 34px 'Schibsted Grotesk',sans-serif;margin:8px 0 2px">$0 <span style="font:400 12px 'IBM Plex Mono',monospace;color:#9A9E97">/ 7 DAYS</span></div>
       <div style="font:400 11.5px/1.7 'Schibsted Grotesk',sans-serif;color:#4A4E49;margin-top:10px">Full deal board &amp; scores for 7 days · every dossier open · the same underwriter we buy with — realistic Miami repair bands · no card required</div>
-      <a href="firm.html#contact" style="display:inline-block;margin-top:16px;font:700 11px 'Schibsted Grotesk',sans-serif;padding:10px 16px;border-radius:3px;background:#E8501F;color:#fff">Start free trial →</a>
+      <a href="trial.html" style="display:inline-block;margin-top:16px;font:700 11px 'Schibsted Grotesk',sans-serif;padding:10px 16px;border-radius:3px;background:#E8501F;color:#fff">Start free trial →</a>
     </div>
     <div style="border:1px solid rgba(19,21,18,.18);border-radius:5px;padding:22px 24px;background:#FDFDFB">
       <div style="font:800 15px 'Schibsted Grotesk',sans-serif">Investor</div>
       <div style="font:800 34px 'Schibsted Grotesk',sans-serif;margin:8px 0 2px">$40 <span style="font:400 12px 'IBM Plex Mono',monospace;color:#9A9E97">/ MO</span></div>
       <div style="font:400 11.5px/1.7 'Schibsted Grotesk',sans-serif;color:#4A4E49;margin-top:10px">Unlimited dossiers, re-scored live on every session · every signal — estates, recorded liens, code violations, long-term holds · all six Florida counties</div><!-- STRIPE-INVESTOR: replace href below with your Stripe Payment Link -->
-      <a href="firm.html#contact" style="display:inline-block;margin-top:16px;font:700 11px 'Schibsted Grotesk',sans-serif;padding:10px 16px;border-radius:3px;background:#131512;color:#fff">Get Investor — $40/mo →</a>
+      <a href="trial.html?plan=investor" style="display:inline-block;margin-top:16px;font:700 11px 'Schibsted Grotesk',sans-serif;padding:10px 16px;border-radius:3px;background:#131512;color:#fff">Get Investor — $40/mo →</a>
     </div>
     <div style="border:1px solid rgba(19,21,18,.18);border-radius:5px;padding:22px 24px;background:#FDFDFB">
       <div style="font:800 15px 'Schibsted Grotesk',sans-serif">Principal</div>
       <div style="font:800 34px 'Schibsted Grotesk',sans-serif;margin:8px 0 2px">$50 <span style="font:400 12px 'IBM Plex Mono',monospace;color:#9A9E97">/ MO</span></div>
       <div style="font:400 11.5px/1.7 'Schibsted Grotesk',sans-serif;color:#4A4E49;margin-top:10px">Everything in Investor · pipeline CRM &amp; mail merge · owner mailing lists &amp; skip-trace links · new markets prioritized by your requests</div><!-- STRIPE-PRINCIPAL: replace href below with your Stripe Payment Link -->
-      <a href="firm.html#contact" style="display:inline-block;margin-top:16px;font:700 11px 'Schibsted Grotesk',sans-serif;padding:10px 16px;border-radius:3px;background:#131512;color:#fff">Get Principal — $50/mo →</a>
+      <a href="trial.html?plan=principal" style="display:inline-block;margin-top:16px;font:700 11px 'Schibsted Grotesk',sans-serif;padding:10px 16px;border-radius:3px;background:#131512;color:#fff">Get Principal — $50/mo →</a>
     </div>
   </div>
   <div style="padding:6px 44px 26px;font:400 9.5px 'IBM Plex Mono',monospace;color:#9A9E97">LIVE TODAY: MIAMI-DADE · BROWARD · LEE · COLLIER · POLK · LAKE</div>
 
   <!-- ============ FOOTER ============ -->
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 44px;border-top:1px solid rgba(19,21,18,.14);font:400 10.5px 'IBM Plex Mono',monospace;color:#6B6F6A">
+  <div class="site-footer" style="display:flex;justify-content:space-between;align-items:center;padding:18px 44px;border-top:1px solid rgba(19,21,18,.14);font:400 10.5px 'IBM Plex Mono',monospace;color:#6B6F6A;flex-wrap:wrap;gap:12px">
     <span>MACO EQUITY PARTNERS — UNDERWRITTEN WITH RIGOR · EXECUTED WITH DISCIPLINE<br><span style="color:#9A9E97">NOT INVESTMENT ADVICE · ESTIMATES FROM PUBLIC RECORDS · © 2026 MACO EQUITY PARTNERS LLC</span></span>
     <span style="display:flex;gap:18px;flex-wrap:wrap;letter-spacing:.1em"><a href="firm.html">THE FIRM</a><a href="research.html">RESEARCH</a><a href="blog.html">JOURNAL</a><a href="portal.html">LOG IN</a><a href="privacy.html">PRIVACY</a><a href="terms.html">TERMS</a><a href="disclosures.html">DISCLOSURES</a></span>
   </div>
@@ -1164,7 +1196,7 @@ DEALS.forEach(function (d, i) {
   };
   var ACT = {
     'Log in':                {href:'portal.html'},
-    'Start free trial':      {href:'firm.html#contact'},
+    'Start free trial':      {href:'trial.html'},
     'See sample deals':      {scrollEl:'map', scroll:['The deal board']}
   };
   function norm(s){ return (s||'').replace(/[\s→↓↑·—\-]+$/,'').replace(/^\s+/,'').replace(/’/g,"'").trim(); }
