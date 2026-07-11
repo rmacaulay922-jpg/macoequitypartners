@@ -3,380 +3,315 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Research & Market Reports — Maco Equity Partners</title>
+<title>Research &amp; Market Reports — Maco Equity Partners</title>
 <meta name="description" content="Institutional-grade analysis of South Florida real estate — industrial and residential. Recorded sales, pricing, vacancy, supply, and the off-market ownership layer. The research we use to underwrite our own deals.">
-
+<link rel="canonical" href="https://macoequitypartners.com/research.html">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://macoequitypartners.com/research.html">
 <meta property="og:site_name" content="Maco Equity Partners">
-<meta property="og:title" content="Research & Market Reports — Maco Equity Partners">
-<meta property="og:description" content="Institutional-grade analysis of South Florida industrial and residential real estate. The research we use to underwrite our own deals.">
+<meta property="og:title" content="Research &amp; Market Reports — Maco Equity Partners">
+<meta property="og:description" content="The research we use to underwrite our own deals — South Florida industrial and residential, built on county-recorded sales.">
 <meta property="og:image" content="https://macoequitypartners.com/logo-full.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Research & Market Reports — Maco Equity Partners">
-<meta name="twitter:description" content="The research we use to underwrite our own deals.">
-<meta name="twitter:image" content="https://macoequitypartners.com/logo-full.png">
-
 <script defer data-domain="macoequitypartners.com" src="https://plausible.io/js/script.js"></script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="favicon.png">
-<link rel="stylesheet" href="styles.css?v=11">
 <style>
-  .research-intro{padding:5rem 5vw 4rem;background:var(--bg);border-bottom:1px solid var(--rule)}
-  .research-intro-inner{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.4fr;gap:5vw;align-items:center}
-  .research-intro h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(1.8rem,3.5vw,2.8rem);line-height:1.15;letter-spacing:-.01em;color:var(--ivory)}
-  .research-intro h2 em{font-style:italic;color:var(--bronze-soft);font-weight:300}
-  .research-intro p{color:var(--ivory-soft);font-weight:300;font-size:1.05rem;line-height:1.75;margin-bottom:1.4rem}
-  .research-intro p a{color:var(--bronze);border-bottom:1px solid var(--rule-bronze);transition:border-color .3s}
-  .research-intro p a:hover{border-color:var(--bronze)}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#E9E9E4;color:#131512;font-family:'Schibsted Grotesk',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{display:block}
+::selection{background:#E8501F;color:#fff}
 
-  .kpi-section{padding:5rem 5vw 6rem;background:var(--bg)}
-  .kpi-band{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
-  .kpi{padding:2.5rem 1.8rem;border-right:1px solid var(--rule);position:relative}
-  .kpi:last-child{border-right:none}
-  .kpi-label{font-size:.62rem;letter-spacing:.32em;text-transform:uppercase;color:var(--bronze);font-weight:500;margin-bottom:1rem}
-  .kpi-value{font-family:'Fraunces',serif;font-size:clamp(2.4rem,4vw,3.6rem);font-weight:300;color:var(--ivory);letter-spacing:-.015em;line-height:1;margin-bottom:.6rem}
-  .kpi-delta{font-size:.78rem;color:var(--bronze);font-weight:400;letter-spacing:.04em}
-  .kpi-delta.down{color:#c97a6a}
-  .kpi-source{max-width:var(--container);margin:1.2rem auto 0;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-align:right}
+/* ---- shared grammar (matches homepage) ---- */
+.az-mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.az-label{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#131512}
+.az-label--mute{color:#6B6F6A}
+.az-kicker{font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.2em;text-transform:uppercase;color:#E8501F}
+.az-badge{font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:3px 7px;border-radius:2px;white-space:nowrap}
+.az-band{padding:64px 44px;border-bottom:1px solid rgba(19,21,18,.14)}
+.az-card{background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:3px;padding:22px 24px}
+.az-btn{display:inline-flex;align-items:center;gap:8px;font:700 11.5px 'Schibsted Grotesk',sans-serif;padding:12px 20px;border-radius:3px;cursor:pointer;border:0;transition:background .15s ease,transform .15s ease}
+.az-btn--primary{background:#E8501F;color:#fff}
+.az-btn--primary:hover{background:#C43A1A}
+.az-btn--dark{background:#131512;color:#fff}
+.az-btn--dark:hover{background:#2A2C28}
+.az-btn--ghost{background:transparent;color:#131512;border:1px solid rgba(19,21,18,.28)}
+.az-btn--ghost:hover{border-color:#131512}
+.az-arrow{font-family:'IBM Plex Mono',monospace;font-weight:500}
 
-  .reports{padding:8rem 5vw 9rem;background:var(--bg-deep);border-top:1px solid var(--rule)}
-  .reports-head{max-width:var(--container);margin:0 auto 5rem;text-align:center}
-  .reports-head h2{font-family:'Fraunces',serif;font-weight:300;font-size:clamp(2.2rem,4.5vw,4rem);line-height:1.1;letter-spacing:-.01em;color:var(--ivory)}
-  .reports-head h2 em{font-style:italic;color:var(--bronze-soft);font-weight:300}
-  .reports-list{max-width:var(--container-narrow);margin:0 auto;border-top:1px solid var(--rule)}
-  .report-item{display:grid;grid-template-columns:auto 1fr auto;gap:3vw;padding:3rem 0;border-bottom:1px solid var(--rule);transition:padding .4s ease;align-items:center}
-  .report-item:hover{padding-left:1rem;padding-right:1rem}
-  .report-num{font-family:'Fraunces',serif;font-size:3.2rem;font-weight:400;font-style:italic;color:var(--bronze);line-height:1;transition:transform .4s ease,color .3s ease;position:relative;padding-left:.6rem}
-  .report-num::before{content:'';position:absolute;left:-1rem;top:50%;width:1.6rem;height:1px;background:var(--bronze);transform:translateY(-50%) scaleX(0);transform-origin:right center;transition:transform .4s ease}
-  .report-item:hover .report-num{transform:translateX(6px);color:var(--bronze-soft)}
-  .report-item:hover .report-num::before{transform:translateY(-50%) scaleX(1)}
-  .report-body h3{font-family:'Fraunces',serif;font-size:clamp(1.6rem,2.6vw,2.2rem);font-weight:400;color:var(--ivory);margin-bottom:.7rem;line-height:1.15;letter-spacing:-.005em}
-  .report-body p{font-size:.98rem;color:var(--ivory-soft);line-height:1.65;font-weight:300;max-width:620px;margin-bottom:1rem}
-  .report-meta{display:flex;gap:1.5rem;flex-wrap:wrap;font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze)}
-  .report-cta{font-size:.62rem;letter-spacing:.35em;text-transform:uppercase;color:var(--bronze);transition:color .3s}
-  .report-item:hover .report-cta{color:var(--bronze-soft)}
+/* ---- nav ---- */
+.az-nav{position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:14px 44px;background:rgba(233,233,228,.92);backdrop-filter:blur(8px);border-bottom:1px solid rgba(19,21,18,.14)}
+.az-nav-left{display:flex;align-items:center;gap:14px}
+.az-nav-left img{height:44px;width:auto}
+.az-nav-links{display:flex;gap:28px;font:500 12px 'Schibsted Grotesk',sans-serif;color:#6B6F6A}
+.az-nav-links a:hover{color:#131512}
+.az-nav-links a.active{color:#131512;font-weight:700}
+.az-nav-right{display:flex;gap:10px;align-items:center}
+.az-login{font:600 11.5px 'Schibsted Grotesk',sans-serif;padding:9px 16px;color:#131512}
+.az-login:hover{color:#E8501F}
 
-  .coverage{padding:8rem 5vw 9rem;background:var(--bg);border-top:1px solid var(--rule)}
-  .coverage-grid{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.5fr;gap:5vw}
-  .coverage-list{display:grid;grid-template-columns:1fr 1fr;gap:0;align-self:start}
-  .coverage-item{padding:1.8rem 1.5rem 1.8rem 0;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
-  .coverage-item:nth-child(even){padding-left:1.5rem;padding-right:0;border-right:none}
-  .coverage-item:nth-last-child(-n+2){border-bottom:none}
-  .coverage-item h4{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:500;color:var(--ivory);margin-bottom:.4rem}
-  .coverage-item p{font-size:.9rem;color:var(--ivory-soft);font-weight:300;line-height:1.6}
-  .coverage-text p{color:var(--ivory-soft);font-weight:300;line-height:1.75;font-size:1.05rem;margin-top:1rem}
+/* ---- hero ---- */
+.az-hero{padding:84px 44px 56px;border-bottom:1px solid rgba(19,21,18,.14)}
+.az-hero h1{font:800 clamp(44px,6.4vw,76px)/0.98 'Schibsted Grotesk',sans-serif;letter-spacing:-.03em;margin:18px 0 22px;max-width:1000px}
+.az-hero h1 span{color:#E8501F}
+.az-hero p{font:400 17px/1.55 'Schibsted Grotesk',sans-serif;color:#4A4E49;max-width:600px}
+.az-hero-cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+.az-hero-top{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.az-stats{display:flex;gap:0;margin-top:52px;border:1px solid rgba(19,21,18,.16);border-radius:3px;background:#FDFDFB;max-width:720px}
+.az-stat{flex:1;padding:18px 24px;border-right:1px solid rgba(19,21,18,.14)}
+.az-stat:last-child{border-right:0}
+.az-stat b{display:block;font:800 34px 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em}
+.az-stat span{display:block;margin-top:3px;font:500 8px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9A9E97}
 
-  .methodology{padding:7rem 5vw 7rem;background:var(--bg-deep);border-top:1px solid var(--rule)}
-  .method-grid{max-width:var(--container);margin:0 auto;display:grid;grid-template-columns:1fr 1.5fr;gap:5vw}
-  .methodology p{color:var(--ivory-soft);font-weight:300;line-height:1.8;font-size:1.05rem;margin-bottom:1.5rem}
-  .source-list{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:1.8rem}
-  .source-list span{font-size:.85rem;color:var(--ivory-soft);padding:.7rem 1rem;border:1px solid var(--rule);font-weight:300;letter-spacing:.02em}
+/* ---- statement ---- */
+.az-statement{padding:88px 44px;border-bottom:1px solid rgba(19,21,18,.14)}
+.az-statement blockquote{font:600 clamp(26px,3.4vw,40px)/1.22 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em;max-width:960px}
+.az-statement blockquote em{font-style:normal;color:#E8501F}
+.az-statement cite{display:block;margin-top:22px;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#6B6F6A;font-style:normal}
 
-  .subscribe{padding:7rem 5vw;background:var(--bg);border-top:1px solid var(--rule)}
-  .subscribe-card{max-width:680px;margin:0 auto;text-align:center}
-  .subscribe-card h3{font-family:'Fraunces',serif;font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:300;color:var(--ivory);margin-bottom:1rem;letter-spacing:-.005em}
-  .subscribe-card h3 em{font-style:italic;color:var(--bronze-soft)}
-  .subscribe-card p{font-size:1rem;color:var(--ivory-soft);font-weight:300;margin:0 auto 2.5rem;max-width:480px;line-height:1.65}
-  .subscribe-form{display:flex;gap:.6rem;max-width:520px;margin:0 auto;flex-wrap:wrap;border-bottom:1px solid var(--rule-strong);padding-bottom:.5rem}
-  .subscribe-form input{flex:1;min-width:220px;padding:.9rem 0;border:none;background:transparent;font-family:inherit;font-size:1rem;color:var(--ivory);font-weight:300;outline:none}
-  .subscribe-form input::placeholder{color:var(--faint)}
-  .subscribe-form button{background:transparent;border:none;color:var(--bronze);font-family:inherit;cursor:pointer;font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;padding:.9rem 1rem;transition:color .3s}
-  .subscribe-form button:hover{color:var(--bronze-soft)}
+/* ---- section head ---- */
+.az-sechead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:26px;gap:16px;flex-wrap:wrap}
 
-  .disclaimer-section{padding:3rem 5vw 4rem;background:var(--bg-deep);border-top:1px solid var(--rule)}
-  .disclaimer-section p{max-width:var(--container);margin:0 auto;font-size:.78rem;color:var(--muted);line-height:1.7;font-weight:300}
-  .disclaimer-section p + p{margin-top:.7rem}
-  .disclaimer-section a{color:var(--bronze)}
+/* ---- disciplines ---- */
+.az-3grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.az-disc h3{font:700 20px 'Schibsted Grotesk',sans-serif;margin:10px 0 8px}
+.az-disc .num{font:500 12px 'IBM Plex Mono',monospace;color:#E8501F}
+.az-disc p{font:400 13.5px/1.6 'Schibsted Grotesk',sans-serif;color:#4A4E49;min-height:86px}
+.az-disc a{display:inline-block;margin-top:14px;font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#131512;border-bottom:1px solid rgba(19,21,18,.3);padding-bottom:2px}
+.az-disc a:hover{color:#E8501F;border-color:#E8501F}
 
-  @media(max-width:960px){
-    .research-intro-inner{grid-template-columns:1fr;gap:2.5rem}
-    .kpi-band{grid-template-columns:repeat(2,1fr)}
-    .kpi:nth-child(2){border-right:none}
-    .kpi:nth-child(-n+2){border-bottom:1px solid var(--rule)}
-    .report-item{grid-template-columns:auto 1fr;gap:1.5rem}
-    .report-cta{display:none}
-    .coverage-grid{grid-template-columns:1fr;gap:3rem}
-    .coverage-list{grid-template-columns:1fr}
-    .coverage-item,.coverage-item:nth-child(even){padding:1.5rem 0;border-right:none}
-    .method-grid{grid-template-columns:1fr;gap:2.5rem}
-    .source-list{grid-template-columns:1fr}
-  }
+/* ---- stack ---- */
+.az-4grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.az-stack-note{margin-top:22px;font:400 13px 'Schibsted Grotesk',sans-serif;color:#6B6F6A;max-width:640px}
+.az-mini b{display:block;font:700 15px 'Schibsted Grotesk',sans-serif}
+.az-mini span{display:block;margin-top:3px;font:400 10px 'IBM Plex Mono',monospace;color:#9A9E97;letter-spacing:.06em;text-transform:uppercase}
+
+/* ---- approach ---- */
+.az-step .k{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.16em;color:#E8501F}
+.az-step h3{font:700 20px 'Schibsted Grotesk',sans-serif;margin:8px 0 6px}
+.az-step p{font:400 13px/1.6 'Schibsted Grotesk',sans-serif;color:#4A4E49}
+
+/* ---- research teaser ---- */
+.az-rrow{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:3px;margin-bottom:10px;transition:border-color .15s ease}
+.az-rrow:hover{border-color:#E8501F}
+.az-rrow .t{font:700 16px 'Schibsted Grotesk',sans-serif}
+.az-rrow .m{font:500 9px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#9A9E97;margin-top:4px}
+.az-rrow .go{font:600 14px 'IBM Plex Mono',monospace;color:#E8501F}
+
+/* ---- engine (dark) ---- */
+.az-engine{background:#131512;color:#F1F1EC;padding:84px 44px;border-bottom:1px solid rgba(19,21,18,.14)}
+.az-engine h2{font:800 clamp(30px,4vw,48px)/1.05 'Schibsted Grotesk',sans-serif;letter-spacing:-.025em;max-width:760px;margin:16px 0 18px}
+.az-engine h2 span{color:#E8501F}
+.az-engine p{font:400 15px/1.6 'Schibsted Grotesk',sans-serif;color:#C6C8C2;max-width:640px}
+.az-engine .az-label{color:#93968F}
+.az-chiprow{display:flex;gap:12px;margin:30px 0 34px;flex-wrap:wrap}
+.az-chip{border:1px solid rgba(241,241,236,.22);border-radius:3px;padding:14px 18px;background:rgba(241,241,236,.04)}
+.az-chip b{display:block;font:800 20px 'Schibsted Grotesk',sans-serif;color:#F1F1EC}
+.az-chip span{display:block;margin-top:2px;font:500 8px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#93968F}
+
+/* ---- contact ---- */
+.az-contact{padding:84px 44px;border-bottom:1px solid rgba(19,21,18,.14)}
+.az-contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:44px;margin-top:34px}
+.az-crow{padding:16px 0;border-bottom:1px solid rgba(19,21,18,.14)}
+.az-crow .k{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9A9E97}
+.az-crow .v{font:600 15px 'Schibsted Grotesk',sans-serif;margin-top:4px}
+.az-crow .v a:hover{color:#E8501F}
+.az-form{display:grid;gap:12px}
+.az-form label{font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#6B6F6A;display:block;margin-bottom:6px}
+.az-form input,.az-form select,.az-form textarea{width:100%;font:400 14px 'Schibsted Grotesk',sans-serif;color:#131512;background:#FDFDFB;border:1px solid rgba(19,21,18,.22);border-radius:3px;padding:12px 14px;outline:none;transition:border-color .15s ease}
+.az-form input:focus,.az-form select:focus,.az-form textarea:focus{border-color:#E8501F}
+.az-form textarea{min-height:120px;resize:vertical}
+.az-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.az-sent{display:none;background:#FDFDFB;border:1px solid #E8501F;border-left:4px solid #E8501F;border-radius:3px;padding:14px 16px;font:600 13px 'Schibsted Grotesk',sans-serif;margin-bottom:6px}
+.az-sent.show{display:block}
+
+/* ---- footer ---- */
+.az-footer{padding:34px 44px 44px;display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.az-footer .az-label--mute{line-height:1.9}
+.az-flinks{display:flex;gap:22px;flex-wrap:wrap;font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#6B6F6A}
+.az-flinks a:hover{color:#E8501F}
+
+/* ---- reveal ---- */
+html.anim .rv{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease}
+html.anim .rv.on{opacity:1;transform:none}
+
+@media (max-width:960px){
+  .az-3grid,.az-4grid{grid-template-columns:1fr 1fr}
+  .az-contact-grid{grid-template-columns:1fr}
+  .az-nav-links{display:none}
+  .az-band,.az-hero,.az-statement,.az-engine,.az-contact{padding-left:22px;padding-right:22px}
+  .az-nav{padding:12px 22px}
+  .az-footer{padding:28px 22px 36px}
+  .az-stats{flex-direction:column}
+  .az-stat{border-right:0;border-bottom:1px solid rgba(19,21,18,.14)}
+  .az-stat:last-child{border-bottom:0}
+}
+@media (max-width:600px){
+  .az-3grid,.az-4grid{grid-template-columns:1fr}
+  .az-2col{grid-template-columns:1fr}
+}
+
+/* research page extras */
+.az-hero p.lead{font:400 17px/1.55 'Schibsted Grotesk',sans-serif;color:#4A4E49;max-width:640px}
+.az-2col-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.az-track li{font:400 13.5px/1.9 'Schibsted Grotesk',sans-serif;color:#4A4E49;list-style:none;padding-left:18px;position:relative}
+.az-track li::before{content:"";position:absolute;left:0;top:12px;width:8px;height:2px;background:#E8501F}
+.az-jrow{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#FDFDFB;border:1px solid rgba(19,21,18,.16);border-radius:3px;margin-bottom:8px;transition:border-color .15s ease}
+.az-jrow:hover{border-color:#E8501F}
+.az-jrow .t{font:600 14px 'Schibsted Grotesk',sans-serif}
+.az-jrow .go{font:600 13px 'IBM Plex Mono',monospace;color:#E8501F}
+@media (max-width:700px){.az-2col-cards{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<nav class="nav" id="nav">
-  <a href="index.html" class="nav-logo">
-    <img src="logo-mark.png" alt="Maco Equity Partners logo">
-    <span class="text">Maco <span class="accent">·</span> Equity Partners</span>
-  </a>
-  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false" onclick="this.classList.toggle('open'); this.parentElement.querySelector('.nav-links').classList.toggle('open'); this.setAttribute('aria-expanded', this.classList.contains('open'));">
-    <span></span><span></span><span></span>
-  </button>
-  <ul class="nav-links">
-    <li><a href="index.html#disciplines">Disciplines</a></li>
-    <li><a href="index.html#network">Network</a></li>
-    <li><a href="index.html#approach">Approach</a></li>
-    <li><a href="research.html" class="active">Research</a></li>
-    <li><a href="blog.html">Journal</a></li>
-    <li><a href="index.html#contact" class="nav-cta">Enquire</a></li>
-  </ul>
+<!-- ============ NAV ============ -->
+<nav class="az-nav">
+  <div class="az-nav-left">
+    <a href="index.html"><img src="logo-full.png" alt="Maco Equity Partners"></a>
+    <span class="az-badge">Research</span>
+  </div>
+  <div class="az-nav-links">
+    <a href="firm.html">The Firm</a>
+    <a href="index.html#how">How it works</a>
+    <a href="index.html#map">Live map</a>
+    <a href="index.html#pricing">Pricing</a>
+    <a href="research.html" class="active">Research</a>
+  </div>
+  <div class="az-nav-right">
+    <a class="az-login" href="portal.html">Log in</a>
+    <a class="az-btn az-btn--primary" href="firm.html#contact">Start free trial</a>
+  </div>
 </nav>
 
-<section class="page-hero">
-  <div class="page-hero-inner">
-    <span class="eyebrow">Market Intelligence</span>
-    <h1>Research &amp; <em>Market Reports.</em></h1>
-    <p>Institutional-grade analysis of South Florida real estate across two verticals: <strong>industrial</strong> (vacancy, rents, cap rates, supply) and <strong>residential</strong> (county-recorded sales, submarket pricing, and the off-market ownership layer). Published quarterly — and used to underwrite every deal we close.</p>
+<!-- ============ HERO ============ -->
+<header class="az-hero" style="padding-bottom:48px">
+  <div class="az-hero-top">
+    <span class="az-kicker">Research &amp; Market Reports · South Florida</span>
+    <span class="az-badge">Quarterly · Sourced · Free of varnish</span>
   </div>
+  <h1>The research we use to<br><span>underwrite our own deals.</span></h1>
+  <p class="lead">Institutional-grade analysis of South Florida industrial and residential real estate — recorded sales, pricing, vacancy, supply, and the off-market ownership layer. Built by the same function that underwrites every deal we close. Residential is built on county-recorded sales, not listing-feed optimism.</p>
+</header>
+
+<!-- ============ RESIDENTIAL ============ -->
+<section class="az-band" id="residential">
+  <div class="az-sechead">
+    <span class="az-label">South Florida Residential — County-recorded sales</span>
+    <span class="az-label az-label--mute">2 reports</span>
+  </div>
+  <a class="az-rrow rv" href="Q2_2026_SFL_Residential_Overview.html">
+    <div><div class="t">Residential Market Overview</div><div class="m">Q2 2026 · Recorded sales · Pricing &amp; velocity</div></div>
+    <span class="go">→</span>
+  </a>
+  <a class="az-rrow rv" href="Q1_2026_SFL_Residential_Overview.html">
+    <div><div class="t">Residential Market Overview</div><div class="m">Q1 2026 · Recorded sales · Pricing &amp; velocity</div></div>
+    <span class="go">→</span>
+  </a>
 </section>
 
-<section class="research-intro">
-  <div class="research-intro-inner">
-    <div>
-      <span class="eyebrow">From the Desk</span>
-      <h2>The research we use to <em>underwrite our own deals.</em></h2>
-    </div>
-    <div>
-      <p>Every report on this page is produced by the same research function that underwrites every Maco Equity Partners acquisition. We don't publish marketing varnish or broker-quarterly fluff. We publish the analysis we'd want to see ourselves — rigorous, sourced, and unsentimental.</p>
-      <p>If you'd like the underlying data, a custom cut by submarket, or to discuss how these dynamics apply to a specific deal — <a href="index.html#contact">get in touch</a>.</p>
-    </div>
+<!-- ============ INDUSTRIAL ============ -->
+<section class="az-band" id="industrial">
+  <div class="az-sechead">
+    <span class="az-label">South Florida Industrial — Supply, deals &amp; pricing</span>
+    <span class="az-label az-label--mute">3 reports</span>
   </div>
+  <a class="az-rrow rv" href="Q1_2026_SFL_Industrial_Overview.html">
+    <div><div class="t">South Florida Industrial Market Overview</div><div class="m">Q1 2026 · Vacancy · Rents · Cap rates</div></div>
+    <span class="go">→</span>
+  </a>
+  <a class="az-rrow rv" href="Q1_2026_Small_Bay_Deals.html">
+    <div><div class="t">Small-Bay Industrial Deal Activity</div><div class="m">Q1 2026 · Recorded transactions · Basis analysis</div></div>
+    <span class="go">→</span>
+  </a>
+  <a class="az-rrow rv" href="Q1_2026_New_Industrial_Supply.html">
+    <div><div class="t">New Industrial Supply Pipeline</div><div class="m">Q1 2026 · Deliveries · Under construction · Planned</div></div>
+    <span class="go">→</span>
+  </a>
 </section>
 
-<section class="kpi-section">
-  <div class="kpi-band">
-    <div class="kpi">
-      <div class="kpi-label">Tri-County Vacancy</div>
-      <div class="kpi-value">6.9%</div>
-      <div class="kpi-delta down">↑ 40 bps QoQ</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Avg Asking Rent NNN</div>
-      <div class="kpi-value">$16.74</div>
-      <div class="kpi-delta">↑ 1.2% QoQ</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Under Construction</div>
-      <div class="kpi-value">4.2M<span style="font-size:.5em;color:var(--muted);margin-left:.15em"> SF</span></div>
-      <div class="kpi-delta down">↓ 8% QoQ</div>
-    </div>
-    <div class="kpi">
-      <div class="kpi-label">Avg Cap Rate</div>
-      <div class="kpi-value">6.3%</div>
-      <div class="kpi-delta">↓ 20 bps QoQ</div>
-    </div>
+<!-- ============ METHOD ============ -->
+<section class="az-band" id="method">
+  <div class="az-sechead">
+    <span class="az-label">What we track — and how</span>
   </div>
-  <div class="kpi-source">Maco Equity Partners Research · Q1 2026 · Sources: CoStar, Colliers, JLL, CBRE EA</div>
-</section>
-
-<section class="reports">
-  <div class="reports-head">
-    <span class="eyebrow bookend">Residential Vertical</span>
-    <h2>South Florida <em>Residential.</em></h2>
-  </div>
-  <div class="reports-list" style="margin-bottom:6rem">
-    <a href="Q2_2026_SFL_Residential_Overview.html" class="report-item">
-      <div class="report-num">I.</div>
-      <div class="report-body">
-        <h3>Q2 2026 — Residential Market Overview</h3>
-        <p>County-recorded single-family sales across our farmed submarkets: volume, median pricing, $/SF by submarket, and the off-market ownership layer (estates, trusts, absentee owners) nobody else publishes.</p>
-        <div class="report-meta"><span>Recorded Sales</span><span>Pricing</span><span>Off-Market Layer</span></div>
-      </div>
-      <div class="report-cta">Read →</div>
-    </a>
-    <a href="Q1_2026_SFL_Residential_Overview.html" class="report-item">
-      <div class="report-num">II.</div>
-      <div class="report-body">
-        <h3>Q1 2026 — Residential Market Overview</h3>
-        <p>The opening report in our residential series: Q1 recorded-sales pricing and volume, submarket by submarket, on the same county data our acquisition engine underwrites with.</p>
-        <div class="report-meta"><span>Recorded Sales</span><span>Submarkets</span><span>Methodology</span></div>
-      </div>
-      <div class="report-cta">Read →</div>
-    </a>
-  </div>
-  <div class="reports-head" style="margin-top:2rem">
-    <span class="eyebrow bookend">Industrial Vertical · Q1 2026</span>
-    <h2>South Florida <em>Industrial.</em></h2>
-  </div>
-  <div class="reports-list">
-    <a href="Q1_2026_SFL_Industrial_Overview.html" class="report-item">
-      <div class="report-num">I.</div>
-      <div class="report-body">
-        <h3>South Florida Industrial Market Overview</h3>
-        <p>Comprehensive analysis of the Tri-County industrial market: vacancy trends, rental rate movement, net absorption, capital markets activity, and submarket performance.</p>
-        <div class="report-meta">
-          <span>Vacancy</span><span>Rents</span><span>Cap Rates</span><span>Absorption</span>
-        </div>
-      </div>
-      <div class="report-cta">Read →</div>
-    </a>
-    <a href="Q1_2026_Small_Bay_Deals.html" class="report-item">
-      <div class="report-num">II.</div>
-      <div class="report-body">
-        <h3>Small-Bay Industrial Deal Activity</h3>
-        <p>Transaction-level analysis of small-bay sales across South Florida. Deal spotlights, cap rate trends, price-per-SF benchmarking, and small-bay vs. big-box comparison.</p>
-        <div class="report-meta">
-          <span>Transactions</span><span>Small-Bay</span><span>Pricing</span>
-        </div>
-      </div>
-      <div class="report-cta">Read →</div>
-    </a>
-    <a href="Q1_2026_New_Industrial_Supply.html" class="report-item">
-      <div class="report-num">III.</div>
-      <div class="report-body">
-        <h3>New Industrial Supply Pipeline</h3>
-        <p>Analysis of the South Florida construction pipeline, Q1 deliveries, pre-lease rates by county, and implications for vacancy and rent trajectory through year-end.</p>
-        <div class="report-meta">
-          <span>Construction</span><span>Pipeline</span><span>Deliveries</span>
-        </div>
-      </div>
-      <div class="report-cta">Read →</div>
-    </a>
-  </div>
-</section>
-
-<section class="coverage">
-  <div class="coverage-grid">
-    <div class="coverage-text">
-      <span class="eyebrow">Coverage Universe</span>
-      <h2 class="section-title">What we <em>track.</em></h2>
-      <p>Our research focuses on the South Florida industrial corridor — the densest, most supply-constrained logistics market in the Southeast. We cover transaction activity, supply, and capital markets across six core submarkets.</p>
-    </div>
-    <div class="coverage-list">
-      <div class="coverage-item">
-        <h4>Miami-Dade</h4>
-        <p>Airport West, Hialeah, Medley, Doral. The institutional core.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Broward</h4>
-        <p>Pompano, Deerfield, Davie, Sunrise. Last-mile distribution belt.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Palm Beach</h4>
-        <p>Lake Worth, Boynton, Riviera Beach, West Palm. The growth frontier.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Treasure Coast</h4>
-        <p>Stuart, Port St. Lucie. Emerging small-bay and flex demand.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Small-Bay Segment</h4>
-        <p>5,000–25,000 SF flex and warehouse. Our highest-conviction subsegment.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Capital Markets</h4>
-        <p>Sales volume, cap rates, buyer composition, debt cost.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Residential — Miami-Dade</h4>
-        <p>20+ farmed submarkets from Kendall to Homestead. Recorded sales &amp; the off-market layer.</p>
-      </div>
-      <div class="coverage-item">
-        <h4>Residential — Polk County</h4>
-        <p>Lakeland, Winter Haven, Haines City. The Orlando-corridor expansion market.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="methodology">
-  <div class="method-grid">
-    <div>
-      <span class="eyebrow">Methodology</span>
-      <h2 class="section-title">Sources &amp; <em>rigor.</em></h2>
-    </div>
-    <div>
-      <p>Market data is triangulated from multiple institutional sources to mitigate vendor-specific bias. We disclose every dataset, time series, and definition. Where we estimate, we say so. Where we project, we publish the assumptions.</p>
-      <div class="source-list">
-        <span>CoStar Group</span>
-        <span>Colliers South Florida</span>
-        <span>JLL Research</span>
-        <span>CBRE Econometric Advisors</span>
-        <span>Real Capital Analytics</span>
-        <span>Dodge Data &amp; Analytics</span>
-        <span>Public county records</span>
-        <span>Maco proprietary tracking</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="subscribe">
-  <div class="subscribe-card">
-    <span class="eyebrow bookend">Quarterly Research</span>
-    <h3>Get reports in <em>your inbox.</em></h3>
-    <p>New research drops the first week of each quarter. No spam — just the data and commentary we'd want to see ourselves.</p>
-    <form class="subscribe-form" action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST">
-      <input type="hidden" name="_subject" value="New research subscriber">
-      <input type="hidden" name="_captcha" value="false">
-      <input type="hidden" name="_next" value="https://macoequitypartners.com/research.html?subscribed=1">
-      <input type="text" name="_honey" style="display:none">
-      <input type="email" name="email" placeholder="your@email.com" required>
-      <button type="submit">Subscribe →</button>
-    </form>
-  </div>
-</section>
-
-<section class="disclaimer-section">
-  <p><strong style="color:var(--ivory-soft)">Disclaimer.</strong> This research is for informational purposes only and does not constitute investment advice, a solicitation, or an offer to buy or sell any security or interest. Past performance is not indicative of future results.</p>
-  <p>Prepared by Maco Equity Partners Research. Inquiries: <a href="mailto:rmac@macoequitypartners.com">rmac@macoequitypartners.com</a> · macoequitypartners.com</p>
-</section>
-
-<footer class="footer">
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <span class="footer-logo">Maco <span class="accent">·</span> Equity Partners</span>
-      <p>A value-add real estate and private equity firm. We underwrite, we execute, we exit — delivering realized returns to our investors.</p>
-    </div>
-    <div class="footer-col">
-      <h4>Firm</h4>
-      <ul>
-        <li><a href="index.html#disciplines">Disciplines</a></li>
-        <li><a href="index.html#network">Network</a></li>
-        <li><a href="index.html#approach">Approach</a></li>
-        <li><a href="index.html#contact">Enquire</a></li>
+  <div class="az-2col-cards">
+    <div class="az-card rv">
+      <span class="az-kicker">What we track</span>
+      <ul class="az-track" style="margin-top:12px">
+        <li>Recorded sales — price, basis, and velocity by submarket</li>
+        <li>Vacancy, absorption, and new supply by corridor</li>
+        <li>The off-market ownership layer — estates, liens, violations, long-term holds</li>
+        <li>Construction costs and insurance trajectory in live underwriting</li>
       </ul>
     </div>
-    <div class="footer-col">
-      <h4>Research</h4>
-      <ul>
-        <li><a href="research.html">Market reports</a></li>
-        <li><a href="blog.html">Journal</a></li>
-        <li><a href="Q1_2026_SFL_Industrial_Overview.html">SFL Industrial Q1</a></li>
-        <li><a href="Q1_2026_Small_Bay_Deals.html">Small-Bay Deals</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>Connect</h4>
-      <ul>
-        <li><a href="mailto:rmac@macoequitypartners.com">rmac@macoequitypartners.com</a></li>
-        <li><a href="index.html#contact">Inquiry form</a></li>
+    <div class="az-card rv">
+      <span class="az-kicker">Sources &amp; method</span>
+      <ul class="az-track" style="margin-top:12px">
+        <li>County recorder &amp; property appraiser feeds, read daily</li>
+        <li>Comp-based ARVs from real recorded sales — never listing feeds</li>
+        <li>Scored nightly by the same engine behind the Deal Analyzer</li>
+        <li>Every figure sourced; every method disclosed in the report</li>
       </ul>
     </div>
   </div>
-  <div class="footer-bottom">
-    <span>© 2026 Maco Equity Partners · South Florida · By appointment</span>
-    <div class="meta">
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-      <a href="disclosures.html">Disclosures</a>
-    </div>
+</section>
+
+<!-- ============ JOURNAL ============ -->
+<section class="az-band" id="journal">
+  <div class="az-sechead">
+    <span class="az-label">The Journal — Field notes from the partners</span>
+    <a class="az-label az-label--mute" href="blog.html" style="border-bottom:1px solid rgba(19,21,18,.3);padding-bottom:2px">All posts →</a>
+  </div>
+  <a class="az-jrow rv" href="post-2026-outlook.html"><span class="t">The 2026 Outlook</span><span class="go">→</span></a>
+  <a class="az-jrow rv" href="post-underwriting-is-the-edge.html"><span class="t">Underwriting Is the Edge</span><span class="go">→</span></a>
+  <a class="az-jrow rv" href="post-value-add-underwrite.html"><span class="t">How We Underwrite Value-Add</span><span class="go">→</span></a>
+  <a class="az-jrow rv" href="post-palm-beach-industrial.html"><span class="t">Palm Beach Industrial</span><span class="go">→</span></a>
+</section>
+
+<!-- ============ SUBSCRIBE (DARK) ============ -->
+<section class="az-engine">
+  <span class="az-label">Get reports in your inbox</span>
+  <h2>Quarterly. Sourced. <span>Free of varnish.</span></h2>
+  <p>New reports land quarterly across both verticals. Ask for the research list — or run the engine behind it yourself.</p>
+  <div class="az-hero-cta" style="margin-top:26px">
+    <a class="az-btn az-btn--primary" href="mailto:rmac@macoequitypartners.com?subject=Research%20list">Request the research list <span class="az-arrow">→</span></a>
+    <a class="az-btn az-btn--ghost" style="color:#F1F1EC;border-color:rgba(241,241,236,.35)" href="index.html">Open the Deal Analyzer <span class="az-arrow">→</span></a>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="az-footer">
+  <div>
+    <span class="az-label">Maco Equity Partners — Underwritten with rigor · Executed with discipline</span><br>
+    <span class="az-label az-label--mute">Not investment advice · ARV comp-based · © 2026</span>
+  </div>
+  <div class="az-flinks">
+    <a href="index.html">Deal Analyzer</a>
+    <a href="firm.html">The Firm</a>
+    <a href="blog.html">Journal</a>
+    <a href="portal.html">Log in</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="disclosures.html">Disclosures</a>
   </div>
 </footer>
 
 <script>
-  const nav = document.getElementById('nav');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 60) nav.classList.add('scrolled');
-    else nav.classList.remove('scrolled');
-  });
+(function(){
+  try{
+    document.documentElement.classList.add('anim');
+    var io=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('on'); io.unobserve(e.target); } });
+    },{threshold:.12});
+    document.querySelectorAll('.rv').forEach(function(el){ io.observe(el); });
+  }catch(e){ document.querySelectorAll('.rv').forEach(function(el){ el.classList.add('on'); }); }
+})();
 </script>
-
 </body>
 </html>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,300;1,9..144,400;1,9..144,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* ============================================================
    Maco Equity Partners — "Miami Ledger" design system
@@ -11,33 +11,33 @@
 
 :root{
   /* Canvas — warm bone paper */
-  --paper:#F3EFE4;
-  --paper-2:#ECE6D7;
-  --paper-3:#E2DAC7;
-  --card:#FBF8F0;
+  --paper:#E9E9E4;
+  --paper-2:#E1E1DB;
+  --paper-3:#D7D7CF;
+  --card:#FDFDFB;
 
   /* Ink — deep forest */
-  --ink:#101D17;
-  --ink-soft:#37463E;
-  --ink-mute:#6A7770;
-  --ink-faint:#9AA298;
+  --ink:#131512;
+  --ink-soft:#4A4E49;
+  --ink-mute:#6B6F6A;
+  --ink-faint:#9A9E97;
 
   /* Brand */
-  --forest:#15402C;
-  --emerald:#1B704A;
-  --jade:#27A268;
-  --brass:#8C6C36;
-  --brass-soft:#A9854A;
-  --brass-line:rgba(140,108,54,.42);
+  --forest:#131512;
+  --emerald:#E8501F;
+  --jade:#E8501F;
+  --brass:#C4471C;
+  --brass-soft:#E8501F;
+  --brass-line:rgba(232,80,31,.40);
 
   /* On dark sections */
-  --on-dark:#F1EEE2;
-  --on-dark-soft:#C4CCC1;
-  --on-dark-mute:#8B968C;
+  --on-dark:#F1F1EC;
+  --on-dark-soft:#C6C8C2;
+  --on-dark-mute:#93968F;
 
   /* Lines */
-  --rule:rgba(16,29,23,.13);
-  --rule-2:rgba(16,29,23,.22);
+  --rule:rgba(19,21,18,.14);
+  --rule-2:rgba(19,21,18,.22);
 
   /* Containers */
   --container:1340px;
@@ -45,11 +45,11 @@
   --container-text:720px;
 
   /* Type */
-  --serif:'Fraunces',Georgia,'Times New Roman',serif;
-  --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --serif:'Schibsted Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;
+  --sans:'Schibsted Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,monospace;
 
-  --shadow:0 40px 90px -45px rgba(16,29,23,.45);
+  --shadow:0 40px 90px -45px rgba(19,21,18,.35);
   --ease:cubic-bezier(.2,.7,.2,1);
 
   /* legacy aliases (kept so any stray var refs still resolve) */
@@ -205,8 +205,8 @@ main,nav,footer,section,header{position:relative;z-index:2}
 .btn-outline{background:transparent;color:var(--emerald);border-color:var(--emerald)}
 .btn-outline:hover{background:var(--emerald);color:var(--card)}
 /* On dark sections */
-.section-dark .btn-primary{background:var(--jade);color:#06140D;border-color:var(--jade)}
-.section-dark .btn-primary:hover{background:#34b878;border-color:#34b878}
+.section-dark .btn-primary{background:var(--jade);color:#FFFFFF;border-color:var(--jade)}
+.section-dark .btn-primary:hover{background:#F0754C;border-color:#F0754C}
 .section-dark .btn-ghost{color:var(--on-dark);border-color:rgba(241,238,226,.25)}
 .section-dark .btn-ghost:hover{border-color:var(--jade);color:var(--jade)}
 
@@ -587,49 +587,49 @@ main,nav,footer,section,header{position:relative;z-index:2}
 @media print{
   @page{
     size:letter;margin:.85in .7in .85in;
-    @top-left{content:"Maco · Equity Partners";font-family:'Fraunces',Georgia,serif;font-size:10pt;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#8C6C36}
-    @top-right{content:"Confidential · macoequitypartners.com";font-family:'Inter',sans-serif;font-size:8pt;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#8C6C36}
-    @bottom-center{content:"Page " counter(page) " of " counter(pages);font-family:'Inter',sans-serif;font-size:8pt;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#8C6C36}
-    @bottom-left{content:"Maco Equity Partners Research";font-family:'Inter',sans-serif;font-size:7pt;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:#aaa}
-    @bottom-right{content:"rmac@macoequitypartners.com";font-family:'Inter',sans-serif;font-size:7pt;font-weight:400;letter-spacing:.12em;color:#aaa}
+    @top-left{content:"Maco · Equity Partners";font-family:'Schibsted Grotesk',sans-serif;font-size:10pt;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#4A4E49}
+    @top-right{content:"Confidential · macoequitypartners.com";font-family:'Schibsted Grotesk',sans-serif;font-size:8pt;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#4A4E49}
+    @bottom-center{content:"Page " counter(page) " of " counter(pages);font-family:'Schibsted Grotesk',sans-serif;font-size:8pt;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:#4A4E49}
+    @bottom-left{content:"Maco Equity Partners Research";font-family:'Schibsted Grotesk',sans-serif;font-size:7pt;font-weight:400;letter-spacing:.15em;text-transform:uppercase;color:#aaa}
+    @bottom-right{content:"rmac@macoequitypartners.com";font-family:'Schibsted Grotesk',sans-serif;font-size:7pt;font-weight:400;letter-spacing:.12em;color:#aaa}
   }
   .print-watermark{display:block !important;position:fixed;inset:0;pointer-events:none;z-index:9999}
-  .print-watermark::before{content:"Maco Equity Partners  ·  Confidential";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:'Fraunces',Georgia,serif;font-size:5.5rem;font-weight:300;color:#15402C;opacity:.05;white-space:nowrap;letter-spacing:.08em;text-transform:uppercase}
-  body{background:#fff !important;color:#101D17 !important}
+  .print-watermark::before{content:"Maco Equity Partners  ·  Confidential";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-family:'Schibsted Grotesk',sans-serif;font-size:5.5rem;font-weight:300;color:#131512;opacity:.05;white-space:nowrap;letter-spacing:.08em;text-transform:uppercase}
+  body{background:#fff !important;color:#131512 !important}
   body::before{display:none !important}
   .nav,.nav-toggle,.footer,.scroll-indicator,.hero-scroll,.report-actions,.post-actions,.post-footer-cta,.report-disclaimer,.cta-section,.cta-strip,.subscribe,.editorial,.related-posts,.featured-section,.filters-bar,.posts-section,.nav-cta,.scroll-progress,.marquee{display:none !important}
-  section,.report-hero,.report-body,.report-tldr,.report-kpi,.report-methodology,.post-hero,.post-body{background:#fff !important;color:#101D17 !important;padding:.5rem 0 !important;border:none !important}
+  section,.report-hero,.report-body,.report-tldr,.report-kpi,.report-methodology,.post-hero,.post-body{background:#fff !important;color:#131512 !important;padding:.5rem 0 !important;border:none !important}
   .report-hero,.post-hero{padding-top:0 !important}
   .report-hero-mark img,.nav-logo img{filter:none !important;opacity:1 !important}
-  h1,h2,h3,h4,.section-title{color:#101D17 !important}
-  h1 em,h2 em,h3 em,.section-title em{color:#1B704A !important}
-  p,li,td,.subtitle{color:#101D17 !important}
-  strong{color:#101D17 !important}
-  .eyebrow,.eyebrow::before,.eyebrow::after,.report-hero-meta,.post-meta,.report-section-num,.report-kpi-source,.report-chart-eyebrow,.report-chart-source,.post-cat{color:#8C6C36 !important}
-  .eyebrow::before,.eyebrow::after{background:#8C6C36 !important}
+  h1,h2,h3,h4,.section-title{color:#131512 !important}
+  h1 em,h2 em,h3 em,.section-title em{color:#E8501F !important}
+  p,li,td,.subtitle{color:#131512 !important}
+  strong{color:#131512 !important}
+  .eyebrow,.eyebrow::before,.eyebrow::after,.report-hero-meta,.post-meta,.report-section-num,.report-kpi-source,.report-chart-eyebrow,.report-chart-source,.post-cat{color:#4A4E49 !important}
+  .eyebrow::before,.eyebrow::after{background:#4A4E49 !important}
   .report-kpi-band{border-top:1px solid #ccc !important;border-bottom:1px solid #ccc !important;page-break-inside:avoid}
   .report-kpi-band .kpi{border-right:1px solid #ddd !important}
-  .report-kpi-band .kpi-value{color:#101D17 !important}
-  .report-kpi-band .kpi-delta{color:#1B704A !important}
-  .report-tldr-inner{background:#FAF8F1 !important;border-left:2px solid #8C6C36 !important;page-break-inside:avoid}
-  .report-tldr-inner li::before{background:#1B704A !important}
-  .report-chart{background:#FAF8F1 !important;border:1px solid #ddd !important;page-break-inside:avoid}
+  .report-kpi-band .kpi-value{color:#131512 !important}
+  .report-kpi-band .kpi-delta{color:#E8501F !important}
+  .report-tldr-inner{background:#F4F4F0 !important;border-left:2px solid #4A4E49 !important;page-break-inside:avoid}
+  .report-tldr-inner li::before{background:#E8501F !important}
+  .report-chart{background:#F4F4F0 !important;border:1px solid #ddd !important;page-break-inside:avoid}
   .report-chart text[fill="#8a8478"]{fill:#666 !important}
-  .report-table th{color:#8C6C36 !important;border-bottom:1px solid #999 !important}
-  .report-table td{color:#101D17 !important;border-bottom:1px solid #e0e0e0 !important}
-  .report-table tr.total td{background:#FAF8F1 !important;border-top:1px solid #999 !important}
+  .report-table th{color:#4A4E49 !important;border-bottom:1px solid #999 !important}
+  .report-table td{color:#131512 !important;border-bottom:1px solid #e0e0e0 !important}
+  .report-table tr.total td{background:#F4F4F0 !important;border-top:1px solid #999 !important}
   .report-table-wrap{page-break-inside:avoid}
-  .report-deal{background:#FAF8F1 !important;border:1px solid #ddd !important;page-break-inside:avoid}
+  .report-deal{background:#F4F4F0 !important;border:1px solid #ddd !important;page-break-inside:avoid}
   .report-deal .submarket{color:#555 !important}
-  .report-deal-stat .label{color:#8C6C36 !important}
-  .report-deal-stat .value{color:#101D17 !important}
-  .report-callout,.post-callout{background:#FAF8F1 !important;border-left:2px solid #1B704A !important;page-break-inside:avoid}
-  .report-callout-label,.post-callout strong{color:#1B704A !important}
-  .post-callout p{color:#101D17 !important}
-  .report-blockquote,.post-body-inner blockquote{color:#101D17 !important;border-left-color:#8C6C36 !important}
-  .report-blockquote em,.post-body-inner blockquote em{color:#1B704A !important}
-  .post-body-inner > p:first-of-type{color:#101D17 !important}
-  .report-methodology .source-list span{border:1px solid #ddd !important;color:#101D17 !important}
+  .report-deal-stat .label{color:#4A4E49 !important}
+  .report-deal-stat .value{color:#131512 !important}
+  .report-callout,.post-callout{background:#F4F4F0 !important;border-left:2px solid #E8501F !important;page-break-inside:avoid}
+  .report-callout-label,.post-callout strong{color:#E8501F !important}
+  .post-callout p{color:#131512 !important}
+  .report-blockquote,.post-body-inner blockquote{color:#131512 !important;border-left-color:#4A4E49 !important}
+  .report-blockquote em,.post-body-inner blockquote em{color:#E8501F !important}
+  .post-body-inner > p:first-of-type{color:#131512 !important}
+  .report-methodology .source-list span{border:1px solid #ddd !important;color:#131512 !important}
   .report-section{page-break-inside:avoid}
   .report-section h2,.post-body-inner h2{page-break-after:avoid}
   .hero,.hero::before,.hero::after,.hero-image,.network-image,.network::before{display:none !important}
