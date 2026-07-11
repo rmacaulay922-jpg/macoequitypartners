@@ -57,3 +57,12 @@ tools/real_refresh_state.txt
 tools/refresh_task_debug.log
 tools/steer_state_once.bat
 tools/__pycache__/
+
+# Digest: local state/log + credentials/recipients (PII + secrets — never commit)
+tools/digest_state.json
+tools/digest.log
+tools/digest_smtp.json
+tools/digest_recipients.txt
+
+# Field Intel: dated memos are PAID subscriber content — only the template ships
+tools/field-intel/2*.html
