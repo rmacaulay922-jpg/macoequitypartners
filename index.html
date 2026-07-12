@@ -981,8 +981,8 @@ svg.leaflet-image-layer.leaflet-interactive path {
       <img src="assets/da-01.png" alt="Maco Equity Partners" style="height:46px;width:auto;display:block">
       <span class="nav-tag" style="font:600 8.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:3px 7px;border-radius:2px">DEAL ANALYZER</span>
     </div>
-    <div class="nav-links" style="display:flex;gap:28px;font:500 12px 'Schibsted Grotesk',sans-serif;color:#6B6F6A">
-      <span>The Firm</span><span>How it works</span><span>Live map</span><span>Pricing</span><span>Research</span>
+    <div class="nav-links" style="display:flex;gap:20px;font:500 12px 'Schibsted Grotesk',sans-serif;color:#6B6F6A">
+      <span>Product</span><span>How It Works</span><span>Markets</span><span>Pricing</span><span>Reports</span><span>Research</span><span>Firm</span>
     </div>
     <div style="display:flex;gap:10px;align-items:center">
       <span style="font:600 11.5px 'Schibsted Grotesk',sans-serif;padding:9px 16px;color:#131512;cursor:pointer">Log in</span>
@@ -991,7 +991,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <!-- ============ HERO ============ -->
-  <div class="hero-wrap" style="display:flex;justify-content:space-between;align-items:flex-end;padding:52px 44px 34px">
+  <div id="product" class="hero-wrap" style="display:flex;justify-content:space-between;align-items:flex-end;padding:52px 44px 34px">
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
         <span style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.2em;color:#E8501F">THE OFF-MARKET DEAL ANALYZER · SOUTH FLORIDA</span>
@@ -1013,7 +1013,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   </div>
 
   <!-- ============ SIGNAL DATA BAND ============ -->
-  <div class="signal-pad" style="padding:0 44px 34px;border-bottom:1px solid rgba(19,21,18,.14)">
+  <div id="how" class="signal-pad" style="padding:0 44px 34px;border-bottom:1px solid rgba(19,21,18,.14)">
     <div class="signal-head" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
       <span style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.18em;color:#131512">WHAT THE ENGINE READS — STRAIGHT FROM COUNTY RECORDS</span>
       <span id="signal-vintage" style="font:400 10px 'IBM Plex Mono',monospace;color:#9A9E97">EVERY SIGNAL FEEDS THE SCORE · COUNTS VERIFIED JUL 11, 2026</span>
@@ -1176,12 +1176,15 @@ DEALS.forEach(function (d, i) {
 
 <script>
 (function(){
+  // Canonical nav — identical labels + order to the da-nav on every other page.
   var NAV = {
-    'The Firm':      {href:'firm.html'},
+    'Product':       {scrollEl:'product'},
+    'How It Works':  {scrollEl:'how'},
+    'Markets':       {href:'markets.html'},
+    'Pricing':       {href:'pricing.html'},
+    'Reports':       {href:'reports.html'},
     'Research':      {href:'research.html'},
-    'How it works':  {href:'demo.html'},
-    'Live map':      {scrollEl:'map', scroll:['The deal board']},
-    'Pricing':       {href:'pricing.html'}
+    'Firm':          {href:'firm.html'}
   };
   var ACT = {
     'Log in':                {href:'portal.html'},
@@ -1200,7 +1203,7 @@ DEALS.forEach(function (d, i) {
       }
     }
   }
-  var HASHMAP = {'#how': NAV['Live map'], '#map': NAV['Live map'], '#pricing': {scroll:['Simple monthly pricing']}};
+  var HASHMAP = {'#product': NAV['Product'], '#how': NAV['How It Works'], '#map': {scrollEl:'map', scroll:['The deal board']}, '#pricing': {scroll:['Simple monthly pricing']}};
   var hashTried = false;
   function tryHash(){
     if(hashTried) return; hashTried = true;
