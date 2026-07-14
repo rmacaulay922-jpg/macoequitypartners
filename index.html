@@ -182,6 +182,64 @@ a{color:inherit;text-decoration:none;}
 .leaflet-tooltip.mkt:before{display:none;}
 .leaflet-control-zoom a{color:var(--ink)!important;border-color:var(--line)!important;}
 
+/* ===== HOW IT WORKS (portal walkthrough) ===== */
+.hiw{padding:56px 40px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBF9F2,#F7F7F4);}
+.steps{display:flex;flex-direction:column;gap:34px;margin-top:32px;}
+.step{display:grid;grid-template-columns:1fr 1.06fr;gap:40px;align-items:center;}
+.step.rev .txt{order:2;}.step.rev .mock{order:1;}
+.step .num{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.14em;color:var(--orange);}
+.step h3{font-weight:800;letter-spacing:-.02em;font-size:clamp(20px,2.5vw,26px);margin:8px 0 10px;}
+.step .txt>p{font-size:15px;line-height:1.55;color:var(--soft);margin:0;max-width:46ch;}
+.step .mini{margin-top:14px;display:flex;flex-direction:column;gap:7px;}
+.step .mini span{font-size:13.5px;color:var(--mute);display:flex;gap:9px;align-items:flex-start;line-height:1.4;}
+.step .mini .ck{color:var(--orange);font-weight:800;flex:0 0 auto;}
+/* dark portal mockups (match the real portal: #131512 + orange #E8501F + green #3DBE82) */
+.mock{background:#131512;border:1px solid rgba(241,241,236,.12);border-radius:12px;overflow:hidden;box-shadow:0 34px 64px -36px rgba(19,21,18,.72);color:#F1F1EC;}
+.pw-bar{display:flex;align-items:center;gap:8px;padding:11px 14px;background:#0E100D;border-bottom:1px solid rgba(241,241,236,.1);font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:#A2A69E;text-transform:uppercase;}
+.pw-dot{width:6px;height:6px;border-radius:50%;background:#3DBE82;animation:blink 1.5s infinite;}
+.pw-badge{margin-left:auto;background:rgba(232,80,31,.16);color:#F0754C;font-size:8px;letter-spacing:.08em;padding:2px 7px;border-radius:4px;}
+.pw-body{padding:15px 16px;}
+.pw-lbl{font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:#83877E;text-transform:uppercase;margin-bottom:8px;}
+.pw-select{display:flex;justify-content:space-between;align-items:center;background:#1A1C19;border:1px solid rgba(241,241,236,.14);border-radius:8px;padding:11px 13px;font-weight:600;font-size:13px;color:#F1F1EC;}
+.pw-chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.pw-chip{font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding:4px 9px;border-radius:20px;border:1px solid rgba(241,241,236,.14);color:#A2A69E;}
+.pw-chip.on{background:rgba(232,80,31,.16);border-color:rgba(232,80,31,.4);color:#F0754C;}
+.pw-tr{display:grid;grid-template-columns:1.5fr .8fr 1.05fr auto;gap:8px;align-items:center;padding:9px 16px;border-top:1px solid rgba(241,241,236,.07);font-size:12px;}
+.pw-th{border-top:none;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#83877E;text-transform:uppercase;}
+.pw-grn{color:#3DBE82;font-weight:700;}
+.pw-sc{justify-self:end;width:30px;height:30px;border-radius:50%;background:#E8501F;color:#131512;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;}
+.pw-sc.b{background:#F0754C;}.pw-sc.c{background:#8C8F86;color:#131512;}
+.pw-scrow{display:flex;align-items:center;gap:13px;}
+.pw-circle{width:46px;height:46px;border-radius:50%;background:#E8501F;color:#131512;font-weight:800;font-size:17px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.pw-addr{font-size:14px;font-weight:800;}.pw-sub{font-family:var(--mono);font-size:8.5px;color:#83877E;margin-top:3px;}
+.pw-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:13px;}
+.pw-metric{background:#1A1C19;border:1px solid rgba(241,241,236,.1);border-radius:7px;padding:9px 10px;}
+.pw-metric b{display:block;font-size:15px;font-weight:800;}
+.pw-metric span{font-family:var(--mono);font-size:7px;letter-spacing:.06em;color:#83877E;text-transform:uppercase;}
+.pw-tags{display:flex;gap:5px;margin-top:12px;flex-wrap:wrap;}
+.pw-tag{font-family:var(--mono);font-size:8px;color:#F0754C;background:rgba(232,80,31,.12);border:1px solid rgba(232,80,31,.28);border-radius:12px;padding:3px 8px;}
+.pw-uw{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:15px 16px;}
+.pw-field{background:#1A1C19;border:1px solid rgba(241,241,236,.14);border-radius:7px;padding:8px 10px;margin-bottom:8px;}
+.pw-field span{font-family:var(--mono);font-size:7px;letter-spacing:.06em;color:#83877E;text-transform:uppercase;display:block;margin-bottom:2px;}
+.pw-field b{font-size:14px;font-weight:700;}
+.pw-field .cur{position:relative;}.pw-field .cur::after{content:"▾";position:absolute;right:0;top:-14px;color:#E8501F;font-size:10px;}
+.pw-result{background:linear-gradient(180deg,#1B1D1A,#131512);border:1px solid rgba(232,80,31,.3);border-radius:8px;padding:14px;display:flex;flex-direction:column;justify-content:center;}
+.pw-result .rl{font-family:var(--mono);font-size:7.5px;letter-spacing:.1em;color:#83877E;text-transform:uppercase;}
+.pw-result .big{font-size:25px;font-weight:800;color:#3DBE82;letter-spacing:-.02em;margin-top:3px;}
+.pw-result .mg{font-size:12px;color:#D2D4CD;margin-top:4px;}
+.pw-result .buy{margin-top:11px;align-self:flex-start;font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:#131512;background:#3DBE82;padding:4px 11px;border-radius:5px;font-weight:700;}
+.pw-line{display:flex;justify-content:space-between;padding:8px 16px;border-top:1px solid rgba(241,241,236,.07);font-size:12px;color:#D2D4CD;}
+.pw-line .v{color:#F1F1EC;font-weight:600;}
+.pw-line.tot{background:#0E100D;font-weight:800;color:#F1F1EC;}.pw-line.tot .v{color:#E8501F;}
+.pw-kanban{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:14px;}
+.pw-col{background:#0E100D;border:1px solid rgba(241,241,236,.09);border-radius:8px;padding:8px;}
+.pw-colh{font-family:var(--mono);font-size:7.5px;letter-spacing:.08em;color:#83877E;text-transform:uppercase;margin-bottom:8px;display:flex;justify-content:space-between;}
+.pw-colh i{color:#E8501F;font-style:normal;font-weight:700;}
+.pw-pc{background:#1A1C19;border:1px solid rgba(241,241,236,.1);border-radius:6px;padding:7px 8px;margin-bottom:6px;position:relative;}
+.pw-pc b{font-size:11px;font-weight:700;display:block;padding-right:22px;}
+.pw-pc span{font-family:var(--mono);font-size:8px;color:#3DBE82;}
+.pw-pc em{position:absolute;top:6px;right:6px;font-style:normal;font-family:var(--mono);font-size:9px;font-weight:800;color:#E8501F;}
+
 /* responsive */
 @media (max-width:900px){.hnav .lk{display:none;}}
 @media (max-width:840px){
@@ -191,6 +249,8 @@ a{color:inherit;text-decoration:none;}
   .split{grid-template-columns:1fr;}
   .split .ph{min-height:300px;}
   .mkts{grid-template-columns:1fr;}
+  .step{grid-template-columns:1fr;gap:20px;}
+  .step.rev .txt,.step.rev .mock{order:0;}
 }
 @media (max-width:720px){
   .hero{min-height:640px;}
@@ -246,7 +306,7 @@ a{color:inherit;text-decoration:none;}
   </header>
 
   <!-- ===== SIGNALS BAND ===== -->
-  <section class="signals" id="how">
+  <section class="signals" id="signals">
     <div class="sgrid">
       <div>
         <span class="eb">The signals nationwide tools skip</span>
@@ -289,6 +349,156 @@ a{color:inherit;text-decoration:none;}
       </div>
     </div>
     <div class="mrcredit">Sample board · masked addresses, illustrative deals · basemap © OpenStreetMap contributors © CARTO</div>
+  </section>
+
+  <!-- ===== HOW IT WORKS (portal walkthrough) ===== -->
+  <section class="hiw" id="how">
+    <div class="ctr"><span class="eb">How it works</span><h2>County records to a closed deal — <span class="o">one login.</span></h2></div>
+    <div class="steps">
+
+      <!-- 1 · Pick your market -->
+      <div class="step">
+        <div class="txt">
+          <div class="num">STEP 01</div>
+          <h3>Pick your market.</h3>
+          <p>Log in and choose your county farm. Maco has already pulled and scored every property in it from the county's own records — you're not starting from a blank search.</p>
+          <div class="mini">
+            <span><span class="ck">→</span>Miami-Dade, Broward, Palm Beach + three more counties, live.</span>
+            <span><span class="ck">→</span>Refreshed nightly — no data entry, no list-buying.</span>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="pw-bar"><span class="pw-dot"></span>Maco Deal Analyzer</div>
+          <div class="pw-body">
+            <div class="pw-lbl">Choose your market</div>
+            <div class="pw-select">Miami-Dade · Kendall / Pinecrest farm <span style="color:#E8501F">▾</span></div>
+            <div class="pw-chips"><span class="pw-chip on">Miami-Dade</span><span class="pw-chip">Broward</span><span class="pw-chip">Palm Beach</span><span class="pw-chip">Lee</span><span class="pw-chip">Collier</span><span class="pw-chip">Sarasota</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2 · Tonight's ranked board -->
+      <div class="step rev">
+        <div class="txt">
+          <div class="num">STEP 02</div>
+          <h3>Open tonight's ranked board.</h3>
+          <p>Every property is scored 0–100 on distress signals and sorted by estimated net profit. The three worth a call this week float to the top — sort by ARV, profit, or score.</p>
+          <div class="mini">
+            <span><span class="ck">→</span>Comp-based ARV and an est. net profit on every row.</span>
+            <span><span class="ck">→</span>Filter by signal, beds, value or ZIP in one click.</span>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="pw-bar">Top Deals by Deal Score<span class="pw-badge">50</span></div>
+          <div class="pw-tr pw-th"><span>Address</span><span>ARV</span><span>Est. net profit</span><span>Score</span></div>
+          <div class="pw-tr"><span>9·· NE 12th Ave</span><span>$412K</span><span class="pw-grn">+$71K</span><span class="pw-sc">94</span></div>
+          <div class="pw-tr"><span>12·· SE 4th St</span><span>$596K</span><span class="pw-grn">+$96K</span><span class="pw-sc">88</span></div>
+          <div class="pw-tr"><span>4·· NW 3rd St</span><span>$389K</span><span class="pw-grn">+$58K</span><span class="pw-sc b">86</span></div>
+          <div class="pw-tr"><span>23·· McKinley St</span><span>$421K</span><span class="pw-grn">+$47K</span><span class="pw-sc b">84</span></div>
+        </div>
+      </div>
+
+      <!-- 3 · Open the dossier -->
+      <div class="step">
+        <div class="txt">
+          <div class="num">STEP 03</div>
+          <h3>Open the dossier.</h3>
+          <p>One click opens the full picture: the score, the exact distress signals behind it, ownership and mailing address, and the comp-based numbers — before you ever pick up the phone.</p>
+          <div class="mini">
+            <span><span class="ck">→</span>The signals that scored it: liens, code cases, vacancy, absentee owner.</span>
+            <span><span class="ck">→</span>Owner + mailing address pulled from the county roll.</span>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="pw-bar">Dossier · 9·· NE 12th Ave</div>
+          <div class="pw-body">
+            <div class="pw-scrow"><div class="pw-circle">94</div><div><div class="pw-addr">9·· NE 12th Ave</div><div class="pw-sub">BOYNTON BEACH 33435 · 3 / 2 · 1,512 SF · 1962</div></div></div>
+            <div class="pw-metrics"><div class="pw-metric"><b>$412K</b><span>Comp ARV</span></div><div class="pw-metric"><b>$78K</b><span>Repair est</span></div><div class="pw-metric"><b style="color:#3DBE82">+$71K</b><span>Net profit</span></div></div>
+            <div class="pw-tags"><span class="pw-tag">2 LIENS</span><span class="pw-tag">VACANT</span><span class="pw-tag">ABSENTEE · GA</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 · Underwrite the flip -->
+      <div class="step rev">
+        <div class="txt">
+          <div class="num">STEP 04</div>
+          <h3>Underwrite the flip in seconds.</h3>
+          <p>The built-in underwriter models the whole flip P&amp;L. Change the ARV, repair budget, purchase price or hold time and the net profit and margin update live — so you know your number before you offer.</p>
+          <div class="mini">
+            <span><span class="ck">→</span>Hard-money assumptions baked in, fully editable.</span>
+            <span><span class="ck">→</span>It'll tell you when a deal doesn't pencil.</span>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="pw-bar">Underwriter<span class="pw-badge">Flip / Hold P&amp;L</span></div>
+          <div class="pw-uw">
+            <div>
+              <div class="pw-field"><span>ARV (after-repair value)</span><b class="cur">$412,000</b></div>
+              <div class="pw-field"><span>Repair budget</span><b class="cur">$78,000</b></div>
+              <div class="pw-field"><span>Purchase price</span><b class="cur">$255,000</b></div>
+            </div>
+            <div class="pw-result">
+              <div class="rl">Est. net profit</div>
+              <div class="big">+$71,400</div>
+              <div class="mg">17% margin · 7-mo flip</div>
+              <div class="buy">BUY ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5 · Estimate the rehab -->
+      <div class="step">
+        <div class="txt">
+          <div class="num">STEP 05</div>
+          <h3>Estimate the rehab.</h3>
+          <p>The construction estimator prices the scope at current Miami market rates, so your repair number isn't a guess. Feed it straight back into the underwriter.</p>
+          <div class="mini">
+            <span><span class="ck">→</span>Line-item costs by system — roof, kitchen, baths, finishes.</span>
+            <span><span class="ck">→</span>Tuned to South Florida labor and materials.</span>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="pw-bar">Construction Cost Estimator<span class="pw-badge">Miami rates</span></div>
+          <div class="pw-line"><span>Roof — replace, 22 sq</span><span class="v">$14,200</span></div>
+          <div class="pw-line"><span>Kitchen — full gut</span><span class="v">$22,000</span></div>
+          <div class="pw-line"><span>Bathrooms (2)</span><span class="v">$12,500</span></div>
+          <div class="pw-line"><span>Impact windows + paint + floors</span><span class="v">$29,300</span></div>
+          <div class="pw-line tot"><span>Total repair estimate</span><span class="v">$78,000</span></div>
+        </div>
+      </div>
+
+      <!-- 6 · Work your pipeline -->
+      <div class="step rev">
+        <div class="txt">
+          <div class="num">STEP 06</div>
+          <h3>Work it in your pipeline.</h3>
+          <p>Drag the keepers into your CRM board and move them from reviewing to offer to closed. Notes, numbers and status live in one place — the whole hunt, start to finish, in one login.</p>
+          <div class="mini">
+            <span><span class="ck">→</span>Drag-and-drop stages with per-deal notes.</span>
+            <span><span class="ck">→</span>Print a clean one-page report for any property.</span>
+          </div>
+        </div>
+        <div class="mock">
+          <div class="pw-bar">Pipeline</div>
+          <div class="pw-kanban">
+            <div class="pw-col"><div class="pw-colh"><span>Reviewing</span><i>2</i></div>
+              <div class="pw-pc"><em>94</em><b>9·· NE 12th Ave</b><span>+$71K</span></div>
+              <div class="pw-pc"><em>86</em><b>4·· NW 3rd St</b><span>+$58K</span></div>
+            </div>
+            <div class="pw-col"><div class="pw-colh"><span>Contacted</span><i>1</i></div>
+              <div class="pw-pc"><em>88</em><b>12·· SE 4th St</b><span>+$96K</span></div>
+            </div>
+            <div class="pw-col"><div class="pw-colh"><span>Offer</span><i>1</i></div>
+              <div class="pw-pc"><em>81</em><b>8·· W 4th Ave</b><span>+$54K</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div style="text-align:center;margin-top:36px"><a class="btn btn-o" href="trial.html">Try it free for 7 days →<span class="shine"></span></a></div>
   </section>
 
   <!-- ===== TRUST ===== -->
@@ -355,7 +565,7 @@ a{color:inherit;text-decoration:none;}
 (function(){
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   var DEALS=[
-    {rank:1,score:94,grade:"A",addr:"9·· NE 12th Ave",city:"Boynton Beach",zip:"33435",bb:"3 / 2",sf:"1,512",yr:"1962",arv:"$412K",rep:"$78K",lat:26.525,lng:-80.066,tags:["2 LIENS","VACANT","ABSENTEE"],read:"Two lien searches in 24 months, water shut off since spring, owner mails out of state.",margin:"Underwrites to a 19% margin at ARV.",verdict:"WORTH A CALL"},
+    {rank:1,score:94,grade:"A",addr:"9·· NE 12th Ave",city:"Boynton Beach",zip:"33435",bb:"3 / 2",sf:"1,512",yr:"1962",arv:"$412K",rep:"$78K",lat:26.525,lng:-80.066,tags:["2 LIENS","VACANT","ABSENTEE"],read:"Two lien searches in 24 months, water shut off since spring, owner mails out of state.",margin:"Underwrites to a 17% margin at ARV.",verdict:"WORTH A CALL"},
     {rank:2,score:88,grade:"A",addr:"12·· SE 4th St",city:"Fort Lauderdale",zip:"33301",bb:"3 / 2",sf:"1,704",yr:"1958",arv:"$596K",rep:"$110K",lat:26.122,lng:-80.137,tags:["OPEN CODE CASE","ABSENTEE"],read:"Open unsafe-structure case; owner's mailing address is out of state.",margin:"Underwrites to a 21% margin at ARV.",verdict:"WORTH A CALL"},
     {rank:3,score:86,grade:"B",addr:"4·· NW 3rd St",city:"Pompano Beach",zip:"33060",bb:"3 / 1",sf:"1,240",yr:"1965",arv:"$389K",rep:"$92K",lat:26.234,lng:-80.125,tags:["EXPIRED PERMIT","TIRED"],read:"A 2019 permit was pulled and never closed — a stalled rehab.",margin:"Underwrites to a 16% margin at ARV.",verdict:"WORTH A CALL"},
     {rank:4,score:84,grade:"B",addr:"23·· McKinley St",city:"Hollywood",zip:"33020",bb:"2 / 1",sf:"1,066",yr:"1954",arv:"$421K",rep:"$103K",lat:26.011,lng:-80.150,tags:["LIEN","LONG-HELD"],read:"Held 20+ years with a fresh municipal lien — a tired-landlord signal.",margin:"Underwrites to a 13% margin at ARV.",verdict:"WORTH A CALL"},
