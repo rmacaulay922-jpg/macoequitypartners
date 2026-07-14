@@ -694,7 +694,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </button>
     <div id="loginErr"></div>
-    <div style="margin-top:16px;font-size:11.5px;color:rgba(244,241,234,.55)">No access code? <a href="demo.html" style="color:#27A268;text-decoration:underline">Book a 20-minute demo</a> — 7-day trial included, no card required.</div>
+    <div style="margin-top:16px;font-size:11.5px;color:rgba(244,241,234,.55)">No access code? <a href="trial.html" style="color:#E8501F;text-decoration:underline">Start your free trial</a> — 7 days, no card. Or <a href="demo.html" style="color:#A2A69E;text-decoration:underline">book a 20-minute demo</a>.</div>
   </div>
 </div>
 
@@ -751,7 +751,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <div id="briefGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>
     <div style="margin-top:18px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;max-width:820px;">
       <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:8px;">What happens next</div>
-      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.8;">1&#41; You flag a deal you like &rarr; 2&#41; Ryan walks the property and verifies everything (MLS comps, title &amp; lien payoffs, insurance quotes, contractor bids) &rarr; 3&#41; You get the full verified underwriting &rarr; 4&#41; Close through licensed title &amp; counsel. <button type="button" onclick="toggleGlossary(true)" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12.5px;text-decoration:underline dotted;padding:0;">Any term unclear? Plain-English glossary.</button></div>
+      <div style="font-size:12.5px;color:var(--ivory-soft);line-height:1.8;">1&#41; You flag a deal you like &rarr; 2&#41; our team walks the property and verifies everything (MLS comps, title &amp; lien payoffs, insurance quotes, contractor bids) &rarr; 3&#41; You get the full verified underwriting &rarr; 4&#41; Close through licensed title &amp; counsel. <button type="button" onclick="toggleGlossary(true)" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12.5px;text-decoration:underline dotted;padding:0;">Any term unclear? Plain-English glossary.</button></div>
     </div>
   </div>
   <div id="tab-overview" class="tab-content active">
@@ -1575,7 +1575,7 @@ var STAT_ICON_NAMES=['building','gauge','home','dollar','bars','sales'];
         if(!t0){t0=String(Date.now());try{localStorage.setItem(tk,t0);}catch(e){}}
         if(Date.now()-parseInt(t0,10)>TRIAL_MS){
           try{_beacon('trial-expired',who+' ('+pw+')');}catch(e){}
-          fail('Trial expired — keep it for $40/mo at macoequitypartners.com/trial.html');
+          fail('Trial expired — see plans at macoequitypartners.com/pricing.html');
           return;
         }
       }
@@ -1654,11 +1654,11 @@ function ctaSend(addr, area, btn){
       property:addr,area:area||'',investor:who,when:new Date().toLocaleString()})})
   .then(function(r){if(!r.ok)throw 0;return r.json();})
   .then(function(){
-    if(btn){btn.textContent='\u2713 Sent \u2014 Ryan will reach out';}
-    try{toast('Got it \u2014 Ryan has been notified about '+addr);}catch(e){}
+    if(btn){btn.textContent='\u2713 Sent \u2014 Maco will reach out';}
+    try{toast('Got it \u2014 Maco has been notified about '+addr);}catch(e){}
   })
   .catch(function(){ // network/service hiccup -> fall back to the visitor's mail app
-    if(btn){btn.disabled=false;btn.innerHTML='&#9993; I\u2019m Interested \u2014 Talk to Ryan';}
+    if(btn){btn.disabled=false;btn.innerHTML='&#9993; I\u2019m Interested \u2014 Talk to Maco';}
     location.href='mailto:rmac@macoequitypartners.com?subject='+encodeURIComponent('Interested in '+addr+' (Maco portal)');
   });
 }
@@ -2107,7 +2107,7 @@ function briefLeads(host){
   var src=[]; try{src=(_LSRC()||[]).slice();}catch(e){}
   var label=((MARKETS[window._market]||{}).label)||'This market';
   _briefControls(true,_uniqSorted(src.map(function(l){return l.c;})));
-  _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds). This market has <strong>no sold-comp feed</strong>, so cards show the <strong>county value</strong>, not a resale estimate &mdash; Ryan verifies true value &amp; condition before any offer. <span id="briefUpdated" style="color:var(--gold);"></span>');
+  _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds). This market has <strong>no sold-comp feed</strong>, so cards show the <strong>county value</strong>, not a resale estimate &mdash; our team verifies true value &amp; condition before any offer. <span id="briefUpdated" style="color:var(--gold);"></span>');
   var list=_briefSortLeads(src.filter(function(l){return !_briefState.area||l.c===_briefState.area;}));
   var picks=list.slice(0,6); window._briefLeadList=picks;
   if(!picks.length){_briefEmpty(host,'No leads match this area filter. Choose &ldquo;All areas&rdquo; to see the full '+_escHtml(label)+' list.');_briefCount(src.length,0);return;}
@@ -2456,7 +2456,7 @@ document.addEventListener('click',function(e){
 // Investor CTA — the one action an outside investor needs (Jul 2026 audit: no conversion path existed).
 function ctaBtn(d,style){
   // Posts interest straight to Ryan's inbox (works even with no mail app); ctaSend falls back to mailto.
-  return '<button type="button" class="btn btn-gold mep-cta" style="'+(style||'')+'" onclick="event.stopPropagation();ctaSend(\''+pcJs(d.address)+'\',\''+pcJs(d.neighborhood||'')+'\',this)">&#9993; I\'m Interested &mdash; Talk to Ryan</button>';
+  return '<button type="button" class="btn btn-gold mep-cta" style="'+(style||'')+'" onclick="event.stopPropagation();ctaSend(\''+pcJs(d.address)+'\',\''+pcJs(d.neighborhood||'')+'\',this)">&#9993; I\'m Interested &mdash; Talk to Maco</button>';
 }
 function svPhoto(d,idx){
   return '<div id="dealphoto-'+idx+'" style="height:150px;position:relative;background:#181612 center/cover no-repeat;border-bottom:1px solid var(--border);border-radius:var(--card-radius) var(--card-radius) 0 0;overflow:hidden;">'
@@ -5193,7 +5193,7 @@ function mxRenderVelocity(host){
 function mxRenderBuyBox(host){
   var sales = (typeof SALES!=='undefined' && SALES) ? SALES : [];
   host.innerHTML='';
-  host.appendChild(mxEl('div','mx-h','Buy Box Analysis &mdash; Ryan’s Criteria'));
+  host.appendChild(mxEl('div','mx-h','Buy Box Analysis &mdash; Maco Criteria'));
   host.appendChild(mxEl('p','mx-sub','How the 176 closed comps map against the target acquisition box. Purchase price is proxied by comp sale price.'));
 
   var crit=mxEl('div',null,
