@@ -30,261 +30,323 @@
 <style>
 :root{--page:#F7F7F4;--paper:#F3EFE4;--panel:#FDFDFB;--ink:#131512;--soft:#4A4E49;--mute:#6B6F6A;--faint:#9A9E97;
   --line:rgba(19,21,18,.12);--line2:rgba(19,21,18,.08);--orange:#E8501F;--orange-dk:#C43A1A;--amber:#D9722A;--sand:#9E8763;
-  --sans:'Schibsted Grotesk',-apple-system,system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;}
+  --dark:#0F110E;--cream:#F1EEE4;--sans:'Schibsted Grotesk',-apple-system,system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;}
 *{box-sizing:border-box;}
-body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
 a{color:inherit;text-decoration:none;}
-.site{max-width:1200px;margin:0 auto;background:var(--page);}
+.site{max-width:1200px;margin:0 auto;background:var(--page);overflow:hidden;}
 .mark{transform:rotate(45deg);display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:22px;height:22px;}
-.mark i{border-radius:2px;background:#131512;}.mark i.c{background:var(--orange);}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(247,247,244,.92);backdrop-filter:blur(8px);z-index:2000;}
-.brand{display:flex;align-items:center;gap:11px;}.brand .wm{font-weight:800;font-size:15px;}
-.navlinks{display:flex;gap:20px;font-size:12.5px;font-weight:500;color:var(--mute);}
-.navlinks a:hover{color:var(--ink);}.navlinks a.on{color:var(--ink);font-weight:700;}
-.btn{position:relative;font-weight:700;font-size:12.5px;padding:12px 22px;border-radius:6px;display:inline-block;cursor:pointer;white-space:nowrap;overflow:hidden;transition:transform .16s,background .16s;border:none;}
-.btn-o{background:var(--orange);color:#fff;box-shadow:0 10px 24px -10px rgba(232,80,31,.6);}.btn-o:hover{transform:translateY(-2px);background:var(--orange-dk);}
-.btn-o .shine{position:absolute;top:0;left:-45%;width:34%;height:100%;transform:skewX(-20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shine 4.2s ease-in-out 1.8s infinite;}
-@keyframes shine{0%{left:-45%;}24%{left:135%;}100%{left:135%;}}
-.btn-ghost{border:1.5px solid var(--ink);color:var(--ink);}.btn-ghost:hover{transform:translateY(-2px);background:rgba(19,21,18,.05);}
-.btn-lt{border:1.5px solid rgba(241,238,228,.45);color:#F1EEE4;}
+.mark i{border-radius:2px;background:var(--ink);}.mark i.c{background:var(--orange);}
+.btn{position:relative;overflow:hidden;font-weight:700;font-size:14px;padding:14px 24px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;transition:transform .16s,background .16s;border:none;}
+.btn-o{background:var(--orange);color:#fff;box-shadow:0 16px 30px -12px rgba(232,80,31,.8);}.btn-o:hover{transform:translateY(-2px);background:var(--orange-dk);}
+.shine{position:absolute;top:0;left:-45%;width:34%;height:100%;transform:skewX(-20deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shine 4.8s ease-in-out 2s infinite;}
+@keyframes shine{0%{left:-45%;}22%{left:135%;}100%{left:135%;}}
+@keyframes blink{50%{opacity:.25;}}
+.btn-ghost-lt{border:1.5px solid rgba(241,238,228,.55);color:var(--cream);background:rgba(19,21,18,.2);}
+.btn-ghost-dk{border:1.5px solid var(--ink);color:var(--ink);background:transparent;}.btn-ghost-dk:hover{background:rgba(19,21,18,.05);transform:translateY(-2px);}
 
-/* HERO */
-.hero{position:relative;overflow:hidden;background:radial-gradient(60% 80% at 88% 0%,rgba(232,80,31,.12),transparent 55%),linear-gradient(180deg,#FBF9F2,#F3EFE4);padding:60px 40px 46px;text-align:center;}
-@media (max-width:820px){.hero{padding:40px 22px 34px;}}
-.eyebrow{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--orange);}
-.hero h1{font-weight:800;letter-spacing:-.038em;line-height:.95;margin:16px auto 0;font-size:clamp(42px,6.4vw,80px);max-width:15ch;}
-.hero h1 .o{color:var(--orange);}
-.hero .sub{color:var(--soft);font-size:clamp(16px,2vw,19px);line-height:1.5;max-width:52ch;margin:20px auto 26px;}
-.ctas{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;}
-.hero .tiny{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em;margin-top:16px;}
+/* ===== HERO (cinematic, dark) ===== */
+.hero{position:relative;min-height:772px;background:var(--dark);display:flex;flex-direction:column;overflow:hidden;}
+.hero .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;display:block;}
+.hero .scrim{position:absolute;inset:0;background:linear-gradient(rgba(15,17,14,.62) 0%,rgba(15,17,14,.12) 30%,rgba(15,17,14,.35) 62%,rgba(15,17,14,.92) 100%);pointer-events:none;}
+.hero .glow{position:absolute;inset:0;background:radial-gradient(50% 55% at 80% 18%,rgba(232,80,31,.22),transparent 60%);pointer-events:none;}
+.hnav{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:20px 34px;gap:14px;}
+.hnav .mark i{background:var(--cream);}.hnav .mark i.c{background:var(--orange);}
+.hnav .brand{display:flex;align-items:center;gap:11px;}.hnav .wm{font-weight:800;font-size:16px;letter-spacing:.02em;color:var(--page);}
+.hnav .lk{display:flex;gap:20px;font-size:13px;font-weight:500;color:rgba(247,247,244,.8);flex-wrap:wrap;}
+.hnav .lk a:hover{color:#fff;}.hnav .lk a.on{color:#fff;font-weight:700;}
+.hnav .rt{display:flex;align-items:center;gap:12px;}
+.hnav .login{font-size:13px;font-weight:600;color:var(--cream);}
+.hnav .trial{font-weight:700;font-size:13px;padding:11px 20px;border-radius:8px;border:1.5px solid rgba(241,238,228,.55);color:var(--cream);background:rgba(19,21,18,.25);}
+.hspace{flex:1 1 auto;min-height:30px;}
+.htext{position:relative;z-index:3;padding:0 44px 30px;max-width:760px;}
+.htext .eb{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#FF9A6C;}
+.htext h1{font-weight:800;letter-spacing:-.04em;line-height:.94;margin:14px 0 0;font-size:clamp(38px,5.6vw,56px);color:var(--page);max-width:14ch;}
+.htext h1 .o{color:#FF7A45;}
+.htext p{font-size:clamp(16px,2vw,18px);line-height:1.5;color:#E2E4DC;max-width:44ch;margin:16px 0 24px;}
+.hcta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.hstatus{position:relative;z-index:3;padding:13px 44px;background:rgba(15,17,14,.5);backdrop-filter:blur(4px);border-top:1px solid rgba(241,238,228,.12);display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:rgba(241,238,228,.82);flex-wrap:wrap;}
+.hstatus .dot{width:6px;height:6px;border-radius:50%;background:#27A268;animation:blink 1.5s infinite;display:inline-block;margin-right:7px;}
+.hstatus b{color:#fff;}
+.hstatus .r{margin-left:auto;color:rgba(241,238,228,.62);}
 
-/* MAP ROOM */
-.wrap{padding:0 40px 12px;margin-top:-8px;}@media (max-width:820px){.wrap{padding:0 16px 12px;}}
-.mrhead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 4px 14px;flex-wrap:wrap;}
-.mrhead h2{font-weight:800;letter-spacing:-.03em;font-size:clamp(22px,2.8vw,30px);margin:6px 0 0;}
-.mrhead h2 .o{color:var(--orange);}
-.mrhead .lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;white-space:nowrap;padding-bottom:4px;}
-.maproom{border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:1.05fr .95fr;height:560px;background:var(--panel);box-shadow:0 40px 80px -46px rgba(19,21,18,.5),0 10px 22px -18px rgba(19,21,18,.28);}
-@media (max-width:840px){.maproom{grid-template-columns:1fr;height:auto;}}
-.mapwrap{position:relative;background:#E9E9E3;}
-#map{position:absolute;inset:0;}@media (max-width:840px){.mapwrap{height:360px;} #map{position:relative;height:100%;}}
-.mchip{position:absolute;z-index:1000;font-family:var(--mono);font-size:9px;letter-spacing:.08em;background:rgba(253,253,251,.95);border:1px solid var(--line);border-radius:20px;padding:6px 11px;box-shadow:0 4px 12px rgba(19,21,18,.14);pointer-events:none;color:var(--soft);}
-.mchip.tr{top:12px;right:12px;display:flex;align-items:center;gap:6px;}
-.mchip.tr i{width:6px;height:6px;border-radius:50%;background:#27A268;animation:blink 1.5s infinite;}
-.mchip.bl{bottom:12px;left:12px;display:flex;align-items:center;gap:9px;}
-.mchip .sw{display:inline-flex;gap:3px;}.mchip .sw i{width:9px;height:9px;border-radius:2px;display:inline-block;}
-.mk{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:700;color:#fff;border:1.5px solid #fff;border-radius:7px;box-shadow:0 4px 10px rgba(19,21,18,.35);font-size:11px;line-height:1;}
-.mk.sel{border-width:2px;box-shadow:0 0 0 4px rgba(232,80,31,.22),0 6px 14px rgba(232,80,31,.5);}
+/* ===== SECTIONS ===== */
+.sec{padding:54px 40px;border-bottom:1px solid var(--line);}
+.eb{font-family:var(--mono);font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--orange);}
+.ctr{text-align:center;margin-bottom:26px;}
+.ctr h2{font-weight:800;letter-spacing:-.03em;font-size:clamp(24px,3.4vw,36px);margin:8px 0 0;}
+.ctr h2 .o,.o-in{color:var(--orange);}
 
-/* DOSSIER (map room right) */
-.mdoss{padding:22px 24px;border-left:1px solid var(--line2);display:flex;flex-direction:column;min-height:0;}
-@media (max-width:840px){.mdoss{border-left:none;border-top:1px solid var(--line2);}}
-.mdtop{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.mdtop .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;}
-.rank{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;color:var(--orange);background:rgba(232,80,31,.08);border:1px solid rgba(232,80,31,.22);border-radius:20px;padding:4px 9px;}
+/* signals band */
+.signals{padding:54px 40px;border-bottom:1px solid var(--line);background:#FBF9F2;}
+.sgrid{display:grid;grid-template-columns:.84fr 1.16fr;gap:38px;align-items:center;}
+.sgrid h2{font-weight:800;letter-spacing:-.03em;font-size:clamp(24px,3vw,33px);line-height:1.06;margin:10px 0 12px;}
+.sgrid p{font-size:15px;line-height:1.55;color:var(--soft);margin:0;max-width:42ch;}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px 20px;}
+.card.hot{border-color:rgba(232,80,31,.28);box-shadow:0 18px 34px -26px rgba(232,80,31,.5);}
+.card .lv{position:absolute;top:13px;right:13px;display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:6.5px;letter-spacing:.12em;color:#1B704A;}
+.card .lv i{width:5px;height:5px;border-radius:50%;background:#27A268;animation:blink 1.5s infinite;}
+.card .lb{display:block;font-size:15px;font-weight:700;letter-spacing:-.01em;line-height:1.2;color:var(--ink);padding-right:40px;}
+.card h4{margin:12px 0 0;font-size:clamp(28px,4vw,38px);font-weight:800;letter-spacing:-.035em;font-variant-numeric:tabular-nums;line-height:1;}
+.card.hot h4{color:var(--orange);}
+
+/* map room */
+.maproom{display:grid;grid-template-columns:1fr 1fr;border:1px solid rgba(19,21,18,.14);border-radius:14px;overflow:hidden;box-shadow:0 40px 76px -44px rgba(19,21,18,.45);}
+.mapwrap{position:relative;height:580px;background:#E9E7E0;overflow:hidden;border-right:1px solid var(--line);}
+#map{position:absolute;inset:0;}
+.mchip{position:absolute;z-index:1000;font-family:var(--mono);letter-spacing:.1em;background:rgba(247,247,244,.92);border-radius:6px;box-shadow:0 4px 12px rgba(19,21,18,.12);pointer-events:none;}
+.mchip.tr{right:12px;top:12px;font-size:8px;color:#8A8577;padding:5px 9px;letter-spacing:.14em;}
+.mchip.bl{left:14px;bottom:12px;font-size:8px;color:#5F6B5A;padding:5px 10px;letter-spacing:.08em;border-radius:7px;display:flex;align-items:center;gap:8px;}
+.mchip.bl .sw{display:flex;gap:2px;}.mchip.bl .sw i{width:9px;height:9px;border-radius:2px;display:inline-block;}
+.mk{display:flex;align-items:center;justify-content:center;font:800 12px var(--mono);color:#fff;border:1.5px solid #fff;border-radius:7px;box-shadow:0 6px 15px rgba(19,21,18,.45);}
+.mk.sel{border-width:2px;}
+.doss{background:var(--panel);padding:22px;display:flex;flex-direction:column;}
+.doss .dl{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;color:var(--faint);text-transform:uppercase;margin-bottom:16px;}
+.thumb{position:relative;height:112px;border-radius:8px;overflow:hidden;margin-bottom:16px;background-size:cover;background-position:center;}
+.thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(19,21,18,.55),rgba(19,21,18,.03));}
+.thumb .cap{position:absolute;left:12px;bottom:8px;z-index:2;font-family:var(--mono);font-size:8px;letter-spacing:.12em;color:rgba(247,247,244,.92);}
 .dhead{display:flex;align-items:center;gap:14px;}
-.ring{position:relative;width:58px;height:58px;flex-shrink:0;}.ring svg{transform:rotate(-90deg);}.ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;}
-.daddr{font-size:18px;font-weight:800;letter-spacing:-.01em;}.dmeta{font-family:var(--mono);font-size:9px;color:#6B6F63;margin-top:3px;letter-spacing:.03em;}
-.dg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:18px 0 0;}
-.dg .c{border:1px solid var(--line2);border-radius:6px;padding:10px 11px;background:#fff;}.dg .c b{font-size:17px;font-weight:800;display:block;letter-spacing:-.02em;}.dg .c.a b{color:var(--orange);}
-.dg .c .l{font-family:var(--mono);font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:#9A9E90;margin-top:4px;}
-.dch{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;}.dch .x{font-family:var(--mono);font-size:8px;color:#8a3b1f;background:rgba(232,80,31,.09);border:1px solid rgba(232,80,31,.24);border-radius:12px;padding:4px 9px;letter-spacing:.02em;}
-.dread{font-size:13.5px;line-height:1.5;color:var(--soft);margin:16px 0 0;}
-.dfoot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.dexit{font-size:11.5px;color:var(--mute);line-height:1.4;max-width:62%;}
-.vpill{font-family:var(--mono);font-size:9px;letter-spacing:.07em;padding:6px 11px;border-radius:14px;font-weight:600;white-space:nowrap;}
-.vpill.go{background:rgba(232,80,31,.1);color:var(--orange);border:1px solid rgba(232,80,31,.3);}
-.vpill.pass{background:rgba(19,21,18,.06);color:var(--mute);border:1px solid var(--line);}
-.mrcredit{font-family:var(--mono);font-size:8px;color:var(--faint);text-align:right;margin:8px 6px 0;letter-spacing:.04em;}
+.ring{position:relative;width:58px;height:58px;flex:0 0 auto;}.ring svg{transform:rotate(-90deg);}.ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:var(--orange);}
+.daddr{font-size:17px;font-weight:800;letter-spacing:-.01em;}
+.dmeta{font-family:var(--mono);font-size:9px;color:#6B6F63;letter-spacing:.04em;margin-top:4px;}
+.dg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:18px 0;}
+.dg .c{border:1px solid var(--line2);border-radius:6px;padding:10px 11px;background:#fff;}.dg .c b{font-size:16px;font-weight:800;display:block;}.dg .c.a b{color:var(--orange);}
+.dg .c span{font-family:var(--mono);font-size:7px;letter-spacing:.06em;text-transform:uppercase;color:#9A9E90;}
+.dtags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+.dtags span{font-family:var(--mono);font-size:8px;color:#8a3b1f;background:rgba(232,80,31,.09);border:1px solid rgba(232,80,31,.25);border-radius:12px;padding:3px 9px;letter-spacing:.03em;}
+.dread{font-size:13px;line-height:1.5;color:var(--soft);margin:0 0 14px;}
+.dfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:14px;margin-top:auto;border-top:1px solid var(--line2);}
+.dmargin{font-family:var(--mono);font-size:11px;color:#6B6F6A;max-width:60%;line-height:1.35;}
+.vpill{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;padding:5px 10px;border-radius:6px;white-space:nowrap;}
+.vpill.go{color:var(--orange-dk);background:rgba(232,80,31,.1);}
+.vpill.pass{color:var(--mute);background:rgba(19,21,18,.06);border:1px solid var(--line);}
+.mrcredit{font-family:var(--mono);font-size:8px;color:var(--faint);text-align:right;margin:10px 2px 0;letter-spacing:.04em;}
 
-/* TRUST */
-.trust{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 40px;text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--mute);margin-top:26px;}
-.trust b{color:var(--soft);}.trust .lb{color:var(--faint);}
+/* trust */
+.trust{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 40px;text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;color:var(--mute);}
+.trust .f{color:var(--faint);}.trust b{color:var(--soft);font-weight:600;}
 
-/* SECTIONS */
-.sec{padding:50px 40px;border-bottom:1px solid var(--line);}@media (max-width:820px){.sec{padding:38px 22px;}}
-.h2c{text-align:center;}.h2c h2{font-weight:800;letter-spacing:-.03em;font-size:clamp(24px,3.2vw,36px);margin:8px 0 0;}.h2c h2 .o{color:var(--orange);}.h2c .eyebrow{display:block;}
-.h2c .sml{color:var(--mute);font-size:14px;margin:12px auto 0;max-width:48ch;}
-.feat{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:26px;}
-@media (max-width:760px){.feat{grid-template-columns:1fr 1fr;gap:10px;}.f{padding:14px;gap:11px;}.f .ic{width:38px;height:38px;border-radius:10px;}.f .ic svg{width:20px;height:20px;}.f h4{font-size:22px;}}
-@media (max-width:430px){.feat{grid-template-columns:1fr;}}
-.f{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:18px 20px;position:relative;display:flex;align-items:center;gap:15px;}
-.f .ic{width:46px;height:46px;border-radius:12px;background:rgba(232,80,31,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.f .ic svg{width:24px;height:24px;stroke:var(--orange);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-.f h4{margin:0;font-size:27px;font-weight:800;letter-spacing:-.025em;font-variant-numeric:tabular-nums;line-height:1;white-space:nowrap;}
-.f span{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--faint);text-transform:uppercase;margin-top:5px;}
-.f .liv{position:absolute;top:11px;right:11px;display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:6.5px;letter-spacing:.08em;color:#1B704A;}
-.f .liv i{width:5px;height:5px;border-radius:50%;background:#27A268;animation:blink 1.5s infinite;}
-@keyframes blink{50%{opacity:.3;}}
+/* split photo band */
+.split{display:grid;grid-template-columns:1fr 1fr;align-items:stretch;border-bottom:1px solid var(--line);}
+.split .tx{padding:56px 40px;display:flex;flex-direction:column;justify-content:center;background:#FBF9F2;}
+.split .tx h2{font-weight:800;letter-spacing:-.03em;line-height:1.04;font-size:clamp(26px,3.2vw,38px);margin:14px 0 16px;}
+.split .tx p{font-size:16px;line-height:1.6;color:var(--soft);margin:0 0 22px;max-width:40ch;}
+.checks{display:flex;flex-direction:column;gap:11px;}
+.checks div{display:flex;align-items:flex-start;gap:11px;font-size:14px;line-height:1.4;}
+.checks .ck{color:var(--orange);font-weight:800;flex:0 0 auto;}
+.split .ph{position:relative;min-height:420px;overflow:hidden;}
+.split .ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;}
+.split .ph .cr{position:absolute;right:9px;bottom:7px;z-index:2;font-family:var(--mono);font-size:7px;color:rgba(247,247,244,.5);}
 
-/* PHOTO BAND */
-.photo{position:relative;height:430px;overflow:hidden;}
-.photo img{width:100%;height:100%;object-fit:cover;object-position:center;display:block;filter:saturate(1.02);}
-.photo::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(19,21,18,.78) 0%,rgba(19,21,18,.5) 42%,rgba(19,21,18,.06) 100%);}
-.photo .cap{position:absolute;z-index:2;left:44px;top:50%;transform:translateY(-50%);color:#F7F7F4;max-width:32ch;}
-.photo .cap .eb{font-family:var(--mono);font-size:10.5px;letter-spacing:.15em;text-transform:uppercase;color:#ff8a5c;}
-.photo .cap h2{font-weight:800;letter-spacing:-.03em;line-height:1.02;font-size:clamp(26px,3.4vw,40px);margin:12px 0 0;}
-.photo .cap p{font-size:15px;color:#d8dbd2;margin:12px 0 0;line-height:1.45;}
-.photo .credit{position:absolute;z-index:2;right:10px;bottom:8px;font-family:var(--mono);font-size:7px;color:rgba(247,247,244,.45);}
-@media (max-width:860px){.photo .cap{left:22px;right:22px;max-width:none;}}
-
-/* MARKETS */
-.mkts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:26px;}
-@media (max-width:760px){.mkts{grid-template-columns:1fr;}}
-.county{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);}
-.cmap{height:158px;background:#E9E9E3;}
-.cflag{position:absolute;z-index:600;top:10px;left:10px;font-family:var(--mono);font-size:8px;letter-spacing:.08em;background:rgba(253,253,251,.95);border:1px solid var(--line);border-radius:16px;padding:4px 9px;color:#1B704A;display:flex;align-items:center;gap:5px;pointer-events:none;}
+/* markets */
+.mkts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.county{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);transition:transform .18s,box-shadow .18s;}
+.county:hover{transform:translateY(-3px);box-shadow:0 20px 40px -28px rgba(19,21,18,.4);}
+.cmwrap{position:relative;height:150px;background:#E9E7E0;}
+.cmap{position:absolute;inset:0;}
+.cflag{position:absolute;left:11px;top:10px;z-index:600;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#1B704A;background:rgba(247,247,244,.9);padding:3px 8px;border-radius:5px;pointer-events:none;display:flex;align-items:center;gap:5px;}
 .cflag i{width:5px;height:5px;border-radius:50%;background:#27A268;animation:blink 1.5s infinite;}
 .cinfo{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;}
-.cinfo b{font-size:16px;font-weight:800;letter-spacing:-.01em;}
-.cinfo span{font-family:var(--mono);font-size:8px;color:var(--faint);letter-spacing:.06em;text-transform:uppercase;}
-.mkts-cap{text-align:center;font-family:var(--mono);font-size:10px;color:var(--mute);letter-spacing:.05em;margin-top:16px;}
-.mkts-cap a{color:var(--orange);}
+.cinfo b{font-weight:800;font-size:16px;letter-spacing:-.01em;}
+.cinfo .rf{font-family:var(--mono);font-size:9px;letter-spacing:.06em;color:var(--faint);margin-top:3px;}
+.cinfo .ar{color:var(--orange);font-weight:800;font-size:14px;}
+.mcap{text-align:center;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--faint);margin:22px 0 0;}
+.mcap a{color:var(--orange);}
 
-/* SCORECARD */
-.scard{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:26px;background:var(--panel);}
-.scard .r{display:grid;grid-template-columns:1.7fr 1fr 1fr;border-top:1px solid var(--line2);font-size:13.5px;}
-.scard .hd{display:grid;grid-template-columns:1.7fr 1fr 1fr;}.scard .hd>div{padding:13px 18px;font-weight:800;font-size:13.5px;}
-.scard .hd .m{background:rgba(232,80,31,.07);color:var(--orange);text-align:center;}.scard .hd .o{color:var(--faint);text-align:center;}
-.scard .r>div{padding:12px 18px;display:flex;align-items:center;}.scard .r .fe{color:var(--soft);}.scard .r .col{justify-content:center;border-left:1px solid var(--line2);}.scard .r .m{background:rgba(232,80,31,.05);}
-.yes{color:var(--orange);font-weight:800;}.no{color:#b9b3a2;font-weight:700;}
+/* scorecard */
+.scard{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--panel);}
+.scard .row{display:grid;grid-template-columns:1.7fr 1fr 1fr;font-size:14px;}
+.scard .row+.row{border-top:1px solid var(--line2);}
+.scard .hd>div{padding:14px 20px;font-weight:800;}
+.scard .hd .o{color:var(--faint);text-align:center;}.scard .hd .m{background:rgba(232,80,31,.07);color:var(--orange);text-align:center;}
+.scard .row .fe{padding:13px 20px;color:var(--soft);display:flex;align-items:center;}
+.scard .row .col{padding:13px 20px;display:flex;align-items:center;justify-content:center;border-left:1px solid var(--line2);}
+.scard .row .m{background:rgba(232,80,31,.05);}
+.yes{color:var(--orange);font-weight:800;}.no{color:#b9b3a2;font-weight:700;}.na{color:#8a8577;font-weight:700;}
 
-/* FINAL */
-.final{position:relative;border-radius:12px;overflow:hidden;margin-top:8px;}
-.final img{width:100%;height:300px;object-fit:cover;object-position:center;display:block;}
-.final::after{content:"";position:absolute;inset:0;background:rgba(19,21,18,.72);}
-.final .in{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#F1EEE4;padding:20px;}
-.final h3{font-size:clamp(24px,3.4vw,36px);font-weight:800;letter-spacing:-.02em;margin:0 0 16px;}
+/* cta */
+.cta{padding:56px 40px 30px;text-align:center;background:radial-gradient(80% 120% at 50% 0%,rgba(232,80,31,.1),transparent 60%);}
+.cta h3{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.035em;margin:12px 0 8px;}
+.cta p{font-size:16px;color:var(--mute);margin:0 auto 24px;max-width:44ch;}
+.cta .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.cta .fine{margin-top:34px;padding-top:22px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.04em;}
+
+/* footer */
 .foot{padding:22px 40px;font-family:var(--mono);font-size:10px;color:var(--faint);text-align:center;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}
 .foot a{color:var(--mute);letter-spacing:.08em;}.foot .lk{display:flex;gap:16px;flex-wrap:wrap;}
-@media (max-width:760px){.navlinks{display:none;}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;}.shine{display:none;}}
-/* leaflet tweaks */
-.leaflet-container{background:#E9E9E3;font-family:var(--sans);}
-.leaflet-tooltip.mkt{background:#131512;color:#F7F7F4;border:none;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding:5px 8px;border-radius:5px;}
+
+/* leaflet */
+.leaflet-container{background:#E9E7E0;font-family:var(--sans);}
+.leaflet-tooltip.mkt{background:var(--ink);color:var(--page);border:none;box-shadow:0 4px 12px rgba(0,0,0,.3);font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding:5px 8px;border-radius:5px;}
 .leaflet-tooltip.mkt:before{display:none;}
 .leaflet-control-zoom a{color:var(--ink)!important;border-color:var(--line)!important;}
+
+/* responsive */
+@media (max-width:900px){.hnav .lk{display:none;}}
+@media (max-width:840px){
+  .sgrid{grid-template-columns:1fr;gap:24px;}
+  .maproom{grid-template-columns:1fr;}
+  .mapwrap{height:360px;border-right:none;border-bottom:1px solid var(--line);}
+  .split{grid-template-columns:1fr;}
+  .split .ph{min-height:300px;}
+  .mkts{grid-template-columns:1fr;}
+}
+@media (max-width:720px){
+  .hero{min-height:640px;}
+  .sec,.signals,.split .tx,.cta{padding-left:22px;padding-right:22px;}
+  .htext{padding:0 22px 26px;}
+  .hstatus{padding:12px 22px;font-size:10px;}
+  .hstatus .r{margin-left:0;width:100%;}
+  .scard .row{grid-template-columns:1.4fr .8fr .8fr;font-size:12.5px;}
+}
+@media (max-width:480px){.cards{grid-template-columns:1fr;}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;}.shine{display:none;}}
 </style>
 </head>
 <body>
-<div class="site">
-  <nav class="nav">
-    <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO</span></a>
-    <div class="navlinks">
-      <a href="#product" class="on">Product</a>
-      <a href="#how">How It Works</a>
-      <a href="markets.html">Markets</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="reports.html">Reports</a>
-      <a href="research.html">Research</a>
-      <a href="about.html">About</a>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <a href="portal.html" style="font-size:12.5px;font-weight:600;color:var(--ink)">Log in</a>
-      <a class="btn btn-o" href="trial.html">Start free trial<span class="shine"></span></a>
-    </div>
-  </nav>
+<div class="site" id="top">
 
-  <!-- HERO -->
-  <div class="hero" id="product">
-    <span class="eyebrow">Off-market deal analyzer · South Florida</span>
-    <h1>Florida's best deals, <span class="o">scored by sunrise.</span></h1>
-    <p class="sub">Every night, Maco reads the county's own records — code cases, liens, estates, absentee owners — and hands you a ranked board of the deals worth a call before anyone else is even awake.</p>
-    <div class="ctas"><a class="btn btn-o" href="trial.html">Start free trial →<span class="shine"></span></a><a class="btn btn-ghost" href="#how">See it work</a></div>
-    <p class="tiny">NO CARD · 7-DAY TRIAL · 6 FL COUNTIES LIVE</p>
-  </div>
-
-  <!-- THE MAP ROOM -->
-  <div class="wrap" id="board">
-    <div class="mrhead">
-      <div><span class="eyebrow">The map room</span><h2>Tonight's board, <span class="o">ranked and mapped.</span></h2></div>
-      <div class="lbl">Click a pin → read the dossier</div>
+  <!-- ===== HERO ===== -->
+  <header class="hero" id="product">
+    <img class="bg" src="hero-miami-aerial.jpg" alt="South Florida residential neighborhood from the air">
+    <div class="scrim"></div><div class="glow"></div>
+    <nav class="hnav">
+      <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO</span></a>
+      <div class="lk">
+        <a href="#product" class="on">Product</a>
+        <a href="#how">How it works</a>
+        <a href="markets.html">Markets</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="reports.html">Reports</a>
+        <a href="research.html">Research</a>
+        <a href="about.html">About</a>
+      </div>
+      <div class="rt">
+        <a href="portal.html" class="login">Log in</a>
+        <a href="trial.html" class="trial">Start free trial</a>
+      </div>
+    </nav>
+    <div class="hspace"></div>
+    <div class="htext">
+      <span class="eb">Off-market deal analyzer · South Florida</span>
+      <h1>All of South Florida, <span class="o">ranked by sunrise.</span></h1>
+      <p>Maco scores every off-market home in South Florida from the counties' own records — so you wake up to the three worth calling.</p>
+      <div class="hcta">
+        <a class="btn btn-o" href="trial.html">Start free trial →<span class="shine"></span></a>
+        <a class="btn btn-ghost-lt" href="#board">Explore the map ↓</a>
+      </div>
     </div>
+    <div class="hstatus">
+      <span><span class="dot"></span>SCANNING SOUTH FLORIDA</span>
+      <span style="color:rgba(241,238,228,.3)">·</span>
+      <span><b id="hstat">27,682</b> DISTRESS SIGNALS TRACKED</span>
+      <span class="r">READS COUNTY OPEN DATA, FDOR, CLERK &amp; APPRAISER EVERY NIGHT</span>
+    </div>
+  </header>
+
+  <!-- ===== SIGNALS BAND ===== -->
+  <section class="signals" id="how">
+    <div class="sgrid">
+      <div>
+        <span class="eb">The signals nationwide tools skip</span>
+        <h2>Every distress signal in the county. <span class="o-in">One score.</span></h2>
+        <p>Absentee owners, code cases, liens and estates are where off-market deals hide. Maco reads them from each county's own records every night, then rolls them into a single 0–100 score.</p>
+      </div>
+      <div class="cards">
+        <div class="card hot"><span class="lv">LIVE<i></i></span><span class="lb">Absentee / out-of-state owners</span><h4 data-to="2494">2,494</h4></div>
+        <div class="card"><span class="lv">LIVE<i></i></span><span class="lb">Recorded liens</span><h4 id="live-liens" data-to="17042">17,042</h4></div>
+        <div class="card"><span class="lv">LIVE<i></i></span><span class="lb">Open code cases</span><h4 id="live-cases" data-to="7788">7,788</h4></div>
+        <div class="card"><span class="lb">Estates &amp; probate</span><h4 data-to="358">358</h4></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== THE MAP ROOM ===== -->
+  <section class="sec" id="board">
+    <div class="ctr"><span class="eb">Tonight's board · live</span><h2>Scrub the map. <span class="o">Open any dossier.</span></h2></div>
     <div class="maproom">
       <div class="mapwrap">
         <div id="map"></div>
-        <div class="mchip tr"><i></i>SOUTH FLORIDA · LIVE</div>
-        <div class="mchip bl">SCORED BY SIGNAL<span class="sw"><i style="background:#E8501F"></i><i style="background:#D9722A"></i><i style="background:#9E8763"></i></span></div>
+        <div class="mchip tr">SOUTH FLORIDA · LIVE</div>
+        <div class="mchip bl"><span class="sw"><i style="background:#E8501F"></i><i style="background:#D9722A"></i><i style="background:#9E8763"></i></span>SCORED BY SIGNAL</div>
       </div>
-      <div class="mdoss" id="doss">
-        <div class="mdtop"><span class="k">Deal dossier</span><span class="rank" id="d-rank">RANK 1 / 7</span></div>
+      <div class="doss" id="doss">
+        <div class="dl">Dossier · click a pin</div>
+        <div class="thumb" id="d-thumb"><span class="cap" id="d-cap">AERIAL</span></div>
         <div class="dhead">
-          <div class="ring"><svg width="58" height="58"><circle cx="29" cy="29" r="18" fill="none" stroke="rgba(19,21,18,.09)" stroke-width="4.5"/><circle id="d-arc" cx="29" cy="29" r="18" fill="none" stroke="#E8501F" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/></svg><span class="num" id="d-score">—</span></div>
+          <div class="ring"><svg width="58" height="58"><circle cx="29" cy="29" r="18" fill="none" stroke="rgba(19,21,18,.1)" stroke-width="4"/><circle id="d-arc" cx="29" cy="29" r="18" fill="none" stroke="#E8501F" stroke-width="4" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/></svg><span class="num" id="d-score">—</span></div>
           <div><div class="daddr" id="d-addr">—</div><div class="dmeta" id="d-meta">—</div></div>
         </div>
         <div class="dg">
-          <div class="c"><b id="d-arv">—</b><span class="l">Comp ARV</span></div>
-          <div class="c"><b id="d-rep">—</b><span class="l">Repair est</span></div>
-          <div class="c a"><b id="d-grade">—</b><span class="l">Buy grade</span></div>
+          <div class="c"><b id="d-arv">—</b><span>Comp ARV</span></div>
+          <div class="c"><b id="d-rep">—</b><span>Repair est</span></div>
+          <div class="c a"><b id="d-grade">—</b><span>Buy grade</span></div>
         </div>
-        <div class="dch" id="d-tags"></div>
+        <div class="dtags" id="d-tags"></div>
         <p class="dread" id="d-read">—</p>
-        <div class="dfoot"><span class="dexit" id="d-exit">—</span><span class="vpill go" id="d-verdict">—</span></div>
+        <div class="dfoot"><span class="dmargin" id="d-margin">—</span><span class="vpill go" id="d-verdict">—</span></div>
       </div>
     </div>
     <div class="mrcredit">Sample board · masked addresses, illustrative deals · basemap © OpenStreetMap contributors © CARTO</div>
-  </div>
+  </section>
 
-  <!-- TRUST STRIP -->
-  <div class="trust"><span class="lb">READS DIRECTLY FROM &nbsp;·&nbsp;</span> <b>MIAMI-DADE OPEN DATA</b> &nbsp;·&nbsp; <b>FLORIDA DEPT. OF REVENUE</b> &nbsp;·&nbsp; <b>COUNTY CLERK RECORDS</b> &nbsp;·&nbsp; <b>PROPERTY APPRAISER</b></div>
+  <!-- ===== TRUST ===== -->
+  <div class="trust"><span class="f">READS DIRECTLY FROM &nbsp;·&nbsp;</span> <b>COUNTY OPEN DATA PORTALS</b> &nbsp;·&nbsp; <b>FLORIDA DEPT. OF REVENUE</b> &nbsp;·&nbsp; <b>COUNTY CLERK RECORDS</b> &nbsp;·&nbsp; <b>PROPERTY APPRAISER</b></div>
 
-  <!-- LIVE SIGNALS -->
-  <div class="sec" id="how">
-    <div class="h2c"><span class="eyebrow">What it reads, right now</span><h2>Six signals. <span class="o">One score.</span></h2><p class="sml">Live counts pulled from Miami-Dade's open data as this page loads — not a resold nationwide file.</p></div>
-    <div class="feat">
-      <div class="f"><span class="liv"><i></i>LIVE</span><div class="ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></div><div><h4 id="live-cases" data-to="7788">7,788</h4><span>Open code cases</span></div></div>
-      <div class="f"><span class="liv"><i></i>LIVE</span><div class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7zM10 9h5M10 13h5M10 17h3"/></svg></div><div><h4 id="live-liens" data-to="17042">17,042</h4><span>Recorded liens</span></div></div>
-      <div class="f"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5-6.5-10.5a6.5 6.5 0 0 1 13 0C18.5 16 12 21 12 21z"/><circle cx="12" cy="10.5" r="2.3"/></svg></div><div><h4 data-to="2494">2,494</h4><span>Absentee / OOS</span></div></div>
-      <div class="f"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 21V9l8-5 8 5v12M4 21h16M9 21v-5h6v5M8.5 11h.01M15.5 11h.01"/></svg></div><div><h4 data-to="358">358</h4><span>Estates / probate</span></div></div>
-    </div>
-  </div>
-
-  <!-- PHOTO BAND -->
-  <div class="photo">
-    <img src="hero-miami-aerial.jpg" alt="Miami-Dade residential neighborhood from the air" loading="lazy">
-    <div class="cap">
+  <!-- ===== SPLIT PHOTO BAND ===== -->
+  <section class="split">
+    <div class="tx">
       <span class="eb">Real properties · real records</span>
       <h2>The signals the national tools skip.</h2>
-      <p>Code cases, liens and estates — read from Miami's own county data, block by block, not a resold nationwide list.</p>
+      <p>Code cases, liens and estates — read from Florida's own county files, not a resold nationwide list. Six counties, deep, updated every night.</p>
+      <div class="checks">
+        <div><span class="ck">✓</span> Ranked so you call the right three, not thirty.</div>
+        <div><span class="ck">✓</span> Comp ARV from real recorded sales.</div>
+        <div><span class="ck">✓</span> An honest verdict — it'll tell you to pass.</div>
+      </div>
     </div>
-    <span class="credit">Miami-Dade residential aerial · CC BY-SA · Wikimedia Commons</span>
-  </div>
+    <div class="ph"><img src="street-sfl.jpg" alt="Older single-family home in South Florida" decoding="async"><span class="cr">Fort Lauderdale, FL residence · CC BY-SA · Wikimedia Commons</span></div>
+  </section>
 
-  <!-- MARKETS -->
-  <div class="sec">
-    <div class="h2c"><span class="eyebrow">Where we scan</span><h2>Six counties, <span class="o">read every night.</span></h2></div>
+  <!-- ===== MARKETS ===== -->
+  <section class="sec">
+    <div class="ctr"><span class="eb">Where it's live</span><h2>Six Florida counties. <span class="o">Deeper every week.</span></h2></div>
     <div class="mkts">
-      <div class="county"><div class="cmap" id="cm-pb"></div><div class="cflag"><i></i>SCANNING</div><div class="cinfo"><b>Palm Beach</b><span>Refreshed daily</span></div></div>
-      <div class="county"><div class="cmap" id="cm-bw"></div><div class="cflag"><i></i>SCANNING</div><div class="cinfo"><b>Broward</b><span>Refreshed daily</span></div></div>
-      <div class="county"><div class="cmap" id="cm-md"></div><div class="cflag"><i></i>SCANNING</div><div class="cinfo"><b>Miami-Dade</b><span>Refreshed daily</span></div></div>
+      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-pb"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Palm Beach</b><div class="rf">Refreshed daily</div></div><span class="ar">→</span></div></div>
+      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-bw"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Broward</b><div class="rf">Refreshed daily</div></div><span class="ar">→</span></div></div>
+      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-md"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Miami-Dade</b><div class="rf">Refreshed daily</div></div><span class="ar">→</span></div></div>
     </div>
-    <div class="mkts-cap">Plus Lee, Collier &amp; Sarasota — live now. <a href="markets.html">See all markets →</a></div>
-  </div>
+    <p class="mcap">Plus Lee, Collier &amp; Sarasota — live now. <a href="markets.html">See all markets →</a></p>
+  </section>
 
-  <!-- SCORECARD -->
-  <div class="sec">
-    <div class="h2c"><span class="eyebrow">Why Maco</span><h2>The nationwide way vs <span class="o">the Maco way.</span></h2></div>
+  <!-- ===== SCORECARD ===== -->
+  <section class="sec">
+    <div class="ctr"><span class="eb">Why Maco</span><h2>The nationwide way vs <span class="o">the Maco way.</span></h2></div>
     <div class="scard">
-      <div class="hd"><div>&nbsp;</div><div class="o">Nationwide tools</div><div class="m">Maco</div></div>
-      <div class="r"><div class="fe">Miami-Dade code cases &amp; liens</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
-      <div class="r"><div class="fe">One metro, deep</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
-      <div class="r"><div class="fe">Ranked board, scored by signal</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
-      <div class="r"><div class="fe">No card, no auto-bill trap</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
-      <div class="r"><div class="fe">Nationwide coverage</div><div class="col"><span style="color:#8a8577">✓</span></div><div class="col m"><span class="no">✗ FL only</span></div></div>
+      <div class="row hd"><div>&nbsp;</div><div class="o">Nationwide tools</div><div class="m">Maco</div></div>
+      <div class="row"><div class="fe">County code cases &amp; liens</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
+      <div class="row"><div class="fe">Deep on every FL county</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
+      <div class="row"><div class="fe">No card, no auto-bill trap</div><div class="col"><span class="no">✗</span></div><div class="col m"><span class="yes">✓</span></div></div>
+      <div class="row"><div class="fe">Nationwide coverage</div><div class="col"><span class="na">✓</span></div><div class="col m"><span style="font-weight:700;font-size:10.5px">FL — six counties, deep</span></div></div>
     </div>
-  </div>
+  </section>
 
-  <!-- FINAL -->
-  <div class="sec" style="border-bottom:none">
-    <div class="final">
-      <img src="hero-miami-aerial.jpg" alt="" loading="lazy">
-      <div class="in"><h3>Start your 7 free days.</h3><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><a class="btn btn-o" href="trial.html">Start free trial →<span class="shine"></span></a><a class="btn btn-lt" href="demo.html">Book a 20-minute demo</a></div></div>
+  <!-- ===== CTA ===== -->
+  <section class="cta">
+    <span class="eb">Six FL counties live</span>
+    <h3>Start your 7 free days.</h3>
+    <p>No card. See tonight's board for your county in ten minutes.</p>
+    <div class="row">
+      <a class="btn btn-o" href="trial.html">Start free trial →<span class="shine"></span></a>
+      <a class="btn btn-ghost-dk" href="demo.html">Book a 20-minute demo</a>
     </div>
-  </div>
+    <div class="fine">Estimates from public records · not investment advice · © 2026 Maco Equity Partners LLC</div>
+  </section>
 
   <div class="foot">
-    <span>© 2026 Maco Equity Partners LLC · Estimates from public records · not investment advice</span>
-    <span class="lk"><a href="about.html">About</a><a href="pricing.html">Pricing</a><a href="research.html">Research</a><a href="portal.html">Log in</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="disclosures.html">Disclosures</a></span>
+    <span>© 2026 Maco Equity Partners LLC</span>
+    <span class="lk"><a href="about.html">About</a><a href="pricing.html">Pricing</a><a href="reports.html">Reports</a><a href="research.html">Research</a><a href="portal.html">Log in</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="disclosures.html">Disclosures</a></span>
   </div>
 </div>
 
@@ -292,113 +354,91 @@ a{color:inherit;text-decoration:none;}
 <script>
 (function(){
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-
-  // ---- sample deals (masked, illustrative) ----
   var DEALS=[
-    {rank:1,score:94,grade:"A",addr:"9·· NE 12th Ave",hood:"Boynton Beach 33435",bb:"3 / 2",sf:"1,512 SF",yr:"1962",arv:"$412K",rep:"$78K",lat:26.525,lng:-80.066,tags:["2 LIENS","VACANT","ABSENTEE"],read:"Two lien searches in the last 14 months and the parcel reads vacant — the owner is carrying cost with no income coming in.",exit:"Comps support a mid-$400s exit. Worth a call this week."},
-    {rank:2,score:88,grade:"A",addr:"12·· SE 4th St",hood:"Fort Lauderdale 33301",bb:"3 / 2",sf:"1,704 SF",yr:"1958",arv:"$596K",rep:"$110K",lat:26.122,lng:-80.137,tags:["OPEN CODE CASE","ABSENTEE"],read:"Open unsafe-structure code case with the owner's mailing address out of state — motivated on paper.",exit:"Repair band is wide; worth a call to confirm scope."},
-    {rank:3,score:86,grade:"B",addr:"4·· NW 3rd St",hood:"Pompano Beach 33060",bb:"3 / 1",sf:"1,240 SF",yr:"1965",arv:"$389K",rep:"$92K",lat:26.234,lng:-80.125,tags:["EXPIRED PERMIT","TIRED"],read:"A 2019 permit was pulled and never closed — usually a stalled rehab the owner walked away from.",exit:"Pencils if repairs hold under $95K. Worth a call."},
-    {rank:4,score:84,grade:"B",addr:"23·· McKinley St",hood:"Hollywood 33020",bb:"2 / 1",sf:"1,066 SF",yr:"1954",arv:"$421K",rep:"$103K",lat:26.011,lng:-80.150,tags:["LIEN","LONG-HELD"],read:"Held 20+ years with a recent municipal lien — the classic tired-landlord signal.",exit:"Margin is thin at this repair est. Call, but hold your number."},
-    {rank:5,score:81,grade:"B",addr:"8·· W 4th Ave",hood:"Hialeah 33010",bb:"4 / 2",sf:"1,588 SF",yr:"1961",arv:"$468K",rep:"$88K",lat:25.857,lng:-80.278,tags:["ABSENTEE","2 UNITS"],read:"Absentee owner on a two-unit layout — value-add if the rents are sitting under market.",exit:"Worth a call to pull the rent roll."},
-    {rank:6,score:79,grade:"C",addr:"15·· SW 8th St",hood:"Miami 33135",bb:"3 / 2",sf:"1,320 SF",yr:"1949",arv:"$538K",rep:"$134K",lat:25.766,lng:-80.219,tags:["CODE CASE","CORNER LOT"],read:"Corner lot with an open code case, but the repair scope looks heavy for a frame this old.",exit:"Repair risk is high here — likely a pass unless you buy it right."},
-    {rank:7,score:76,grade:"C",addr:"1·· NE 9th St",hood:"Homestead 33030",bb:"3 / 2",sf:"1,442 SF",yr:"1998",arv:"$362K",rep:"$71K",lat:25.468,lng:-80.477,tags:["ABSENTEE"],read:"Only one real signal — an absentee owner — and comps are soft this far south.",exit:"One signal isn't enough. Pass for now."}
+    {rank:1,score:94,grade:"A",addr:"9·· NE 12th Ave",city:"Boynton Beach",zip:"33435",bb:"3 / 2",sf:"1,512",yr:"1962",arv:"$412K",rep:"$78K",lat:26.525,lng:-80.066,tags:["2 LIENS","VACANT","ABSENTEE"],read:"Two lien searches in 24 months, water shut off since spring, owner mails out of state.",margin:"Underwrites to a 19% margin at ARV.",verdict:"WORTH A CALL"},
+    {rank:2,score:88,grade:"A",addr:"12·· SE 4th St",city:"Fort Lauderdale",zip:"33301",bb:"3 / 2",sf:"1,704",yr:"1958",arv:"$596K",rep:"$110K",lat:26.122,lng:-80.137,tags:["OPEN CODE CASE","ABSENTEE"],read:"Open unsafe-structure case; owner's mailing address is out of state.",margin:"Underwrites to a 21% margin at ARV.",verdict:"WORTH A CALL"},
+    {rank:3,score:86,grade:"B",addr:"4·· NW 3rd St",city:"Pompano Beach",zip:"33060",bb:"3 / 1",sf:"1,240",yr:"1965",arv:"$389K",rep:"$92K",lat:26.234,lng:-80.125,tags:["EXPIRED PERMIT","TIRED"],read:"A 2019 permit was pulled and never closed — a stalled rehab.",margin:"Underwrites to a 16% margin at ARV.",verdict:"WORTH A CALL"},
+    {rank:4,score:84,grade:"B",addr:"23·· McKinley St",city:"Hollywood",zip:"33020",bb:"2 / 1",sf:"1,066",yr:"1954",arv:"$421K",rep:"$103K",lat:26.011,lng:-80.150,tags:["LIEN","LONG-HELD"],read:"Held 20+ years with a fresh municipal lien — a tired-landlord signal.",margin:"Underwrites to a 13% margin at ARV.",verdict:"WORTH A CALL"},
+    {rank:5,score:81,grade:"B",addr:"8·· W 4th Ave",city:"Hialeah",zip:"33010",bb:"4 / 2",sf:"1,588",yr:"1961",arv:"$468K",rep:"$88K",lat:25.857,lng:-80.278,tags:["ABSENTEE","2 UNITS"],read:"Absentee owner, two-unit layout — value-add if the rents sit under market.",margin:"Underwrites to a 15% margin at ARV.",verdict:"WORTH A CALL"},
+    {rank:6,score:79,grade:"C",addr:"15·· SW 8th St",city:"Miami",zip:"33135",bb:"3 / 2",sf:"1,320",yr:"1949",arv:"$538K",rep:"$134K",lat:25.766,lng:-80.219,tags:["CODE CASE","CORNER LOT"],read:"Open code case, but the repair scope looks heavy for a frame this old.",margin:"Margin compresses below 8% at this repair est.",verdict:"PASS"},
+    {rank:7,score:76,grade:"C",addr:"1·· NE 9th St",city:"Homestead",zip:"33030",bb:"3 / 2",sf:"1,442",yr:"1998",arv:"$362K",rep:"$71K",lat:25.468,lng:-80.477,tags:["ABSENTEE"],read:"One real signal — an absentee owner — and comps are soft this far south.",margin:"One signal, thin comps — doesn't clear the bar.",verdict:"PASS"}
   ];
   function ramp(s){return s>=90?'#E8501F':s>=84?'#D9722A':'#9E8763';}
-
+  var THUMBS=['dossier-1.jpg','dossier-2.jpg','dossier-3.jpg'];
   var selectedId=0, markers=[], map=null;
 
-  function fillDoss(d){
-    document.getElementById('d-rank').textContent='RANK '+d.rank+' / 7';
+  function fill(d){
     document.getElementById('d-score').textContent=d.score;
     document.getElementById('d-score').style.color=ramp(d.score);
     document.getElementById('d-addr').textContent=d.addr;
-    document.getElementById('d-meta').textContent=(d.hood+' · '+d.bb+' · '+d.sf+' · BUILT '+d.yr).toUpperCase();
+    document.getElementById('d-meta').textContent=(d.city+' '+d.zip+' · '+d.bb+' · '+d.sf+' SF · '+d.yr);
     document.getElementById('d-arv').textContent=d.arv;
     document.getElementById('d-rep').textContent=d.rep;
     document.getElementById('d-grade').textContent=d.grade;
+    document.getElementById('d-cap').textContent='AERIAL · '+d.city;
+    document.getElementById('d-thumb').style.backgroundImage="url('"+THUMBS[(d.rank-1)%3]+"')";
     var tg=document.getElementById('d-tags');tg.innerHTML='';
-    d.tags.forEach(function(t){var s=document.createElement('span');s.className='x';s.textContent=t;tg.appendChild(s);});
+    d.tags.forEach(function(t){var s=document.createElement('span');s.textContent=t;tg.appendChild(s);});
     document.getElementById('d-read').textContent=d.read;
-    document.getElementById('d-exit').textContent=d.exit;
-    var v=document.getElementById('d-verdict'),pass=/pass/i.test(d.exit);
-    v.className='vpill '+(pass?'pass':'go');v.textContent=pass?'PASS':'WORTH A CALL';
-    // ring
-    var arc=document.getElementById('d-arc'),L=113,off=(L*(1-d.score/100));
+    document.getElementById('d-margin').textContent=d.margin;
+    var v=document.getElementById('d-verdict'),pass=/pass/i.test(d.verdict);
+    v.className='vpill '+(pass?'pass':'go');v.textContent=d.verdict;
+    var arc=document.getElementById('d-arc'),L=113,off=L*(1-d.score/100);
     arc.setAttribute('stroke',ramp(d.score));
     if(reduce){arc.style.strokeDashoffset=off.toFixed(1);}
     else{arc.style.transition='none';arc.style.strokeDashoffset=L;
       requestAnimationFrame(function(){requestAnimationFrame(function(){arc.style.transition='stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)';arc.style.strokeDashoffset=off.toFixed(1);});});}
   }
-
-  function icon(d,sel){var sz=sel?32:26;
+  function icon(d,sel){var sz=sel?30:26;
     return L.divIcon({className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],
-      html:'<div class="mk'+(sel?' sel':'')+'" style="width:'+sz+'px;height:'+sz+'px;background:'+ramp(d.score)+'">'+d.score+'</div>'});}
-
-  function select(id){
-    selectedId=id;
-    markers.forEach(function(m){m.setIcon(icon(m._deal,m._deal.rank===id));if(m._deal.rank===id)m.setZIndexOffset(1000);else m.setZIndexOffset(0);});
-    var d=DEALS.filter(function(x){return x.rank===id;})[0];if(d)fillDoss(d);
-  }
+      html:'<div style="position:relative">'+(sel?'<div style="position:absolute;left:50%;top:50%;width:'+(sz+16)+'px;height:'+(sz+16)+'px;transform:translate(-50%,-50%);border:2px solid #E8501F;border-radius:13px;opacity:.5"></div>':'')+
+      '<div class="mk'+(sel?' sel':'')+'" style="position:relative;min-width:'+sz+'px;height:'+sz+'px;padding:0 6px;background:'+ramp(d.score)+'">'+d.score+'</div></div>'});}
+  function select(id){selectedId=id;
+    markers.forEach(function(m){m.setIcon(icon(m._d,m._d.rank===id));m.setZIndexOffset(m._d.rank===id?1000:0);});
+    var d=DEALS.filter(function(x){return x.rank===id;})[0];if(d)fill(d);}
 
   function buildMap(){
-    if(typeof L==='undefined'){fillDoss(DEALS[0]);return;}
+    if(typeof L==='undefined'){fill(DEALS[0]);return;}
     map=L.map('map',{zoomControl:false,attributionControl:false,scrollWheelZoom:false});
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19}).addTo(map);
     L.control.zoom({position:'bottomright'}).addTo(map);
-    DEALS.forEach(function(d){
-      var m=L.marker([d.lat,d.lng],{icon:icon(d,d.rank===1)});
-      m._deal=d;
-      m.bindTooltip(d.hood.replace(/\s\d+$/,'')+' · '+d.addr,{className:'mkt',direction:'top',offset:[0,-8]});
-      m.on('click',function(){select(d.rank);});
-      m.addTo(map);markers.push(m);
-    });
-    var g=L.featureGroup(markers);
-    map.fitBounds(g.getBounds().pad(0.15));
+    DEALS.forEach(function(d){var m=L.marker([d.lat,d.lng],{icon:icon(d,d.rank===1)});m._d=d;
+      m.bindTooltip(d.city+' · '+d.addr,{className:'mkt',direction:'top',offset:[0,-10]});
+      m.on('click',function(){select(d.rank);});m.addTo(map);markers.push(m);});
+    var g=L.featureGroup(markers);map.fitBounds(g.getBounds().pad(0.15));
     setTimeout(function(){map.invalidateSize();map.fitBounds(g.getBounds().pad(0.15));},260);
     select(1);
   }
-
-  function miniMap(id,center,zoom){
-    if(typeof L==='undefined')return;
+  function mini(id,c,z){if(typeof L==='undefined')return;
     var m=L.map(id,{zoomControl:false,attributionControl:false,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false,touchZoom:false,tap:false});
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{subdomains:'abcd',maxZoom:19}).addTo(m);
-    m.setView(center,zoom);
-    setTimeout(function(){m.invalidateSize();m.setView(center,zoom);},260);
-  }
+    m.setView(c,z);setTimeout(function(){m.invalidateSize();m.setView(c,z);},260);}
 
-  // build after Leaflet is present
   if(document.readyState!=='loading')start();else document.addEventListener('DOMContentLoaded',start);
-  function start(){
-    buildMap();
-    miniMap('cm-pb',[26.68,-80.10],9);
-    miniMap('cm-bw',[26.13,-80.14],10);
-    miniMap('cm-md',[25.78,-80.19],10);
-  }
+  function start(){buildMap();mini('cm-pb',[26.68,-80.10],9);mini('cm-bw',[26.13,-80.14],10);mini('cm-md',[25.78,-80.19],10);}
 
-  // ---- count-up stats on scroll ----
-  function countUp(el){
-    var to=parseInt(el.getAttribute('data-to'),10);if(!to)return;
+  // count-up stats
+  function countUp(el){var to=parseInt(el.getAttribute('data-to'),10);if(!to)return;
     if(reduce){el.textContent=to.toLocaleString('en-US');return;}
-    var t0=null,dur=1400;
-    function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/dur,1);var e=1-Math.pow(1-p,3);
-      el.textContent=Math.round(to*e).toLocaleString('en-US');if(p<1)requestAnimationFrame(step);}
-    requestAnimationFrame(step);
-  }
+    var t0=null;function step(ts){if(!t0)t0=ts;var p=Math.min((ts-t0)/1400,1),e=1-Math.pow(1-p,3);
+      el.textContent=Math.round(to*e).toLocaleString('en-US');if(p<1)requestAnimationFrame(step);}requestAnimationFrame(step);}
   var seen=false;
-  var io=new IntersectionObserver(function(es){es.forEach(function(en){
-    if(en.isIntersecting&&!seen){seen=true;document.querySelectorAll('.feat h4[data-to]').forEach(countUp);}});},{threshold:.2});
-  var featEl=document.querySelector('.feat');if(featEl)io.observe(featEl);
+  var io=new IntersectionObserver(function(es){es.forEach(function(en){if(en.isIntersecting&&!seen){seen=true;
+    document.querySelectorAll('.cards h4[data-to]').forEach(countUp);}});},{threshold:.2});
+  var cardsEl=document.querySelector('.cards');if(cardsEl)io.observe(cardsEl);
 
-  // ---- live counts (same Miami-Dade feed the digest uses; overrides the baked number) ----
+  // live counts (Miami-Dade open data) + keep the hero aggregate honest
   try{
     var BBOX=encodeURIComponent(JSON.stringify({xmin:-80.55,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{wkid:4326}}));
     var GEOM='&geometry='+BBOX+'&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects';
     var V='https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services/CCVIOL_gdb/FeatureServer/0/query';
-    function live(where,id){var el=document.getElementById(id);if(!el)return;
+    var vals={cases:7788,liens:17042,absentee:2494,estates:358};
+    function agg(){var t=vals.cases+vals.liens+vals.absentee+vals.estates;var h=document.getElementById('hstat');if(h)h.textContent=t.toLocaleString('en-US');}
+    function live(where,id,key){var el=document.getElementById(id);
       fetch(V+'?where='+encodeURIComponent(where)+GEOM+'&returnCountOnly=true&f=json').then(function(r){return r.json();})
-        .then(function(d){if(d&&typeof d.count==='number'&&d.count>0){el.setAttribute('data-to',d.count);if(seen)el.textContent=d.count.toLocaleString('en-US');}}).catch(function(){});}
-    live("CASE_STATUS IN ('1','9')",'live-cases');
-    live("LN_RECDATE IS NOT NULL AND LN_RECDATE<>''",'live-liens');
+        .then(function(d){if(d&&typeof d.count==='number'&&d.count>0){vals[key]=d.count;if(el){el.setAttribute('data-to',d.count);if(seen)el.textContent=d.count.toLocaleString('en-US');}agg();}}).catch(function(){});}
+    live("CASE_STATUS IN ('1','9')",'live-cases','cases');
+    live("LN_RECDATE IS NOT NULL AND LN_RECDATE<>''",'live-liens','liens');
   }catch(e){}
 })();
 </script>
