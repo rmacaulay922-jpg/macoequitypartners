@@ -52,7 +52,7 @@ window.MACO = (function () {
         'Flip and hold underwriting',
         'Code and lien signals where available',
         'Exports and investor pipeline',
-        'Seven-day trial available after the demo'
+        'Seven-day free trial first — no card required'
       ],
       notes: [
         'Keep your $50 monthly rate for as long as your subscription remains continuously active.'

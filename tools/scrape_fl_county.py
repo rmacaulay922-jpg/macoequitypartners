@@ -33,14 +33,16 @@ COUNTIES={
  # Miami-Dade = FDOR county 23 (alphabetical: Broward 16, Collier 21, Dade 23 — verified against zip mix).
  # Whole-county coverage: Homestead (330xx) up to the Broward line (331/332xx). Larger cap than the
  # single-county farms because the user wants the full county surfaced, not a 600-row slice.
- 'miami':  {'co':23,'label':'Miami-Dade','var':'MIAMI','out':'miami-leads.js','zpre':('330','331','332'),'topn':3000},
+ # Gentler pull params (pagesize/cap/pace): Miami-Dade is the biggest county and the FDOR host throttles
+ # heavy pulls, so smaller pages + slower pacing + a lower cap actually FINISH instead of hanging.
+ 'miami':  {'co':23,'label':'Miami-Dade','var':'MIAMI','out':'miami-leads.js','zpre':('330','331','332'),'topn':2500,'pagesize':1000,'cap':12000,'pace':2.5},
 }
 
-def query(where, last_oid, geom=True):
+def query(where, last_oid, geom=True, pagesize=2000):
     # OBJECTID-cursor pagination (NOT resultOffset — the FDOR hosted layer rejects resultOffset).
     w=where+(' AND OBJECTID>%d'%last_oid if last_oid else '')
     body={'where':w,'outFields':'*','returnGeometry':'true' if geom else 'false','outSR':'4326',
-          'f':'json','resultRecordCount':2000,'orderByFields':'OBJECTID'}
+          'f':'json','resultRecordCount':pagesize,'orderByFields':'OBJECTID'}
     # FDOR (services9) throttles bursts and returns "Invalid query parameters" for MINUTES after a
     # heavy pull (verified July 2026: Broward's pull works, then Lee/Collier are rejected; a single
     # query succeeds again after a multi-minute cooldown). So back off in MINUTES, not seconds —
@@ -106,8 +108,9 @@ def run(key):
     where=("DOR_UC='001' AND CO_NO=%d AND JV>=60000 AND JV<=650000 AND (JV_HMSTD=0 OR JV_HMSTD IS NULL)"%c['co'])
     print('=== %s County (CO_NO=%d) === single-family from FDOR statewide roll'%(c['label'],c['co']))
     feats=[]; last_oid=0; first=True; asmt=''
+    PAGE=c.get('pagesize',2000); CAP=c.get('cap',25000); PACE=c.get('pace',0.6)
     while True:
-        d=query(where, last_oid)
+        d=query(where, last_oid, pagesize=PAGE)
         if d is None:
             if first: raise SystemExit('first page failed — service unreachable, wait a few min and re-run.')
             print('   page failed after retries — baking the %d parcels already pulled.'%len(feats)); break
@@ -120,12 +123,12 @@ def run(key):
         if not f: break
         feats+=f; print('   ...%d parcels'%len(feats))
         last_oid=max(int(num(x['attributes'].get('OBJECTID')) or 0) for x in f)
-        if len(f)<2000: break
-        time.sleep(0.6)                             # light pacing between pages
+        if len(f)<PAGE: break
+        time.sleep(PACE)                            # pacing between pages (gentler for throttled big counties)
         # Sample cap: these counties have huge out-of-state SFH pools and full enumeration hits flaky
-        # deep-cursor timeouts. 25k is a large, representative sample; we take the top 600 by motivation
-        # score from it (every parcel is already a valid out-of-state non-homestead flip-band SFH lead).
-        if len(feats)>=25000: print('   (25k sample cap reached — taking top leads from this sample)'); break
+        # deep-cursor timeouts. The cap is a large, representative sample; we take the top-N by motivation
+        # score from it (every parcel is already a valid non-homestead flip-band SFH lead).
+        if len(feats)>=CAP: print('   (%d sample cap reached — taking top leads from this sample)'%CAP); break
     # zip self-check: what fraction of parcels fall in the EXPECTED zip prefixes for this county?
     zips=[str(int(num(x['attributes'].get('PHY_ZIPCD')))) for x in feats]
     hit=sum(1 for z in zips if z[:3] in c['zpre'])
