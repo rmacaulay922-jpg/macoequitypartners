@@ -330,12 +330,25 @@ window.MACO = (function () {
     }).join('');
   }
 
+  // County landing pages — pills link through when a page exists.
+  var MARKET_PAGES = {
+    'Miami-Dade County': 'off-market-deals-miami-dade.html',
+    'Broward County': 'off-market-deals-broward.html',
+    'Lee County (Fort Myers)': 'off-market-deals-lee.html',
+    'Collier County (Naples)': 'off-market-deals-collier.html',
+    'Polk County': 'off-market-deals-polk.html',
+    'Lake County': 'off-market-deals-lake.html'
+  };
   function renderMarkets(containerId) {
     var box = el(containerId); if (!box) return;
     box.innerHTML = MARKETS.tiers.map(function (t) {
       var pills = t.markets.length
         ? '<div class="market-tier__pills">' + t.markets.map(function (m) {
-            return '<span class="market-pill market-pill--' + esc(t.key) + '">' + esc(m) + '</span>';
+            var pg = MARKET_PAGES[m];
+            var inner = esc(m) + (pg ? ' <span aria-hidden="true" style="opacity:.7">&rarr;</span>' : '');
+            return pg
+              ? '<a class="market-pill market-pill--' + esc(t.key) + '" href="' + pg + '" title="See what the Deal Analyzer carries for ' + esc(m) + '">' + inner + '</a>'
+              : '<span class="market-pill market-pill--' + esc(t.key) + '">' + esc(m) + '</span>';
           }).join('') + '</div>'
         : '<p class="market-tier__empty">None scheduled yet.</p>';
       return '<div class="market-tier market-tier--' + esc(t.key) + '">' +
