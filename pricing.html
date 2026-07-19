@@ -13,7 +13,7 @@
 <meta property="og:title" content="Pricing — Maco Deal Analyzer">
 <meta property="og:description" content="Every price on one page. Plans start with 7 free days — no card, no auto-bill.">
 <meta property="og:url" content="https://macoequitypartners.com/pricing.html">
-<meta property="og:image" content="https://macoequitypartners.com/logo-full.png">
+<meta property="og:image" content="https://macoequitypartners.com/og-card.png">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,6 +68,19 @@
 <!-- ============ PLANS ============ -->
 <section class="da-section" id="plans" style="padding-top:0">
   <div class="plan-grid" id="plan-grid"></div>
+  <!-- Crawler-visible mirror of site-config.js pricing (cards render via JS).
+       KEEP IN SYNC when editing PLANS in site-config.js. -->
+  <noscript>
+    <ul>
+      <li><strong>Founding Member — $50/month</strong> (launch pricing): full Deal Analyzer access at the founding rate. Rate holds while continuously subscribed.</li>
+      <li><strong>Standard Access — $75/month</strong>: complete access in the primary supported market.</li>
+      <li><strong>Market Select — $85/month</strong>: choose one supported market; additional markets +$10/month each.</li>
+    </ul>
+    <p>Every plan starts with a 7-day free trial — no card. À-la-carte reports: Property Snapshot $15 · Comparable Sales &amp; Estimated Value $29 · Full Deal Underwriting $49 · Analyst-Reviewed Acquisition $79 · Custom Market Opportunity from $99.</p>
+  </noscript>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Maco Deal Analyzer","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://macoequitypartners.com/pricing.html","description":"Off-market real estate deal intelligence for South Florida investors — ranked leads from county records, comparable sales, editable underwriting and investor pipeline tools.","provider":{"@type":"Organization","name":"Maco Equity Partners","url":"https://macoequitypartners.com/"},"offers":[{"@type":"Offer","name":"Founding Member","price":"50","priceCurrency":"USD"},{"@type":"Offer","name":"Standard Access","price":"75","priceCurrency":"USD"},{"@type":"Offer","name":"Market Select","price":"85","priceCurrency":"USD"}]}
+  </script>
   <p class="da-fineprint" style="margin-top:18px">Billed monthly. No long-term contract. Cancel by email — access runs to the end of the period you've paid for. Prefer a walkthrough before deciding? <a href="demo.html" data-track="book_demo_click" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">Book a 20-minute demo</a>.</p>
 </section>
 
@@ -99,7 +112,7 @@
     </div>
     <div><h5>Product</h5><a href="index.html#how">How It Works</a><a href="markets.html">Markets</a><a href="pricing.html">Pricing</a><a href="reports.html">Reports</a><a href="portal.html" data-track="login_click">Deal Analyzer Login</a></div>
     <div><h5>Resources</h5><a href="research.html">Research</a><a href="methodology.html">Methodology</a></div>
-    <div><h5>Company</h5><a href="firm.html">The Firm</a><a href="firm.html#disciplines">Partnerships</a><a href="firm.html#contact">Contact</a></div>
+    <div><h5>Company</h5><a href="about.html">The Firm</a><a href="about.html">Partnerships</a><a href="about.html#contact">Contact</a></div>
   </div>
   <div class="da-footer__legal">
     <span>© 2026 Maco Equity Partners LLC · Not investment advice · Estimates from public records — independently verify before acting.</span>
