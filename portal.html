@@ -1105,6 +1105,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
       + Add All Top 10 Deals to Pipeline
     </button>
     <button class="btn btn-gold" type="button" onclick="openLetterPicker('pipeline')" style="font-size:12px;" title="Send letters to your pipeline deals — pick who gets one, then print">&#128396; Letters to Pipeline</button>
+    <button class="btn btn-outline" type="button" onclick="openRcSettings()" style="font-size:12px;" title="Bring your own free RentCast key and Maco flags LISTED properties before you mail them">&#9881; Listing check</button>
     <button class="btn btn-dark" type="button" onclick="exportPipelineCsv()" style="font-size:12px;">&#8681; Export Pipeline CSV</button>
     <button class="btn btn-dark" type="button" onclick="exportCrmJson()" style="font-size:12px;" title="Download a JSON backup of all statuses, pipeline cards, notes, follow-ups and comp exclusions">&#128190; Backup CRM</button>
     <label class="btn btn-dark" style="font-size:12px;cursor:pointer;" title="Restore a previously downloaded backup">&#8635; Restore CRM<input type="file" accept=".json,application/json" onchange="importCrmJson(this)" style="display:none;"></label>
@@ -1793,7 +1794,7 @@ function applyHomestead(){
 // ── POLK COUNTY — snapshot lead list (non-homestead estate/trust/heirs SFH) ──
 // Data baked in polk-leads.js (window.POLK_LEADS / POLK_META) from the Polk PA map service.
 // Polk has NO open comp or code-violation feed, so these are targeting leads only (no ARV).
-var _polkFilter={market:'',tag:'',own:'',q:''};
+var _polkFilter={market:'',tag:'',own:'',q:'',sort:'',inst:'',band:''};
 function _polkAddr(l){return l.a+', '+l.c+' FL '+(l.z||'');}
 function _polkMail(l){return [l.m1,l.m3].filter(Boolean).join(', ');}                         // owner mailing address
 function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_polkAddr(l));}
@@ -1810,13 +1811,22 @@ function polkTagStyle(tag){var m={probate:['#e8854a','Estate / probate'],le:['#d
 // owner location: out-of-state (strongest), in-state absentee, or local
 function polkOwnLoc(l){ if(l.oos)return {k:'oos',t:'Out-of-state · '+(l.mst||'?'),c:'#7c76ff'}; if(l.abs)return {k:'abs',t:'Absentee (FL)',c:'#4fa3d1'}; return {k:'local',t:'Local owner',c:'#9A9E97'}; }
 function polkFiltered(){
-  return (_LSRC()||[]).filter(function(l){
+  var out=(_LSRC()||[]).filter(function(l){
     if(_polkFilter.market&&l.c!==_polkFilter.market)return false;
     if(_polkFilter.tag&&l.tag!==_polkFilter.tag)return false;
     if(_polkFilter.own&&polkOwnLoc(l).k!==_polkFilter.own)return false;
+    if(_polkFilter.inst&&_instOwner(l.o))return false;                    // hide Wall Street portfolios
+    if(_polkFilter.band&&!_bandFor(l))return false;                       // only leads with a real sale band
     if(_polkFilter.q){var q=_polkFilter.q.toLowerCase();if((l.a+' '+l.o+' '+l.c+' '+(l.m3||'')).toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
+  var s=_polkFilter.sort;
+  if(s==='mkt')out.sort(function(a,b){return (b.mkt||0)-(a.mkt||0);});
+  else if(s==='band')out.sort(function(a,b){var x=_bandFor(a),y=_bandFor(b);return ((y&&y.mid)||0)-((x&&x.mid)||0);});
+  else if(s==='held')out.sort(function(a,b){return (b.held||0)-(a.held||0);});
+  else if(s==='sqft')out.sort(function(a,b){var x=_fdorFor(a),y=_fdorFor(b);return ((y&&y.sqft)||0)-((x&&x.sqft)||0);});
+  // default: file order (score desc, as baked)
+  return out;
 }
 function buildPolk(){
   var g=document.getElementById('polkGrid'); if(!g)return;
@@ -1849,9 +1859,14 @@ function buildPolk(){
       +'<select class="filter-sel" onchange="_polkFilter.tag=this.value;renderPolk();"><option value="">All</option><option value="probate">Estate / probate</option><option value="le">Life estate</option><option value="trust">Trust-owned</option><option value="entity">LLC / entity</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Owner</span>'
       +'<select class="filter-sel" onchange="_polkFilter.own=this.value;renderPolk();"><option value="">Anywhere</option><option value="oos">Out-of-state</option><option value="abs">Absentee (FL)</option><option value="local">Local</option></select>'
+      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Sort</span>'
+      +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
+      +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Hide Wall Street SFR portfolios (they never answer blind mail)"><input type="checkbox" onchange="_polkFilter.inst=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Hide institutional</label>'
+      +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Only leads with a ZIP qualified-sale band (priceable range)"><input type="checkbox" onchange="_polkFilter.band=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Has sale band</label>'
       +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
       +'<button class="btn btn-gold" style="font-size:11px;" title="Mail-merge letters to the owners in the current filter — uses the baked county mailing addresses" onclick="openLetterPicker(\'polk\')">&#9993; Letters to this list</button>'
-      +'<button class="btn btn-dark" style="font-size:11px;" onclick="exportPolkCsv()">&#8681; Export CSV</button>';
+      +'<button class="btn btn-dark" style="font-size:11px;" onclick="exportPolkCsv()">&#8681; Export CSV</button>'
+      +'<button class="btn btn-outline" style="font-size:11px;" onclick="openRcSettings()" title="Bring your own free RentCast key — Maco flags LISTED properties before you mail them">&#9881; Listing check</button>';
   }
   renderPolk();
 }
@@ -2337,6 +2352,18 @@ function renderFollowups(){
 
 function miniStat(label,val){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:10px 12px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+label+'</div><div style="font-size:18px;font-weight:800;color:var(--ivory);margin-top:2px;">'+val+'</div></div>';}
 function onMarketChange(){ buildOverviewMarket(); }
+// Label areas that have live comps but NO scored leads — real stats next to "Scored Leads 0"
+// read as broken rather than scoped (Jul 2026 audit).
+function _ovMarkCompsOnly(){
+  var sel=document.getElementById('ovMarket'); if(!sel||sel.dataset.compsMarked)return;
+  sel.dataset.compsMarked='1';
+  var leadAreas={}; try{ALL_ROWS.forEach(function(r){if(r&&r[2])leadAreas[r[2]]=1;});}catch(e){}
+  for(var i=0;i<sel.options.length;i++){
+    var o=sel.options[i]; if(!o.value&&!o.text)continue; if(o.value==='')continue;
+    var name=o.value||o.text;
+    if(!leadAreas[name]) o.text=name+' (comps only)';
+  }
+}
 function mxTile(l,v,sub){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px 14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+l+'</div><div style="font-size:21px;font-weight:800;color:var(--ivory);margin-top:3px;line-height:1;">'+v+'</div>'+(sub?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+sub+'</div>':'')+'</div>';}
 var _mxExpand={};
 function mxBars(title,items,fmt,key){
@@ -2390,6 +2417,7 @@ function mxTrendCard(sales){
 }
 function buildOverviewMarket(market){
   var el=document.getElementById('overviewMarket'); if(!el)return;
+  try{_ovMarkCompsOnly();}catch(e){}
   market=(market!=null&&market!=='')?market:(((document.getElementById('ovMarket')||{}).value)||'');
   var badge=document.getElementById('ovMarketBadge'); if(badge)badge.textContent=(market||'all markets').toLowerCase();
   function med(a){a=a.slice().sort(function(x,y){return x-y;});return a.length?a[Math.floor(a.length/2)]:0;}
@@ -2505,7 +2533,83 @@ function listingsBar(d){
   return '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 14px;background:rgba(0,106,255,.07);border-bottom:1px solid var(--border);font-size:10.5px;">'
     +'<span style="color:var(--muted);font-weight:700;letter-spacing:.3px;">FOR SALE?</span>'
     +lk(z,'Zillow')+sep+lk(redfin,'Redfin')+sep+lk(realtor,'Realtor')+sep+lk(all,'All listings &#8599;')
+    +(function(){var ch=listedChip(a,p.zip);return ch?sep+ch:'';})()
   +'</div>';
+}
+
+// ── RENTCAST BYO-KEY LISTING STATUS (Jul 2026 audit item 14) ──
+// The honest automated answer to "is it listed?": the subscriber brings their OWN free RentCast
+// key (rentcast.io/api — 50 requests/mo free). One request returns up to 500 active listings for
+// a whole ZIP, so a 200-letter run costs ~5 requests, not 200. No key → everything degrades to
+// the manual Zillow/Realtor links exactly as before. "No listing found" is NEVER a green light:
+// coverage is most-but-not-all FL MLSs, and FSBO/pocket listings won't appear.
+var RC_KEY='mep_rentcast_key', LISTED_KEY='mep_listed_v1', LISTED_TTL=24*3600*1000;
+function _rcKey(){try{return localStorage.getItem(RC_KEY)||'';}catch(e){return '';}}
+function _listedCache(){try{return JSON.parse(localStorage.getItem(LISTED_KEY)||'{}')}catch(e){return{}}}
+function _listedSave(c){try{localStorage.setItem(LISTED_KEY,JSON.stringify(c));}catch(e){}}
+function rcFetchZip(zip,cb){
+  var k=_rcKey(); zip=(''+(zip||'')).slice(0,5);
+  if(!k||!/^\d{5}$/.test(zip)){cb(null);return;}
+  var c=_listedCache(), e=c[zip];
+  if(e&&(Date.now()-e.t)<LISTED_TTL){cb(e);return;}
+  fetch('https://api.rentcast.io/v1/listings/sale?zipCode='+zip+'&status=Active&limit=500',{headers:{'X-Api-Key':k}})
+    .then(function(r){ if(r.status===401||r.status===403)throw {code:401}; if(r.status===429)throw {code:429}; return r.json(); })
+    .then(function(arr){
+      var items={};
+      (Array.isArray(arr)?arr:[]).forEach(function(li){
+        var ad=(li.formattedAddress||li.addressLine1||'');
+        var key=_normAddr((''+ad).split(',')[0]);
+        if(key)items[key]={p:li.price||0,dom:(li.daysOld!=null?li.daysOld:(li.daysOnMarket!=null?li.daysOnMarket:null))};
+      });
+      var rec={t:Date.now(),items:items}; c[zip]=rec; _listedSave(c); cb(rec);
+    })
+    .catch(function(err){
+      if(err&&err.code===401)toast('RentCast key invalid — fix it under ⚙ Listing check');
+      else if(err&&err.code===429)toast('RentCast monthly quota used — manual links still work');
+      cb(null);
+    });
+}
+function listedStatus(addr,zip){ // cache-only, synchronous: {s:'listed',p,dom} | {s:'none',t} | null(=unknown/unchecked)
+  zip=(''+(zip||'')).slice(0,5); if(!/^\d{5}$/.test(zip))return null;
+  var e=_listedCache()[zip]; if(!e||(Date.now()-e.t)>=LISTED_TTL)return null;
+  var hit=e.items[_normAddr((''+addr).split(',')[0])];
+  return hit?{s:'listed',p:hit.p,dom:hit.dom}:{s:'none',t:e.t};
+}
+function listedChip(addr,zip){
+  var st=listedStatus(addr,zip); if(!st)return '';
+  if(st.s==='listed')return '<span title="Active MLS listing found (RentCast) — do NOT blind-mail this owner; they have an agent" style="background:rgba(224,101,90,.16);color:#e0655a;border:1px solid rgba(224,101,90,.45);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;white-space:nowrap;">LISTED'+(st.p?' '+fmtK(st.p):'')+(st.dom!=null?' · '+st.dom+' DOM':'')+'</span>';
+  return '<span title="No active MLS listing found (RentCast, checked '+new Date(st.t).toLocaleDateString()+'). Coverage is most-but-not-all FL MLSs; FSBO and pocket listings will not appear — not a guarantee." style="background:rgba(61,190,130,.10);color:#3DBE82;border:1px solid rgba(61,190,130,.3);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;white-space:nowrap;">No MLS listing found</span>';
+}
+function openRcSettings(){
+  var k=_rcKey();
+  document.getElementById('printBody').innerHTML=
+    '<div class="print-section"><h3>Automatic listing check (RentCast)</h3>'
+    +'<div style="font-size:12.5px;color:#555;line-height:1.6;margin:8px 0 12px;">Paste a free <a href="https://www.rentcast.io/api" target="_blank" rel="noopener" style="color:#006AFF;">RentCast API key</a> (50 checks/month free) and Maco will flag <b>LISTED</b> properties before you mail them. One check covers a whole ZIP, so a 200-letter run uses ~5 checks. Your key stays in this browser only.</div>'
+    +'<div style="display:grid;gap:10px;max-width:460px;">'
+    +'<input id="rcKeyBox" type="password" placeholder="RentCast API key" value="'+_escHtml(k)+'" style="width:100%;padding:10px 12px;font-size:13px;box-sizing:border-box;font-family:monospace;">'
+    +'<div id="rcStatus" style="font-size:12px;color:#888;min-height:16px;"></div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+      +'<button class="btn btn-gold" type="button" onclick="_rcSave()">Save key</button>'
+      +'<button class="btn btn-dark" type="button" onclick="_rcTest()">Test key</button>'
+      +(k?'<button class="btn btn-dark" type="button" onclick="localStorage.removeItem(RC_KEY);localStorage.removeItem(LISTED_KEY);openRcSettings();">Remove key</button>':'')
+    +'</div>'
+    +'<div style="font-size:11px;color:#999;line-height:1.5;">Honest limits: RentCast covers most (not all) Florida MLSs. “No listing found” means exactly that — FSBO and pocket listings won’t show. It reduces wasted postage; it doesn’t replace checking before you offer.</div>'
+    +'</div></div>';
+  document.getElementById('printModal').classList.add('open');
+}
+function _rcSave(){
+  var v=(document.getElementById('rcKeyBox')||{}).value||'';
+  try{localStorage.setItem(RC_KEY,v.trim());}catch(e){}
+  toast(v.trim()?'RentCast key saved':'RentCast key cleared');
+  document.getElementById('printModal').classList.remove('open');
+}
+function _rcTest(){
+  var v=((document.getElementById('rcKeyBox')||{}).value||'').trim();
+  var st=document.getElementById('rcStatus'); if(!v){if(st)st.textContent='Paste a key first.';return;}
+  if(st)st.textContent='Testing…';
+  fetch('https://api.rentcast.io/v1/listings/sale?zipCode=33173&status=Active&limit=1',{headers:{'X-Api-Key':v}})
+    .then(function(r){ if(st)st.textContent=(r.ok?'✓ Key works — hit Save.':(r.status===401||r.status===403?'✗ Invalid key.':(r.status===429?'Key valid but monthly quota is used up.':'Unexpected response ('+r.status+')')));})
+    .catch(function(){ if(st)st.textContent='Network error — try again.'; });
 }
 // ── FEMA FLOOD ZONE (NFHL) — the most Miami-specific risk there is. Endpoint verified Jul 2 2026:
 // keyless, CORS-ok (hazards.fema.gov reflects origin). Point-in-polygon per parcel centroid; cached 30d.
@@ -3953,7 +4057,7 @@ function openLetterPicker(source){
         var mm=(''+(en._m3||'')).match(/^(.*?)\s+([A-Za-z]{2})\s+(\d{5}(?:-\d+)?)$/);
         window._lpOC[a]={o:en.owner||'',ma:en._m1,mc:(mm?mm[1]:(en.mail_city||'')),ms:(mm?mm[2].toUpperCase():(en.owner_state||'FL')),mz:(mm?mm[3]:'')};
       }
-      cands.push({addr:a,nb:en.neighborhood||'',folio:_folioForAddr(a)});
+      cands.push({addr:a,nb:en.neighborhood||'',folio:_folioForAddr(a),zip:(en&&en._zip)||_addrParts({address:a}).zip||''});
     });
     if(!cands.length){toast('Pipeline is empty — add deals first, or use Print Letters on All Properties.');return;}
   }else if(source==='viols'){
@@ -3969,7 +4073,7 @@ function openLetterPicker(source){
       if(_instOwner(l.o))skip='institutional portfolio';
       else if(_badZipLead(l))skip='no ZIP on county roll';
       else if(_mailRiskLead(l))skip='mail-return risk (estate, mails to property)';
-      cands.push({addr:l.a+', '+l.c+' FL '+(l.z||''),nb:l.c+', '+_lc,folio:'',polk:l.pid,own:l.o,skip:skip});
+      cands.push({addr:l.a+', '+l.c+' FL '+(l.z||''),nb:l.c+', '+_lc,folio:'',polk:l.pid,own:l.o,skip:skip,zip:(l.z&&l.z!=='0')?(''+l.z):''});
     });
     if(!cands.length){toast('No '+_lc+' leads with a mailing address in the current filter.');return;}
   }else{
@@ -3981,7 +4085,7 @@ function openLetterPicker(source){
     var own=c.own||(c.folio&&oc[c.folio]?oc[c.folio].o:'');
     var ti=touchInfo(c.addr);
     return '<label style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid #e5e0d5;cursor:pointer;font-size:13.5px;'+(c.skip?'opacity:.62;':'')+'">'
-      +'<input type="checkbox" class="lp-check"'+(c.skip?'':' checked')+' data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'"'+(c.polk?' data-polk="'+c.polk+'"':'')+' data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
+      +'<input type="checkbox" class="lp-check"'+(c.skip?'':' checked')+' data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'"'+(c.polk?' data-polk="'+c.polk+'"':'')+' data-zip="'+(c.zip||'')+'" data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
       +'<span style="flex:1;"><strong>'+_escHtml(c.addr)+'</strong> <span style="color:#888;">&middot; '+_escHtml(c.nb)+(own?' &middot; '+_escHtml(own):'')+'</span>'+(c.skip?' <span style="color:#c97a6a;font-size:11px;font-weight:700;">&middot; '+_escHtml(c.skip)+'</span>':'')+'</span>'
       +'<a href="'+zillowUrl({address:c.addr})+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Check whether this property is currently listed before you mail it" style="font-size:11px;color:#006AFF;white-space:nowrap;font-weight:700;text-decoration:none;">Listed?</a>'
       +(ti?'<span style="font-size:11px;color:#9a7b2d;white-space:nowrap;font-weight:700;">mailed '+ti.n+'&times; &middot; last '+ti.last+'</span>':'<span style="font-size:11px;color:#aaa;white-space:nowrap;">never mailed</span>')
@@ -3989,7 +4093,7 @@ function openLetterPicker(source){
   }).join('');
   document.getElementById('printBody').innerHTML=
     '<div class="print-section"><h3>Who gets a letter?</h3>'
-    +'<div style="font-size:11.5px;color:#9a7b2d;margin:2px 0 6px;">Mailing a listed property wastes postage &mdash; spot-check your top rows with the <b style="color:#006AFF;">Listed?</b> link first.</div>'
+    +'<div style="font-size:11.5px;color:#9a7b2d;margin:2px 0 6px;">Mailing a listed property wastes postage &mdash; '+(_rcKey()?'<b style="color:#3DBE82;">auto-checking MLS status&hellip;</b> (RentCast)':'spot-check your top rows with the <b style="color:#006AFF;">Listed?</b> link, or <a href="javascript:void(0)" onclick="openRcSettings()" style="color:#006AFF;font-weight:700;">set up auto-check (free key)</a>')+'.</div>'
     +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">'
       +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=true});_lpCount()">Select all</button>'
       +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=false});_lpCount()">Select none</button>'
@@ -4007,10 +4111,45 @@ function openLetterPicker(source){
     +'</div>';
   document.getElementById('printModal').classList.add('open');
   _lpCount();
+  try{_lpListedCheck();}catch(e){}
 }
 function _lpCount(){
   var n=document.querySelectorAll('.lp-check:checked').length;
   var el=document.getElementById('lpCount'); if(el)el.textContent=n+' selected';
+}
+// Auto-uncheck MLS-listed rows (RentCast BYO-key). One request covers a whole ZIP; capped at 8
+// ZIPs per picker open to respect the free tier. Rows without a resolvable property ZIP keep
+// the manual Listed? link — never guessed.
+function _lpListedCheck(){
+  if(!_rcKey())return;
+  var boxes=Array.prototype.slice.call(document.querySelectorAll('.lp-check'));
+  var byZip={};
+  boxes.forEach(function(b){var z=(b.dataset.zip||'').slice(0,5);if(/^\d{5}$/.test(z))(byZip[z]=byZip[z]||[]).push(b);});
+  var zips=Object.keys(byZip).slice(0,8), done=0, listedN=0;
+  if(!zips.length)return;
+  zips.forEach(function(z){
+    rcFetchZip(z,function(rec){
+      done++;
+      if(rec)byZip[z].forEach(function(b){
+        var st=listedStatus(b.dataset.addr,z);
+        if(st&&st.s==='listed'&&b.checked){
+          b.checked=false; listedN++;
+          var lbl=b.closest('label'); if(lbl&&!lbl.querySelector('.lp-listed')){
+            var sp=document.createElement('span'); sp.className='lp-listed';
+            sp.style.cssText='color:#e0655a;font-size:11px;font-weight:700;white-space:nowrap;';
+            sp.textContent='LISTED'+(st.p?' '+fmtK(st.p):'')+(st.dom!=null?' · '+st.dom+' DOM':'');
+            lbl.insertBefore(sp,lbl.lastElementChild);
+            lbl.style.opacity='.62';
+          }
+        }
+      });
+      if(done===zips.length){
+        _lpCount();
+        var s=document.getElementById('letterPickStatus');
+        if(s)s.textContent=listedN?('⚠ '+listedN+' listed propert'+(listedN===1?'y':'ies')+' unchecked (re-include with the checkbox if you disagree)'):'MLS check: none of the checked rows are actively listed (RentCast, '+zips.length+' ZIP'+(zips.length>1?'s':'')+')';
+      }
+    });
+  });
 }
 // Step 2: pull owners for ONLY the checked addresses, merge, and lay out one letter per page.
 // Polk leads carry their baked mailing address — normalize one to the same {o,ma,mc,ms,mz} shape the letters use.
@@ -4030,11 +4169,11 @@ function printSelectedLetters(){
     window._ownerSnap=cache;
     var tpl=_escHtml(letterTpl());
     var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-    var seen={},out=[],skipped=0,mailedAddrs=[];
+    var seen={},out=[],skipped=0,skippedZip=0,mailedAddrs=[];
     picks.forEach(function(p){
-      var oc=p.polk?_polkMailRec(p.polk):(p.folio&&cache[p.folio]);
+      var oc=p.polk?_polkMailRec(p.polk):(window._lpOC&&_lpOC[p.addr])||(p.folio&&cache[p.folio]);
       if(!oc||!oc.o||!oc.ma){skipped++;return;}
-      if(oc._fdor&&!oc.mz){skipped++;return;} // FDOR fallback without a ZIP — not mailable; live pull will fill it next run
+      if(oc._fdor&&!oc.mz){skippedZip++;return;} // state-roll record carries no ZIP — a retry won't fix this; live pull will next run
       var key=oc.o+'|'+oc.ma;if(seen[key])return;seen[key]=1;
       mailedAddrs.push(p.addr);
       var _snd=_senderId();
@@ -4073,7 +4212,7 @@ function printSelectedLetters(){
     document.getElementById('printModal').classList.add('letters-mode'); // strips portal chrome/disclaimer at print time
     if(!document.getElementById('lettersPageZero')){var _st=document.createElement('style');_st.id='lettersPageZero';_st.textContent='@page{margin:0}';document.head.appendChild(_st);}
     document.getElementById('printBody').innerHTML=
-      '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?(failed?' ('+skipped+' missing — owner pull partly failed, Generate again to retry)':' ('+skipped+' skipped — no county mailing address)'):'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
+      '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?(failed?' ('+skipped+' missing — owner pull partly failed, Generate again to retry)':' ('+skipped+' skipped — no county mailing address on record)'):'')+(skippedZip?' ('+skippedZip+' skipped — state-roll record has no ZIP; retrying won’t change this, the next live county pull fills it)':'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
       +out.join('');
   };
   if(miaFolios.length)enrichOwners(miaFolios,_finish,function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
@@ -4543,6 +4682,7 @@ function renderPipelineCard(entry, stage){
   var contactHtml='<div style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5;">'
     +(_oName?('Owner: <span style="color:var(--ivory);">'+pcEsc(_oName)+'</span>'+(entry._m1?' &middot; '+pcEsc(entry._m1)+(_oCity?', '+pcEsc(_oCity):''):(_oCity?' &middot; '+pcEsc(_oCity):''))+'<br>'):'')
     +(_ti?('Mailed '+_ti.n+'&times; &middot; last '+_ti.last+'<br>'):'')
+    +(function(){var ch=listedChip(entry.address,entry._zip||_addrParts({address:entry.address}).zip);return ch?ch+' ':'';})()
     +'<a href="'+zillowUrl({address:entry.address})+'" target="_blank" style="color:var(--bronze);">Zillow</a> &middot; '
     +'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(entry.address+' FL')+'" target="_blank" style="color:var(--bronze);">Maps</a>'
     +(_fol?' &middot; <a href="'+_paFolioUrl(_fol)+'" target="_blank" style="color:var(--bronze);">PA Record</a>':'')
