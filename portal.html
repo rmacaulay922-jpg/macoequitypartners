@@ -1749,6 +1749,11 @@ function _crimeBand(county,city){
   var C=window.CRIME_BANDS; if(!C||!C.agencies)return null;
   var cty=_crimeKey(county), cy=_crimeKey(city);
   var a=cy&&C.agencies[cty+'|'+cy]; if(a)return a.band;      // exact city PD match
+  // Slash-combined area labels ('Wynwood/Little Haiti') — try each part before giving up.
+  if(city&&(''+city).indexOf('/')>=0){
+    var parts=(''+city).split('/');
+    for(var i=0;i<parts.length;i++){var p=C.agencies[cty+'|'+_crimeKey(parts[i])];if(p)return p.band;}
+  }
   // Miami-Dade's county fallback is the POP-WEIGHTED average (inflated by City of Miami) — it was
   // branding Pinecrest/Kendall cards "Crime: HIGH". No agency match there = show NO chip. (Jul 2026 audit)
   if(cty==='MIAMIDADE')return null;
@@ -2361,7 +2366,7 @@ function _ovMarkCompsOnly(){
   for(var i=0;i<sel.options.length;i++){
     var o=sel.options[i]; if(!o.value&&!o.text)continue; if(o.value==='')continue;
     var name=o.value||o.text;
-    if(!leadAreas[name]) o.text=name+' (comps only)';
+    if(!leadAreas[name]){ o.value=name; o.text=name+' (comps only)'; } // pin value BEFORE relabeling — options without a value attr inherit their text, and 'Sweetwater (comps only)' matches no data
   }
 }
 function mxTile(l,v,sub){return '<div style="background:var(--bg-soft);border:1px solid var(--border);border-radius:8px;padding:12px 14px;"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+l+'</div><div style="font-size:21px;font-weight:800;color:var(--ivory);margin-top:3px;line-height:1;">'+v+'</div>'+(sub?'<div style="font-size:10px;color:var(--muted);margin-top:3px;">'+sub+'</div>':'')+'</div>';}

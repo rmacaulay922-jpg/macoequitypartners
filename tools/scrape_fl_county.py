@@ -166,15 +166,19 @@ def run(key):
         except Exception: hi_d=None
         hi=int(num(((hi_d or {}).get('features') or [{}])[0].get('attributes',{}).get('OBJECTID'))) if hi_d and hi_d.get('features') else lo+5000000
         print('   sweep: OBJECTID span %d..%d in %d segments (cap %d/segment)'%(lo,hi,SWEEP,CAP//SWEEP))
-        step=max(1,(hi-lo)//SWEEP+1); okseg=0
+        step=max(1,(hi-lo)//SWEEP+1); deadseg=0
         for s in range(SWEEP):
             a1,b1=lo+s*step, lo+(s+1)*step
             seg,ok,first=crawl(where+(' AND OBJECTID>=%d AND OBJECTID<%d'%(a1,b1)), CAP//SWEEP, first)
-            feats+=seg; okseg+=1 if ok else 0
+            feats+=seg
+            # A segment is DEAD (coverage hole) only if it produced NO rows via failure — a
+            # partial segment still covers its block. The old ok-flag counted retry-exhausted
+            # partials as success, so the skew guard could never trip.
+            if not ok and not seg: deadseg+=1
             time.sleep(PACE)
-        print('   sweep done: %d/%d segments ok · %d parcels'%(okseg,SWEEP,len(feats)))
+        print('   sweep done: %d/%d segments dead · %d parcels'%(deadseg,SWEEP,len(feats)))
         if first: raise SystemExit('every sweep segment failed — service unreachable, wait a few min and re-run.')
-        if okseg<SWEEP*0.5: raise SystemExit('under half the sweep segments succeeded (%d/%d) — coverage would be skewed; NOT baking. Re-run later.'%(okseg,SWEEP))
+        if deadseg>SWEEP*0.5: raise SystemExit('over half the sweep segments returned nothing (%d/%d dead) — coverage would be skewed; NOT baking. Re-run later.'%(deadseg,SWEEP))
     else:
         seg,ok,first=crawl(where, CAP, first)
         feats=seg
