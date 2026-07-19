@@ -1991,6 +1991,30 @@ function _mailRiskLead(l){
   var a=(''+(l.a||'')).toUpperCase().replace(/\s+/g,' ').trim(), m=(''+(l.m1||'')).toUpperCase().replace(/\s+/g,' ').trim();
   return !!(a&&m&&a===m);
 }
+// ── MODELED EQUITY — the #1 pro-investor list filter (suppress underwater owners, chase free-and-clear).
+// Basis exists ONLY where sale history is real (Miami 92.5%, Polk 85% of rows; per-lead gated on an
+// actual recorded price+year — never shown for the 7-18%-coverage counties' empty rows).
+// Model: remaining balance of an assumed 80%-LTV purchase loan at that vintage's average 30-yr fixed
+// rate (Freddie Mac PMMS annual averages), 30-yr amortization. Refis/HELOCs are NOT in public records,
+// so this is a labeled SCREENING estimate, not a payoff figure.
+var _VINTAGE_RATE={1975:9.0,1980:13.7,1985:12.4,1990:10.1,1995:7.9,2000:8.1,2005:5.9,2008:6.0,2010:4.7,2012:3.7,2015:3.9,2018:4.5,2020:3.1,2021:3.0,2022:5.3,2023:6.8,2024:6.7,2025:6.8,2026:6.7};
+function _rateFor(y){var ys=Object.keys(_VINTAGE_RATE).map(Number).sort(function(a,b){return a-b;});var r=_VINTAGE_RATE[ys[0]];for(var i=0;i<ys.length;i++){if(ys[i]<=y)r=_VINTAGE_RATE[ys[i]];}return r;}
+function _equityModel(salePrice,saleYear,valueNow){
+  if(!salePrice||salePrice<20000||!saleYear||saleYear<1970||!valueNow||valueNow<=0)return null;
+  var yrs=(new Date().getFullYear())-saleYear;
+  if(yrs<0)return null;
+  if(yrs>=30)return {pct:100,paidOff:true,yrs:yrs};
+  var P=salePrice*0.8, r=_rateFor(saleYear)/100/12, n=360, m=yrs*12;
+  var bal=r>0?P*(Math.pow(1+r,n)-Math.pow(1+r,m))/(Math.pow(1+r,n)-1):P*(1-m/n);
+  var eq=Math.max(0,valueNow-bal), pct=Math.min(100,Math.round(100*eq/valueNow));
+  return {pct:pct,bal:Math.round(bal),yrs:yrs,paidOff:false};
+}
+function _equityChip(salePrice,saleYear,valueNow){
+  var e=_equityModel(salePrice,saleYear,valueNow); if(!e)return '';
+  var band=e.pct>=70?['#3DBE82','HIGH EQUITY']:(e.pct<30?['#e0655a','LOW EQUITY']:null);
+  if(!band)return ''; // mid-band adds noise, not signal
+  return '<span title="MODELED screening estimate: assumes an 80% purchase loan from the '+saleYear+' sale at that year&#39;s average 30-yr rate ('+_rateFor(saleYear)+'%), 30-yr amortization. Refis and HELOCs are not in public records — verify before relying on it. ~'+e.pct+'% equity vs the current value basis." style="background:'+band[0]+'18;color:'+band[0]+';border:1px solid '+band[0]+'44;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;white-space:nowrap;">'+band[1]+' ~'+e.pct+'% <span style="opacity:.65">modeled</span></span>';
+}
 // Not mailable ONLY if neither the property zip nor the OWNER's mailing zip exists.
 // (Lake bakes z='' on all 120 rows but every owner mailing address is complete — the letter
 // goes to the MAILING address, so the property zip must not disqualify the lead. Jul 2026 audit.)
@@ -2021,7 +2045,7 @@ function renderPolk(){
         +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+' &middot; #'+(l.st||l.pid)+(function(){var e=_fdorFor(l);return e?((e.sqft?' &middot; '+e.sqft.toLocaleString()+' SF':'')+(e.yb?' &middot; built '+e.yb:'')):'';})()+'</div></div>'
         +'<span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;white-space:nowrap;">'+ts[1]+'</span></div>'
       +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 4px;">'+l.o+'</div>'
-      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
+      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
       +(function(){
         var bd=_bandFor(l);
         var cells='<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>'
@@ -2749,6 +2773,11 @@ function dealFlags(d){var vi=violInfo(d.address);var p=[];var _ja='onclick="goto
   if(d.has_homestead===false)p.push('<span title="No homestead exemption on the county roll — not owner-occupied (rental/investor/absentee)" style="background:rgba(61,190,130,.15);color:#3DBE82;font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;letter-spacing:.3px;">NON-HOMESTEAD</span>');
   // City/agency-level crime band (Miami-Dade deals → the submarket's policing jurisdiction, else county sheriff).
   var _cc=_crimeChip('Miami-Dade',(d.neighborhood||d.city||d._nb||''));if(_cc)p.push(_cc);
+  // Modeled equity (only when a real recorded sale price+year exists; skips recently-sold rows)
+  if(!isRecentDeal(d)&&d.last_sale_price>0&&d.held_years>0){
+    var _ey=new Date().getFullYear()-d.held_years;
+    var _eq=_equityChip(d.last_sale_price,_ey,d.arv||d.market_value);if(_eq)p.push(_eq);
+  }
   var _fl=(typeof floodInfo==='function')?floodInfo(d):null; var _flb=_fl?floodBadgeHtml(_fl):''; if(_flb)p.push(_flb);
   return p.length?'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">'+p.join('')+'</div>':'';}
 // Plain-English BUY VERDICT: margin first (does it actually make money?), motivation as the "can you get it" modifier.
