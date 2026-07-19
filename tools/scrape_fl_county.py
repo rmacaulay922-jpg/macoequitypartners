@@ -45,10 +45,12 @@ def query(where, last_oid, geom=True, pagesize=2000):
           'f':'json','resultRecordCount':pagesize,'orderByFields':'OBJECTID'}
     # FDOR (services9) throttles bursts and returns "Invalid query parameters" for MINUTES after a
     # heavy pull (verified July 2026: Broward's pull works, then Lee/Collier are rejected; a single
-    # query succeeds again after a multi-minute cooldown). So back off in MINUTES, not seconds —
-    # ~7min of patient retrying lets a page outlast the throttle instead of giving up in 46s.
-    DELAYS=[20,60,120,240]                          # seconds between the 5 attempts
-    for t in range(5):
+    # query succeeds again after a multi-minute cooldown). The July-18 harness run measured the
+    # cooldown at ~8.5 MINUTES (14 throttle events, every one cleared after a full 510s wait) —
+    # the old ~7.3-min ladder gave up moments before the throttle lifted, which is exactly why
+    # Lee/Collier died mid-crawl every morning. Two 510s steps let a page outlast TWO cooldowns.
+    DELAYS=[20,60,120,510,510]                      # seconds between the 6 attempts
+    for t in range(6):
         try:
             req=urllib.request.Request(SERVICE+'/query', data=urllib.parse.urlencode(body).encode(), headers=UA)
             d=json.load(urllib.request.urlopen(req, timeout=120))
@@ -173,7 +175,8 @@ def run(key):
           'pid':fol,'st':fol,'lat':lat,'lng':lng})
     cands.sort(key=lambda x:(-x['sc'],-x['mkt'])); cands=cands[:c.get('topn',600)]
     markets=sorted(set(x['c'] for x in cands))
-    meta={'county':c['label'],'count':len(cands),'snapshot':(asmt+' roll' if asmt else str(NOW)),'markets':markets}
+    # snapshot = the refresh DATE (subscribers judge freshness by it); the tax-roll year rides separately.
+    meta={'county':c['label'],'count':len(cands),'snapshot':str(NOW),'roll':(asmt+' roll' if asmt else None),'markets':markets}
     js=('// %s County motivated-seller leads — generated %s by scrape_fl_county.py from the FDOR statewide roll.\n'%(c['label'],NOW)
       +'// Non-homestead single-family (DOR_UC 001), $60k-$650k, top %d by motivation score. Schema matches Polk.\n'%len(cands)
       +'window.%s_LEADS=%s;\n'%(c['var'],json.dumps(cands,separators=(',',':')))

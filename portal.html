@@ -1731,7 +1731,7 @@ function setMarket(m,skipSave){
   if(MARKETS[m].kind==='leads'){try{_polkFilter={market:'',tag:'',own:'',q:''};['polkBanner','polkControls'].forEach(function(id){var e=document.getElementById(id);if(e)e.dataset.done='';});buildPolk();}catch(e){console.error('leads rebuild',e);}}
   // Header vintage line describes the active market's data.
   var dv=document.getElementById('dataVintage');
-  if(dv&&MARKETS[m].kind==='leads'){var mt=_LMETA();dv.textContent=MARKETS[m].label+' leads: PA snapshot '+(mt.snapshot||'—')+' · owner mailing + sale history baked · ask to refresh';}
+  if(dv&&MARKETS[m].kind==='leads'){var mt=_LMETA();var _isDate=/^\d{4}-\d{2}-\d{2}$/.test(mt.snapshot||'');dv.textContent=MARKETS[m].label+' leads: '+(_isDate?('refreshed '+mt.snapshot+(mt.roll?' ('+mt.roll+')':'')):('PA snapshot '+(mt.snapshot||'—')+' · refresh queued'))+' · owner mailing + sale history baked · auto-refreshes on a rotating schedule';}
   else if(m==='miami'){try{_updateVintage();}catch(e){}}
   try{buildBrief();}catch(e){} // the Brief follows the active market
 }
@@ -1822,8 +1822,8 @@ function buildPolk(){
   if(ban&&!ban.dataset.done){ban.dataset.done='1';
     ban.innerHTML='<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:14px 18px;margin-bottom:16px;">'
       +'<div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:6px;">'+county+' County &mdash; motivated-seller snapshot</div>'
-      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; snapshot '+(meta.snapshot||'—')+'.</div>'
-      +'<div style="font-size:12px;color:#e8854a;margin-top:8px;">'+county+' publishes no live comp or code-violation feed &mdash; there is <strong>no per-property ARV here</strong>. Each lead now carries FDOR tax-roll sqft &amp; year built plus a <strong>ZIP-level qualified-sale band</strong> (real recorded arm&rsquo;s-length sales, shown as a range). Use the band to shortlist, then walk it and comp it before offering. Static snapshot; ask to refresh for the latest.</div></div>';
+      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; '+(/^\d{4}-\d{2}-\d{2}$/.test(meta.snapshot||'')?('<strong>refreshed '+meta.snapshot+'</strong>'+(meta.roll?' ('+meta.roll+')':'')):('snapshot '+(meta.snapshot||'—')+' &middot; refresh queued'))+'.</div>'
+      +'<div style="font-size:12px;color:#e8854a;margin-top:8px;">'+county+' publishes no live comp or code-violation feed &mdash; there is <strong>no per-property ARV here</strong>. Each lead now carries FDOR tax-roll sqft &amp; year built plus a <strong>ZIP-level qualified-sale band</strong> (real recorded arm&rsquo;s-length sales, shown as a range). Use the band to shortlist, then walk it and comp it before offering. Leads auto-refresh on a rotating schedule &mdash; the refresh date above is the proof.</div></div>';
   }
   var byTag={},oos=0,abss=0; L.forEach(function(l){byTag[l.tag]=(byTag[l.tag]||0)+1;if(l.oos)oos++;else if(l.abs)abss++;});
   var mkts=meta.markets||[];
