@@ -404,10 +404,13 @@ a{color:inherit;text-decoration:none;}
   <header class="hero" id="product">
     <!-- Aerial footage with the still as poster: the still is what shows on slow links,
          under reduced-motion, and anywhere the codec is unsupported. -->
-    <video class="bg" id="heroVid" autoplay muted loop playsinline preload="metadata"
-           poster="hero-miami-aerial.jpg" aria-hidden="true" tabindex="-1">
-      <source src="hero-miami.mp4" type="video/mp4">
-    </video>
+    <!-- No <source> in the markup on purpose. The clip is ~4.4MB and it is decoration:
+         attaching it is decided at runtime (see the hero-footage block in the script
+         at the foot of this file) so phones on cellular, data-saver users and anyone
+         who asked for less motion get the poster frame and download nothing. -->
+    <video class="bg" id="heroVid" muted loop playsinline preload="none"
+           data-src="hero-miami.mp4"
+           poster="hero-miami-aerial.jpg" aria-hidden="true" tabindex="-1"></video>
     <div class="scrim"></div><div class="scrim2"></div><div class="glow"></div>
     <div class="hspace"></div>
     <div class="htext">
@@ -728,17 +731,38 @@ a{color:inherit;text-decoration:none;}
       bar.setAttribute('data-open','0');b.setAttribute('aria-expanded','false');}});
   })();
 
-  /* ---- Hero footage: hold the poster frame when the visitor asked for less motion,
-         and stop decoding it entirely once it has scrolled out of view. ---- */
+  /* ---- Hero footage ----------------------------------------------------------
+     The poster frame is the baseline experience and always renders. The video is
+     only attached when it is genuinely wanted: it is decoration, not content, and
+     not worth 4.4MB of someone's data plan.
+
+     Skipped entirely when the visitor asked for less motion, has data-saver on,
+     is on a 2G/3G connection, or is on a small screen (where the clip is cropped
+     so hard there is little left to see). Otherwise it attaches after load so it
+     never competes with the page itself, and pauses off-screen. ------------------ */
   (function(){
     var v=document.getElementById('heroVid');if(!v)return;
-    if(reduce){try{v.pause();v.removeAttribute('autoplay');}catch(e){}return;}
-    var play=function(){var p=v.play();if(p&&p.catch)p.catch(function(){});};
-    play(); v.addEventListener('loadeddata',play);
-    if(window.IntersectionObserver){
-      new IntersectionObserver(function(es){es.forEach(function(e){
-        if(e.isIntersecting)play(); else try{v.pause();}catch(err){}});},{threshold:.01}).observe(v);
+    var net=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
+    var slow=/2g/.test(net.effectiveType||'')||net.saveData===true;
+    if(reduce||slow||window.innerWidth<700)return;   // poster only
+
+    function attach(){
+      if(v.querySelector('source'))return;
+      var s=document.createElement('source');
+      s.src=v.getAttribute('data-src'); s.type='video/mp4';
+      var play=function(){var p=v.play();if(p&&p.catch)p.catch(function(){});};
+      /* Wait for data before playing. Calling play() straight after load() aborts
+         the play promise, so the first frame only ever arrives via this listener. */
+      v.addEventListener('loadeddata',play);
+      v.addEventListener('canplay',play);
+      v.appendChild(s); v.load();
+      if(window.IntersectionObserver){
+        new IntersectionObserver(function(es){es.forEach(function(e){
+          if(e.isIntersecting)play(); else try{v.pause();}catch(err){}});},{threshold:.01}).observe(v);
+      }
     }
+    if(document.readyState==='complete')attach();
+    else window.addEventListener('load',attach);
   })();
   /* Sample dossiers. Shape mirrors what the analyzer emits for a real parcel:
      score components, owner/title, value + repair basis, public-record flags,
