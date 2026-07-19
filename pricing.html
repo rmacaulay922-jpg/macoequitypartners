@@ -76,7 +76,7 @@
       <li><strong>Standard Access — $75/month</strong>: complete access in the primary supported market.</li>
       <li><strong>Market Select — $85/month</strong>: choose one supported market; additional markets +$10/month each.</li>
     </ul>
-    <p>Every plan starts with a 7-day free trial — no card. À-la-carte reports: Property Snapshot $15 · Comparable Sales &amp; Estimated Value $29 · Full Deal Underwriting $49 · Analyst-Reviewed Acquisition $79 · Custom Market Opportunity from $99.</p>
+    <p>Every plan starts with a 7-day free trial — no card. À-la-carte reports are quoted per request: tell us the property or the market and you get a fixed price and turnaround before any work begins. No subscription required.</p>
   </noscript>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Maco Deal Analyzer","applicationCategory":"BusinessApplication","operatingSystem":"Web","url":"https://macoequitypartners.com/pricing.html","description":"Off-market real estate deal intelligence for South Florida investors — ranked leads from county records, comparable sales, editable underwriting and investor pipeline tools.","provider":{"@type":"Organization","name":"Maco Equity Partners","url":"https://macoequitypartners.com/"},"offers":[{"@type":"Offer","name":"Founding Member","price":"50","priceCurrency":"USD"},{"@type":"Offer","name":"Standard Access","price":"75","priceCurrency":"USD"},{"@type":"Offer","name":"Market Select","price":"85","priceCurrency":"USD"}]}
@@ -128,10 +128,15 @@
     if(mob)mob.addEventListener('click',function(e){if(e.target.closest('a')){nav.setAttribute('data-open','0');burger.setAttribute('aria-expanded','false');}});}
   try{
     MACO.renderPlans('plan-grid');
-    // Compact price table for the à-la-carte reports — THE one place report prices appear.
+    // The à-la-carte catalogue. Reports are scoped and quoted per request, so this
+    // lists what each one is rather than a price column — r.price carries the label.
     var rows = MACO.reports.map(function(r){
-      return '<div style="display:flex;justify-content:space-between;gap:16px;padding:11px 2px;border-bottom:1px solid var(--rule-2)">' +
-        '<span>'+r.name+'</span><span class="mono" style="font-family:\'IBM Plex Mono\',monospace;white-space:nowrap">'+r.price+'</span></div>';
+      return '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;padding:14px 2px;border-bottom:1px solid var(--rule-2)">' +
+        '<span><b style="display:block;font-weight:700">'+r.name+'</b>' +
+        '<span style="display:block;margin-top:3px;font-size:13px;line-height:1.45;color:var(--ink-mute)">'+r.desc+'</span></span>' +
+        '<span style="flex:0 0 auto;font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:.08em;' +
+        'color:var(--accent);border:1px solid var(--accent-line);border-radius:20px;padding:5px 13px;white-space:nowrap">' +
+        r.price + '</span></div>';
     }).join('');
     document.getElementById('report-price-table').innerHTML = rows;
     document.getElementById('report-footnote').textContent = MACO.reportsFootnote + ' Custom scopes are quoted before any work begins.';

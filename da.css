@@ -315,3 +315,22 @@ html.anim .rv.on{opacity:1;transform:none}
   .da-footer__cols{grid-template-columns:1fr}
   .da-title--xl{font-size:38px}
 }
+
+/* ---- Market umbrellas (metro → cities under it) --------------------------- */
+.market-umbrellas{display:flex;flex-direction:column;gap:16px}
+.market-umb{padding:14px 0 0;border-top:1px solid var(--rule)}
+.market-umb:first-child{border-top:0;padding-top:4px}
+.market-umb__head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:9px}
+.market-umb__name{font:800 17px var(--sans);color:var(--ink);letter-spacing:-.01em}
+a.market-umb__name:hover{color:var(--accent)}
+.market-umb__note{font:500 11px var(--mono);color:var(--ink-faint);letter-spacing:.04em}
+.market-umb__cities{display:flex;flex-wrap:wrap;gap:6px}
+.market-city{font:500 11.5px var(--sans);color:var(--ink-mute);background:var(--paper);
+  border:1px solid var(--rule);border-radius:40px;padding:4px 11px;white-space:nowrap}
+.market-tier--active .market-city{background:var(--accent-tint);border-color:var(--accent-line);color:var(--ink)}
+
+/* ---- Source disclosure grid (methodology) --------------------------------- */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px 26px;margin-top:14px}
+.src-grid>div{padding:12px 0;border-bottom:1px solid var(--rule)}
+.src-grid b{display:block;font:700 13.5px var(--sans);color:var(--ink);letter-spacing:-.005em}
+.src-grid span{display:block;margin-top:4px;font:400 12.5px/1.5 var(--sans);color:var(--ink-mute)}

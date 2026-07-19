@@ -66,3 +66,6 @@ tools/digest_recipients.txt
 
 # Field Intel: dated memos are PAID subscriber content — only the template ships
 tools/field-intel/2*.html
+
+# Inbound leads: real contact details, never publish
+tools/inbox/

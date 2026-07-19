@@ -18,10 +18,29 @@
 window.MACO = (function () {
   'use strict';
 
-  /* ---- Business basics ---------------------------------------------------- */
-  var CONTACT_EMAIL  = 'rmac@macoequitypartners.com';
-  // All forms email you through the site's existing FormSubmit inbox.
-  var FORM_ENDPOINT  = 'https://formsubmit.co/' + CONTACT_EMAIL;
+  /* ---- Business basics ----------------------------------------------------
+     Two addresses, deliberately separate, because they fail in different ways.
+
+     CONTACT_EMAIL is what VISITORS SEE — every address printed on the site and
+     every mailto: link. Generic on purpose: the business, not a person.
+
+     FORM_DELIVERY_EMAIL is where form submissions are actually DELIVERED.
+     FormSubmit requires a one-time confirmation per destination address, and an
+     unconfirmed address drops submissions with no bounce and no error — the form
+     appears to work and the lead is simply gone. So this stays pointed at the
+     address that is already confirmed and receiving until deals@ is proven.
+
+     TO SWITCH DELIVERY OVER (do these in order, see tools/inbox-README.md):
+       1. Create deals@macoequitypartners.com (the domain already routes to
+          Microsoft 365 — it is an alias or a new user, not a new signup).
+       2. Fix the SPF record, or your replies will fail SPF and land in spam.
+       3. Set FORM_DELIVERY_EMAIL below to CONTACT_EMAIL.
+       4. Deploy, submit a form, click the FormSubmit confirmation that arrives
+          at deals@, then submit AGAIN and confirm the second one lands.
+     Do not do step 3 before step 1, and do not skip step 4. */
+  var CONTACT_EMAIL       = 'deals@macoequitypartners.com';
+  var FORM_DELIVERY_EMAIL = 'rmac@macoequitypartners.com';   // ← step 3 changes this to CONTACT_EMAIL
+  var FORM_ENDPOINT       = 'https://formsubmit.co/' + FORM_DELIVERY_EMAIL;
 
   // Paste a scheduling URL (Calendly / SavvyCal / Google Appt) to let visitors
   // book directly. Leave "" and the demo page uses the request form instead.
@@ -44,7 +63,7 @@ window.MACO = (function () {
 
   // Extra-market economics (Market Select plan).
   var ADD_MARKET_PRICE = '+$10/month each';
-  var NEW_MARKET_SETUP = 'New-market activation may require a one-time $49 setup fee.';
+  var NEW_MARKET_SETUP = 'New-market activation may require a one-time setup fee, quoted before any work begins.';
 
   /* ---- Subscription plans ------------------------------------------------- */
   var PLANS = [
@@ -122,7 +141,7 @@ window.MACO = (function () {
     {
       id: 'snapshot',
       name: 'Property Snapshot',
-      price: '$15',
+      price: 'Ask',
       desc: 'A fast read on a single property before you spend time on it.',
       includes: [
         'Ownership and property overview',
@@ -134,7 +153,7 @@ window.MACO = (function () {
     {
       id: 'comps',
       name: 'Comparable Sales & Estimated Value Report',
-      price: '$29',
+      price: 'Ask',
       desc: 'Recorded comps and an estimated value range with methodology shown.',
       includes: [
         'Relevant recorded comparable sales',
@@ -146,7 +165,7 @@ window.MACO = (function () {
     {
       id: 'underwriting',
       name: 'Full Deal Underwriting',
-      price: '$49',
+      price: 'Ask',
       desc: 'A complete flip/hold model with editable assumptions and return scenarios.',
       includes: [
         'Purchase and renovation assumptions',
@@ -159,7 +178,7 @@ window.MACO = (function () {
     {
       id: 'analyst',
       name: 'Analyst-Reviewed Acquisition Report',
-      price: '$79',
+      price: 'Ask',
       desc: 'Full underwriting, reviewed by a person for obvious data issues and risk.',
       includes: [
         'Full deal underwriting',
@@ -169,9 +188,72 @@ window.MACO = (function () {
       ]
     },
     {
+      id: 'distress',
+      name: 'Distress & Title-Risk Signal Report',
+      price: 'Ask',
+      desc: 'Everything the public record says is wrong with a property, in one place.',
+      includes: [
+        'Open code-enforcement cases and recorded liens',
+        'Unsafe-structure and expired-permit history',
+        'Scheduled foreclosure-auction status where filed',
+        'Flood zone and insurance implication',
+        'What to verify with title before you commit'
+      ]
+    },
+    {
+      id: 'owner',
+      name: 'Owner & Entity Research',
+      price: 'Ask',
+      desc: 'Who actually controls the property, and where to reach them.',
+      includes: [
+        'Ownership chain from recorded transfers',
+        'Entity principals and registered-agent lookup',
+        'Mailing address and absentee/out-of-state profile',
+        'Estate, trust and heir indicators',
+        'Skip-trace starting points (contact data not resold)'
+      ]
+    },
+    {
+      id: 'farm',
+      name: 'Farm Area Build-Out',
+      price: 'Ask',
+      desc: 'A whole ZIP or neighborhood scored, ranked and ready to work.',
+      includes: [
+        'Every qualifying property in the target area',
+        'Motivation scoring and ranking',
+        'Value bands and owner mailing data',
+        'Exportable mail list and pipeline import'
+      ]
+    },
+    {
+      id: 'auction',
+      name: 'Auction Watchlist',
+      price: 'Ask',
+      desc: 'Upcoming foreclosure sales in your buy box, underwritten before the date.',
+      includes: [
+        'Scheduled sales matching your criteria',
+        'Judgment amount and assessed value',
+        'Preliminary value range per property',
+        'Listing-status check and flood zone',
+        'Refreshed ahead of each sale date'
+      ]
+    },
+    {
+      id: 'rental',
+      name: 'Rental & Hold Analysis',
+      price: 'Ask',
+      desc: 'The buy-and-hold case: cash flow, carry and exit, on your assumptions.',
+      includes: [
+        'Rent estimate and gross yield',
+        'Taxes, insurance and carrying costs',
+        'Financing scenarios including DSCR terms',
+        'Hold-period return and refinance sensitivity'
+      ]
+    },
+    {
       id: 'market',
       name: 'Custom Market Opportunity Report',
-      price: 'From $99',
+      price: 'Ask',
       desc: 'A scoped read on a market, ZIP code or property type you choose.',
       includes: [
         'Requested market, ZIP code or property type',
@@ -183,7 +265,7 @@ window.MACO = (function () {
     }
   ];
 
-  var REPORTS_FOOTNOTE = 'Bulk property analysis available by quote.';
+  var REPORTS_FOOTNOTE = 'Every report is scoped and priced before any work begins — tell us the property or market and you get a fixed quote and turnaround, no subscription required. Bulk and recurring analysis available.';
 
   var REPORT_DISCLAIMER =
     'Reports are provided for investment screening and informational purposes. ' +
@@ -206,18 +288,27 @@ window.MACO = (function () {
         key: 'active',
         label: 'Active',
         blurb: 'Full signal set — code cases, recorded liens, unsafe/expired permits, comparable sales and underwriting.',
-        markets: ['Miami-Dade County']
+        markets: [
+          { name: 'Miami-Dade County', page: 'off-market-deals-miami-dade.html',
+            note: 'Deepest coverage. County-wide expansion rolling out.',
+            cities: ['Kendall', 'Palmetto Bay', 'Pinecrest', 'South Miami', 'Homestead'] }
+        ]
       },
       {
         key: 'expanding',
         label: 'Live · expanding coverage',
-        blurb: 'Live now on county tax-roll records and recorded sales. Code and lien depth is still being added county by county.',
+        blurb: 'Live now on county tax-roll records, recorded sales and owner mailing data, with ZIP-level sale bands. Code and lien depth is still being added county by county.',
         markets: [
-          'Broward County',
-          'Lee County (Fort Myers)',
-          'Collier County (Naples)',
-          'Polk County',
-          'Lake County'
+          { name: 'Broward County', page: 'off-market-deals-broward.html',
+            cities: ['Fort Lauderdale', 'Pompano Beach', 'Deerfield Beach', 'Coral Springs', 'Coconut Creek', 'Margate', 'Tamarac', 'Sunrise', 'Oakland Park', 'Lauderhill', 'Lauderdale Lakes', 'North Lauderdale', 'Wilton Manors', 'Lighthouse Point', 'Lauderdale By The Sea', 'Unincorporated Broward'] },
+          { name: 'Lee County', page: 'off-market-deals-lee.html', note: 'Fort Myers metro',
+            cities: ['Fort Myers', 'Cape Coral', 'Lehigh Acres', 'North Fort Myers', 'Bonita Springs', 'Estero', 'Fort Myers Beach', 'Sanibel', 'Alva', 'Bokeelia', 'Matlacha', 'Saint James City'] },
+          { name: 'Collier County', page: 'off-market-deals-collier.html', note: 'Naples metro',
+            cities: ['Naples', 'Golden Gate City', 'Marco Island', 'Immokalee', 'Everglades City', 'Goodland', 'Chokoloskee'] },
+          { name: 'Polk County', page: 'off-market-deals-polk.html', note: 'Orlando–Tampa corridor',
+            cities: ['Lakeland', 'Winter Haven', 'Davenport', 'Haines City', 'Auburndale', 'Lake Wales', 'Poinciana', 'Mulberry'] },
+          { name: 'Lake County', page: 'off-market-deals-lake.html', note: 'Smallest market — Clermont area only',
+            cities: ['Clermont'] }
         ]
       },
       {
@@ -225,9 +316,9 @@ window.MACO = (function () {
         label: 'Requested · under evaluation',
         blurb: 'On the evaluation list. We review public-data availability and update frequency before committing a launch date. Request yours to move it up the queue.',
         markets: [
-          'Palm Beach County',
-          'Hillsborough County (Tampa)',
-          'Orange County (Orlando)'
+          { name: 'Palm Beach County', cities: ['West Palm Beach', 'Boca Raton', 'Delray Beach', 'Lake Worth'] },
+          { name: 'Hillsborough County', note: 'Tampa', cities: ['Tampa', 'Brandon', 'Plant City'] },
+          { name: 'Orange County', note: 'Orlando', cities: ['Orlando', 'Apopka', 'Winter Garden'] }
         ]
       },
       {
@@ -342,13 +433,21 @@ window.MACO = (function () {
   function renderMarkets(containerId) {
     var box = el(containerId); if (!box) return;
     box.innerHTML = MARKETS.tiers.map(function (t) {
-      var pills = t.markets.length
-        ? '<div class="market-tier__pills">' + t.markets.map(function (m) {
-            var pg = MARKET_PAGES[m];
-            var inner = esc(m) + (pg ? ' <span aria-hidden="true" style="opacity:.7">&rarr;</span>' : '');
-            return pg
-              ? '<a class="market-pill market-pill--' + esc(t.key) + '" href="' + pg + '" title="See what the Deal Analyzer carries for ' + esc(m) + '">' + inner + '</a>'
-              : '<span class="market-pill market-pill--' + esc(t.key) + '">' + esc(m) + '</span>';
+      var body = t.markets.length
+        ? '<div class="market-umbrellas">' + t.markets.map(function (m) {
+            var head = m.page
+              ? '<a class="market-umb__name" href="' + m.page + '">' + esc(m.name) + ' <span aria-hidden="true">&rarr;</span></a>'
+              : '<span class="market-umb__name">' + esc(m.name) + '</span>';
+            var cities = (m.cities || []).length
+              ? '<div class="market-umb__cities">' + m.cities.map(function (c) {
+                  return '<span class="market-city">' + esc(c) + '</span>';
+                }).join('') + '</div>'
+              : '';
+            return '<div class="market-umb">' +
+              '<div class="market-umb__head">' + head +
+                (m.note ? '<span class="market-umb__note">' + esc(m.note) + '</span>' : '') +
+              '</div>' + cities +
+            '</div>';
           }).join('') + '</div>'
         : '<p class="market-tier__empty">None scheduled yet.</p>';
       return '<div class="market-tier market-tier--' + esc(t.key) + '">' +
@@ -357,7 +456,7 @@ window.MACO = (function () {
           '<span class="market-tier__count">' + t.markets.length + '</span>' +
         '</div>' +
         '<p class="market-tier__blurb">' + esc(t.blurb) + '</p>' +
-        pills +
+        body +
       '</div>';
     }).join('');
   }

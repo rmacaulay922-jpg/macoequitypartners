@@ -78,6 +78,7 @@ h2.t{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:10px 0 0;font
 @media (max-width:760px){.navlinks{display:none;}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
 </style>
+<script src="site-config.js"></script>
 </head>
 <body>
 <div class="site">
@@ -170,9 +171,9 @@ h2.t{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:10px 0 0;font
     <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:36px;align-items:start" class="contact-grid">
       <div style="font-size:13.5px;line-height:1.7;color:var(--soft)">
         <p style="margin:0 0 12px">Deal submissions, partnership and LP conversations, research questions, or anything about the Deal Analyzer — one form, straight to the desk. We respond within one business day.</p>
-        <p style="margin:0;font-family:var(--mono);font-size:11px;color:var(--mute)">DIRECT: <a href="mailto:rmac@macoequitypartners.com" style="color:var(--orange)">rmac@macoequitypartners.com</a></p>
+        <p style="margin:0;font-family:var(--mono);font-size:11px;color:var(--mute)">DIRECT: <a href="mailto:deals@macoequitypartners.com" style="color:var(--orange)">deals@macoequitypartners.com</a></p>
       </div>
-      <form action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST" style="display:grid;gap:10px">
+      <form data-maco-form action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST" style="display:grid;gap:10px">
         <div id="contactSent" style="display:none;background:var(--panel);border:1px solid var(--orange);border-left:4px solid var(--orange);border-radius:3px;padding:12px 14px;font-size:13px;font-weight:600">Message sent — we&rsquo;ll respond within one business day.</div>
         <input type="hidden" name="_subject" value="Firm contact — macoequitypartners.com/about">
         <input type="hidden" name="_captcha" value="false">
@@ -194,7 +195,7 @@ h2.t{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:10px 0 0;font
   <div class="sec" style="border-bottom:none">
     <div class="final">
       <img src="hero-miami-aerial.jpg" alt="" loading="lazy">
-      <div class="in"><h3>Run the same engine we use — free for 7 days.</h3><p>No credit card, no auto-bill, no sales call. Spend a week inside it and see what it surfaces.</p><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><a class="btn btn-o" href="trial.html">Start free trial →</a><a class="btn btn-lt" href="demo.html">Book a 20-minute demo</a></div><div class="em">rmac@macoequitypartners.com</div></div>
+      <div class="in"><h3>Run the same engine we use — free for 7 days.</h3><p>No credit card, no auto-bill, no sales call. Spend a week inside it and see what it surfaces.</p><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><a class="btn btn-o" href="trial.html">Start free trial →</a><a class="btn btn-lt" href="demo.html">Book a 20-minute demo</a></div><div class="em">deals@macoequitypartners.com</div></div>
     </div>
   </div>
 
@@ -209,5 +210,10 @@ h2.t{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:10px 0 0;font
   function cu(el){var to=+el.getAttribute('data-to'),dur=1400,t0=null;function s(ts){if(!t0)t0=ts;var p=Math.min(1,(ts-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=Math.round(to*e).toLocaleString('en-US');if(p<1)requestAnimationFrame(s);}requestAnimationFrame(s);}
   var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting&&!e.target.dataset.done){e.target.dataset.done='1';e.target.textContent='0';cu(e.target);io.unobserve(e.target);}});},{threshold:.4});
   document.querySelectorAll('.cnt').forEach(function(el){io.observe(el);});})();
+</script>
+<script>
+/* Form delivery is centralised in site-config.js — see FORM_DELIVERY_EMAIL.
+   The action attribute above is only the no-JS fallback. */
+try{if(window.MACO){document.querySelectorAll('form[data-maco-form]').forEach(function(f){f.action=MACO.formEndpoint;});}}catch(e){}
 </script>
 </body></html>

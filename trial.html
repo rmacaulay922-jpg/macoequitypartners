@@ -50,6 +50,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
   .footer a { margin-left: 0; margin-right: 14px; }
 }
 </style>
+<script src="site-config.js"></script>
 </head>
 <body>
 <div class="page">
@@ -87,7 +88,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
       <div class="tag">NO CARD REQUIRED</div>
       <div id="form-block">
         <div style="font:800 17px 'Schibsted Grotesk',sans-serif">Start your trial</div>
-        <form action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST" id="trial-form">
+        <form data-maco-form action="https://formsubmit.co/rmac@macoequitypartners.com" method="POST" id="trial-form">
           <input type="hidden" name="_subject" value="Deal Analyzer — access request">
           <input type="hidden" name="_template" value="table">
           <input type="hidden" name="_captcha" value="false">
@@ -143,5 +144,10 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
     document.getElementById('sent-block').style.display = 'block';
   }
 })();
+</script>
+<script>
+/* Form delivery is centralised in site-config.js — see FORM_DELIVERY_EMAIL.
+   The action attribute above is only the no-JS fallback. */
+try{if(window.MACO){document.querySelectorAll('form[data-maco-form]').forEach(function(f){f.action=MACO.formEndpoint;});}}catch(e){}
 </script>
 </body></html>

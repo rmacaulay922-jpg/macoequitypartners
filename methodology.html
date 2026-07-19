@@ -75,6 +75,37 @@
     <div class="method"><span class="k">05 — Refresh</span><h4>Data-refresh limitations</h4><p>County feeds update on their own schedules and coverage depth differs by market — Miami-Dade carries the fullest signal set today. Some data lags real events, and not every signal exists in every county. We show data vintage where we can.</p></div>
     <div class="method"><span class="k">06 — Verify</span><h4>Independent verification required</h4><p>Every figure in the platform is a screening estimate, not a licensed appraisal, title report or inspection. Confirm ownership, title, condition, comparable sales and your numbers independently before you make an offer or spend money.</p></div>
   </div>
+  <!-- Sources are named at the agency level. Naming the office is the credibility;
+       publishing the individual service endpoints is not, so we don't. -->
+  <div style="margin-top:34px;border:1px solid var(--rule-2);border-radius:5px;overflow:hidden">
+    <div style="background:var(--ink);color:#F1F1EC;padding:15px 22px">
+      <span class="da-label" style="color:#F0754C">Where the data comes from</span>
+      <p style="margin:7px 0 0;font-size:14px;line-height:1.55;color:#C6C8C2;max-width:76ch">
+        Every record in the analyzer is pulled from the public agency that keeps it. We name the office
+        on each field so you can go verify it at the counter or on their own site.</p>
+    </div>
+    <div style="padding:6px 22px 18px">
+      <div class="src-grid">
+        <div><b>County property appraisers</b><span>Miami-Dade, Broward, Lee, Collier, Polk, Lake — ownership, mailing address,
+          building characteristics, homestead status, sale history.</span></div>
+        <div><b>Florida Department of Revenue</b><span>Statewide certified tax roll — parcel characteristics, just and assessed
+          values, qualified-sale records used for the value bands.</span></div>
+        <div><b>Municipal code enforcement &amp; building departments</b><span>Open code cases, unsafe-structure actions,
+          permit history and expired permits, where the city publishes them.</span></div>
+        <div><b>Clerk of the Circuit Court</b><span>Recorded instruments — deeds, municipal and code-enforcement liens,
+          and the published foreclosure-auction calendars.</span></div>
+        <div><b>FEMA National Flood Hazard Layer</b><span>Flood zone and the effective map date for the parcel.</span></div>
+        <div><b>Florida Department of Law Enforcement</b><span>Reported offense counts by agency, used only to place an area
+          in a broad band — never to label an individual property.</span></div>
+        <div><b>Florida Division of Corporations</b><span>Entity status, officers and registered agent when the owner of
+          record is an LLC or corporation.</span></div>
+      </div>
+      <p class="da-fineprint" style="margin-top:16px">Coverage differs by county because the agencies publish different things.
+        Where a source has no record for a parcel, the analyzer leaves the field blank rather than filling it with an estimate.
+        We do not buy or resell third-party skip-trace or lead lists.</p>
+    </div>
+  </div>
+
   <div style="margin-top:28px;background:var(--card);border:1px solid var(--rule-2);border-radius:5px;padding:20px 22px">
     <p class="da-disclaimer">Estimated values, comparable analyses and underwriting produced by the Maco Deal Analyzer are for investment screening and informational purposes only. They are not licensed real estate appraisals, title reports, inspections, legal opinions or guarantees of future performance. Users must independently verify all material information. See our <a href="disclosures.html" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">full disclosures</a> for more detail.</p>
   </div>
