@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maco Deal Analyzer — One-Pager (Print)</title>
+<meta name="robots" content="noindex, follow">
+<link rel="icon" type="image/png" href="favicon.png?v=logo2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Print-first one-pager: Letter portrait, fits on one page. Screen shows a preview + print button. */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#131512;--soft:#4A4E49;--mute:#6B6F6A;--orange:#E8501F;--line:rgba(19,21,18,.14);--panel:#FDFDFB}
+body{background:#E9E9E4;font-family:'Schibsted Grotesk',sans-serif;color:var(--ink)}
+.toolbar{max-width:8.5in;margin:14px auto 0;display:flex;justify-content:space-between;align-items:center;padding:0 4px}
+.toolbar button{background:var(--orange);color:#fff;border:0;border-radius:6px;font:700 13px 'Schibsted Grotesk',sans-serif;padding:11px 20px;cursor:pointer}
+.sheet{width:8.5in;min-height:10.6in;margin:10px auto 30px;background:#fff;padding:.55in .6in;box-shadow:0 4px 24px rgba(0,0,0,.15)}
+.mono{font-family:'IBM Plex Mono',monospace}
+.hd{display:flex;justify-content:space-between;align-items:center;border-bottom:2.5px solid var(--ink);padding-bottom:14px}
+.hd img{height:52px}
+.hd .r{text-align:right;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.12em;color:var(--mute)}
+h1{font:800 30px/1.05 'Schibsted Grotesk',sans-serif;letter-spacing:-.02em;margin:18px 0 6px}
+h1 span{color:var(--orange)}
+.sub{font:400 13.5px/1.5 'Schibsted Grotesk',sans-serif;color:var(--soft);max-width:58ch}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.box{border:1px solid var(--line);border-radius:8px;padding:13px 15px;background:var(--panel)}
+.box h3{font:800 12.5px 'Schibsted Grotesk',sans-serif;margin-bottom:7px}
+.box h3 .k{color:var(--orange);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-right:6px}
+.box ul{list-style:none}
+.box li{position:relative;padding-left:15px;font:400 11.5px/1.55 'Schibsted Grotesk',sans-serif;color:var(--soft);margin-top:3px}
+.box li::before{content:'';position:absolute;left:0;top:6px;width:8px;height:5px;border-left:2px solid var(--orange);border-bottom:2px solid var(--orange);transform:rotate(-45deg)}
+.band{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:16px;background:var(--panel)}
+.bc{padding:11px 12px;border-left:1px solid var(--line)}
+.bc:first-child{border-left:0}
+.bc b{display:block;font:800 19px 'Schibsted Grotesk',sans-serif}
+.bc span{display:block;font:500 7.5px 'IBM Plex Mono',monospace;letter-spacing:.09em;text-transform:uppercase;color:var(--mute);margin-top:2px}
+.price{display:flex;gap:12px;margin-top:16px}
+.pp{flex:1;border:1.5px solid var(--line);border-radius:8px;padding:12px 14px;text-align:center}
+.pp.f{border-color:var(--orange)}
+.pp b{font:800 22px 'Schibsted Grotesk',sans-serif}
+.pp .nm{font:700 11px 'Schibsted Grotesk',sans-serif;margin-bottom:2px}
+.pp .s{font:400 9px 'IBM Plex Mono',monospace;color:var(--mute)}
+.foot{margin-top:16px;border-top:2.5px solid var(--ink);padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.foot .cta{font:800 15px 'Schibsted Grotesk',sans-serif}
+.foot .cta span{color:var(--orange)}
+.foot .fine{font:400 8.5px/1.5 'IBM Plex Mono',monospace;color:var(--mute);max-width:38ch;text-align:right}
+@media print{
+  body{background:#fff}
+  .toolbar{display:none}
+  .sheet{box-shadow:none;margin:0;width:auto;min-height:auto;padding:.2in .35in}
+  @page{size:letter portrait;margin:.25in}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span class="mono" style="font-size:10px;color:#6B6F6A">HANDOUT — prints on one Letter page</span>
+  <button onclick="window.print()">Print / Save PDF</button>
+</div>
+<div class="sheet">
+  <div class="hd">
+    <img src="logo-full.png?v=logo2" alt="Maco Equity Partners">
+    <div class="r">OFF-MARKET DEAL ANALYZER<br>MACOEQUITYPARTNERS.COM</div>
+  </div>
+
+  <h1>Off-market deals, <span>ranked from county records.</span></h1>
+  <p class="sub">Built by a Miami flipper who got tired of $120/mo nationwide tools reselling the same lists. Maco reads Florida county records directly — code cases, liens, estates, recorded sales — and ranks every property with honest, editable underwriting.</p>
+
+  <div class="band">
+    <div class="bc"><b>6</b><span>FL counties live</span></div>
+    <div class="bc"><b>2,387</b><span>Miami-Dade scored</span></div>
+    <div class="bc"><b>30,721</b><span>Recorded sales in ZIP bands</span></div>
+    <div class="bc"><b>$50<span style="display:inline;font-size:10px;color:var(--mute)">/mo</span></b><span>Founding rate, locked</span></div>
+  </div>
+
+  <div class="cols">
+    <div class="box"><h3><span class="k">01</span>Signals national tools skip</h3><ul>
+      <li>Open code-enforcement cases &amp; recorded liens (live, Miami-Dade)</li>
+      <li>Estates, trusts, heirs &amp; out-of-state owners — with mailing addresses</li>
+      <li>Modeled equity flags from real sale history (labeled as modeled)</li>
+      <li>FEMA flood zone &amp; FDLE crime band per property</li>
+    </ul></div>
+    <div class="box"><h3><span class="k">02</span>Price it before you chase it</h3><ul>
+      <li>Miami-Dade: comp-based ARV from live recorded sales + max-offer math</li>
+      <li>Other counties: ZIP sale bands from recorded arm&rsquo;s-length sales</li>
+      <li>Editable flip &amp; hold underwriter — when the math says pass, it says pass</li>
+      <li>Losses shown in red. No fantasy numbers, ever.</li>
+    </ul></div>
+    <div class="box"><h3><span class="k">03</span>From lead to mailbox</h3><ul>
+      <li>Pick recipients, merge letters under <b>your</b> name, print — minutes</li>
+      <li>Auto-skips listed properties (free MLS check), portfolios &amp; bad addresses</li>
+      <li>Pipeline CRM with follow-up reminders + owner mailing exports</li>
+    </ul></div>
+    <div class="box"><h3><span class="k">04</span>Honest by design</h3><ul>
+      <li>Every count stamped with its refresh date — check it yourself</li>
+      <li>Estimates labeled as estimates; nothing sold as an appraisal</li>
+      <li>Data straight from county &amp; state records, not resold lists</li>
+    </ul></div>
+  </div>
+
+  <div class="price">
+    <div class="pp f"><div class="nm">Founding Member</div><b>$50</b><div class="s">/MO · LOCKED WHILE ACTIVE</div></div>
+    <div class="pp"><div class="nm">Standard Access</div><b>$75</b><div class="s">/MO · PRIMARY MARKET</div></div>
+    <div class="pp"><div class="nm">Market Select</div><b>$85</b><div class="s">/MO · PICK YOUR COUNTY</div></div>
+  </div>
+
+  <div class="foot">
+    <div class="cta">Free 7 days. No card. <span>macoequitypartners.com/trial</span></div>
+    <div class="fine">Not investment advice. Estimates from public records — independently verify before acting. © 2026 Maco Equity Partners LLC</div>
+  </div>
+</div>
+</body>
+</html>

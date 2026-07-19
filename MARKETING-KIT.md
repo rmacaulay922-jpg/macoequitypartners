@@ -82,3 +82,38 @@ DM reply when someone asks what you use:
 - Social share card: `og-card.png` (renders automatically when the site is linked).
 - Sample the live numbers for posts from the homepage signal band (they're live-wired
   and stamped with a verification date — quote them WITH the date).
+
+---
+
+# Trial → Paid Email Sequence (copy-paste from your phone)
+
+Speed wins trials; the day-5 close converts them. Every message is one thumb-scroll long.
+
+**T+0 · Code delivery (within 15 min of signup — this speed IS the pitch):**
+> Subject: Your Deal Analyzer access code
+> Code: DA-TRIAL-__ · Login: macoequitypartners.com/portal.html
+> Live for 7 days from first use. Reply with the area you work (e.g. "Kendall" or
+> "Pompano estates") and I'll tell you exactly which two filters to run first. — Ryan
+
+**T+1 day · The guided first win (only if they logged in):**
+> Saw you got in. Quick tip for [their market]: open the Leads tab, sort by Sale Band,
+> and tick "Hide institutional" — that's the real list. The HIGH EQUITY chips are the
+> owners who can actually say yes. Want 10 minutes on the phone while you drive it?
+
+**T+2 days · If they HAVEN'T logged in:**
+> Your trial clock hasn't started (it begins at first login). Life happens — want me
+> to push the expiry so you get a clean week? Or if now's a bad time, just say so and
+> I'll close it out, no drip campaign.
+
+**T+5 days · The close (send to every active trial):**
+> Your week wraps [day]. If it's earning a spot in your process, the founding rate is
+> $50/mo, locked for as long as you stay subscribed: [payment link]
+> If not — no hard feelings, the code just expires. Either way: what's the one thing
+> it was missing for you? (I ship fixes weekly — see /updates.html.)
+
+**T+8 days · Expired, no answer (last touch, then stop):**
+> Code's expired. If you ever want back in, the door's open — though founding pricing
+> only lasts while the founding spots do. Good hunting either way.
+
+Rules: never more than one unanswered follow-up in a row; the day-5 "what was missing"
+question is your product roadmap — log every answer.
