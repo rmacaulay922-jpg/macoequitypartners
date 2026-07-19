@@ -1094,6 +1094,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 <div class="tab-content" id="tab-pipeline">
   <div class="section-title">Deal Pipeline <span class="badge" id="pipelineCount">0</span></div>
   <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Track your deals from lead to close. Drag cards between columns. Notes auto-save.</p>
+  <div id="followupsDuePipe"></div>
   
   <!-- Pipeline summary strip -->
   <div class="pipeline-strip" id="pipelineStrip"></div>
@@ -1129,15 +1130,16 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
   </div>
 </div>
 <script>
-var MKT_BADGE={miami:['Miami-Dade','#3DBE82'],broward:['Broward','#E8501F'],lee:['Fort Myers','#E8501F'],collier:['Naples','#E8501F'],polk:['Polk','#E8501F'],lake:['Clermont','#E8501F']};
+var MKT_BADGE={miami:['Miami-Dade','#3DBE82'],miamicw:['Miami-Dade CW','#3DBE82'],broward:['Broward','#E8501F'],lee:['Fort Myers','#E8501F'],collier:['Naples','#E8501F'],polk:['Polk','#E8501F'],lake:['Clermont','#E8501F']};
 function openAddrSearch(){var m=document.getElementById('macoSearchModal');if(!m)return;m.style.display='block';document.body.style.overflow='hidden';var i=document.getElementById('macoSearchInput');if(i){setTimeout(function(){i.focus();},30);} renderAddrResults();}
 function closeAddrSearch(){var m=document.getElementById('macoSearchModal');if(m)m.style.display='none';document.body.style.overflow='';}
 // Every property across every loaded dataset, in one flat list.
 function _searchAssets(){
   var res=[];
   try{(window.ALL_ROWS||[]).forEach(function(r){ if(r&&r[1]) res.push({m:'miami',a:r[1],o:r[3],sub:r[2],val:r[8],sc:r[5],beds:r[6],sqft:r[18],yr:r[12],row:r,kind:'miami'}); });}catch(e){}
-  ['broward','lee','collier','polk','lake'].forEach(function(mk){
-    try{var reg=(window.MARKETS||{})[mk]; if(!reg)return; var arr=reg.src?window[reg.src]:null;
+  // Every leads-kind market from the registry — hardcoding the list silently skipped new markets (Jul 2026 audit).
+  Object.keys(window.MARKETS||{}).forEach(function(mk){
+    try{var reg=MARKETS[mk]; if(!reg||reg.kind!=='leads')return; var arr=reg.src?window[reg.src]:null;
       (arr||[]).forEach(function(l){ if(l&&l.a) res.push({m:mk,a:l.a,o:l.o,sub:l.c,val:l.mkt,sc:l.sc,tag:l.tag,mst:l.mst,oos:l.oos,abs:l.abs,held:l.held,lead:l,kind:'lead'}); });
     }catch(e){}
   });
@@ -1731,7 +1733,7 @@ function setMarket(m,skipSave){
   if(MARKETS[m].kind==='leads'){try{_polkFilter={market:'',tag:'',own:'',q:''};['polkBanner','polkControls'].forEach(function(id){var e=document.getElementById(id);if(e)e.dataset.done='';});buildPolk();}catch(e){console.error('leads rebuild',e);}}
   // Header vintage line describes the active market's data.
   var dv=document.getElementById('dataVintage');
-  if(dv&&MARKETS[m].kind==='leads'){var mt=_LMETA();var _isDate=/^\d{4}-\d{2}-\d{2}$/.test(mt.snapshot||'');dv.textContent=MARKETS[m].label+' leads: '+(_isDate?('refreshed '+mt.snapshot+(mt.roll?' ('+mt.roll+')':'')):('PA snapshot '+(mt.snapshot||'—')+' · refresh queued'))+' · owner mailing + sale history baked · auto-refreshes on a rotating schedule';}
+  if(dv&&MARKETS[m].kind==='leads'){var mt=_LMETA();var _isDate=/^\d{4}-\d{2}-\d{2}$/.test(mt.snapshot||'');dv.textContent=MARKETS[m].label+' leads: '+(_isDate?('refreshed '+mt.snapshot+(mt.roll?' ('+mt.roll+')':'')):('annual '+(mt.snapshot||'—')))+' · owner mailing + sale history baked';}
   else if(m==='miami'){try{_updateVintage();}catch(e){}}
   try{buildBrief();}catch(e){} // the Brief follows the active market
 }
@@ -1746,6 +1748,9 @@ function _crimeBand(county,city){
   var C=window.CRIME_BANDS; if(!C||!C.agencies)return null;
   var cty=_crimeKey(county), cy=_crimeKey(city);
   var a=cy&&C.agencies[cty+'|'+cy]; if(a)return a.band;      // exact city PD match
+  // Miami-Dade's county fallback is the POP-WEIGHTED average (inflated by City of Miami) — it was
+  // branding Pinecrest/Kendall cards "Crime: HIGH". No agency match there = show NO chip. (Jul 2026 audit)
+  if(cty==='MIAMIDADE')return null;
   var s=C.county&&C.county[cty]; return s?s.band:null;       // county sheriff / unincorporated fallback
 }
 function _crimeChip(county,city){
@@ -1822,8 +1827,14 @@ function buildPolk(){
   if(ban&&!ban.dataset.done){ban.dataset.done='1';
     ban.innerHTML='<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:14px 18px;margin-bottom:16px;">'
       +'<div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:6px;">'+county+' County &mdash; motivated-seller snapshot</div>'
-      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; '+(/^\d{4}-\d{2}-\d{2}$/.test(meta.snapshot||'')?('<strong>refreshed '+meta.snapshot+'</strong>'+(meta.roll?' ('+meta.roll+')':'')):('snapshot '+(meta.snapshot||'—')+' &middot; refresh queued'))+'.</div>'
-      +'<div style="font-size:12px;color:#e8854a;margin-top:8px;">'+county+' publishes no live comp or code-violation feed &mdash; there is <strong>no per-property ARV here</strong>. Each lead now carries FDOR tax-roll sqft &amp; year built plus a <strong>ZIP-level qualified-sale band</strong> (real recorded arm&rsquo;s-length sales, shown as a range). Use the band to shortlist, then walk it and comp it before offering. Leads auto-refresh on a rotating schedule &mdash; the refresh date above is the proof.</div></div>';
+      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; '+(/^\d{4}-\d{2}-\d{2}$/.test(meta.snapshot||'')?('<strong>refreshed '+meta.snapshot+'</strong>'+(meta.roll?' ('+meta.roll+')':'')):('annual '+(meta.snapshot||'—')+' tax roll'))+'.</div>'
+      +(function(){
+        var cov=0;try{cov=L.filter(function(x){return _fdorFor(x);}).length/Math.max(1,L.length);}catch(e){}
+        var depth=cov>=0.5
+          ? 'Each lead carries FDOR tax-roll sqft &amp; year built plus a <strong>ZIP-level qualified-sale band</strong> (real recorded arm&rsquo;s-length sales, shown as a range). Use the band to shortlist, then walk it and comp it before offering.'
+          : 'These leads carry the county roll&rsquo;s core fields; sqft, year built and sale bands are <strong>not yet joined for this county</strong> &mdash; anchor on county value and comp by hand before offering.';
+        return '<div style="font-size:12px;color:#e8854a;margin-top:8px;">'+county+' publishes no live comp or code-violation feed &mdash; there is <strong>no per-property ARV here</strong>. '+depth+'</div></div>';
+      })();
   }
   var byTag={},oos=0,abss=0; L.forEach(function(l){byTag[l.tag]=(byTag[l.tag]||0)+1;if(l.oos)oos++;else if(l.abs)abss++;});
   var mkts=meta.markets||[];
@@ -1948,7 +1959,7 @@ function polkToggleDetail(pid){
 // ── FDOR enrichment joins (fdor-enrich.js + zip-value-bands.js) ──
 // sqft/year-built from the state tax roll, and ZIP-level qualified-sale $/sf bands.
 // The band is a RANGE from real recorded arm's-length sales — shown as such, never as an ARV.
-function _fdorFor(l){try{return (window.FDOR_ENRICH||{})[l.pid]||null;}catch(e){return null;}}
+function _fdorFor(l){try{var e=(window.FDOR_ENRICH||{})[l.pid];if(e)return e;if(l&&l.sqft>200)return {sqft:l.sqft,yb:l.yb||null};return null;}catch(e){return null;}}
 // ── DATA-HONESTY GUARDS (Jul 2026 audit) ──
 // Institutional SFR portfolios never answer blind mail — tag them and leave them out of letter runs by default.
 function _instOwner(o){return /SRP SUB|FKH SFR|INVITATION HOMES|FYR SFR|FYR\b|CSMA\b|SWAY\b|AMH 20|AMERICAN HOMES 4 RENT|PROGRESS RESIDENTIAL|TRICON\b|MAIN STREET RENEWAL|HOME PARTNERS/i.test(o||'');}
@@ -1960,10 +1971,17 @@ function _mailRiskLead(l){
   var a=(''+(l.a||'')).toUpperCase().replace(/\s+/g,' ').trim(), m=(''+(l.m1||'')).toUpperCase().replace(/\s+/g,' ').trim();
   return !!(a&&m&&a===m);
 }
-// No usable ZIP on the roll (Lee island rows bake z='0') — not mailable.
-function _badZipLead(l){return !l||!l.z||l.z==='0'||l.z===0;}
+// Not mailable ONLY if neither the property zip nor the OWNER's mailing zip exists.
+// (Lake bakes z='' on all 120 rows but every owner mailing address is complete — the letter
+// goes to the MAILING address, so the property zip must not disqualify the lead. Jul 2026 audit.)
+function _badZipLead(l){
+  if(!l)return true;
+  if(l.z&&l.z!=='0'&&l.z!==0)return false;
+  return !/\d{5}/.test(''+(l.m3||'')); // owner mailing zip rescues it
+}
 function _bandFor(l){
   try{
+    if(_teardownLead(l))return null; // land-value-only parcel — a house-price band would be flatly wrong
     var e=_fdorFor(l); if(!e||!e.sqft||e.sqft<400)return null;
     var b=(window.ZIP_BANDS||{})[''+(l.z||'')]; if(!b||!b.med||b.n<8)return null;
     return {lo:Math.round(b.p25*e.sqft),mid:Math.round(b.med*e.sqft),hi:Math.round(b.p75*e.sqft),n:b.n,ppsf:b.med,sqft:e.sqft,asOf:b.as_of||''};
@@ -2022,8 +2040,11 @@ function polkUnderwrite(pid){
 }
 function polkToPipeline(pid,btn){
   var l=(_LSRC()||[]).filter(function(x){return x.pid===pid;})[0]; if(!l)return;
+  // Carry the FULL owner-contact record — the pipeline card is the call screen, and losing the
+  // mailing street/pid here dead-ended letters + skip-trace for every non-Miami lead (Jul 2026 audit).
   addToPipeline({address:l.a+', '+l.c+' '+(l.z||''), neighborhood:l.c+', '+(_LMETA().county||''), arv:0, repair:0, _score:l.sc,
-    owner:l.o, mail_city:(l.m3||'').replace(/\s+[A-Za-z]{2}\s+\d.*$/,'').trim()||l.c, owner_state:l.mst||'FL'});
+    owner:l.o, mail_city:(l.m3||'').replace(/\s+[A-Za-z]{2}\s+\d.*$/,'').trim()||l.c, owner_state:l.mst||'FL',
+    _pid:l.pid, _mkt:window._market||'', _m1:l.m1||'', _m3:l.m3||'', _city:l.c||'', _zip:l.z||''});
   if(btn){btn.textContent='✓ In Pipeline';btn.disabled=true;}
 }
 function exportPolkCsv(){
@@ -2128,6 +2149,7 @@ function briefMiamiCard(d,i){
     +'<div style="display:grid;gap:7px;margin-top:11px;">'
       +ctaBtn(d,'text-align:center;')
       +'<button class="btn btn-dark" onclick="runUnderwriter(_briefList['+i+'])">See the full numbers (P&amp;L)</button>'
+      +'<a class="btn btn-dark" href="'+zillowUrl(d)+'" target="_blank" rel="noopener" style="text-align:center;border-color:#006AFF;color:#6fa8ff;">Check if it&rsquo;s listed (Zillow)</a>'
       +'<button class="btn btn-dark" onclick="showTabByName(&quot;deals&quot;)">Browse all tracked deals</button>'
     +'</div>'
   +'</div></div>';
@@ -2233,7 +2255,9 @@ function initApp(){
         var _farm=_sel.querySelector('option[value="miami"]');
         if(_farm&&_farm.nextSibling)_sel.insertBefore(_o,_farm.nextSibling);else _sel.appendChild(_o);
       }
-      if(!_saved)_saved='miamicw';
+      // Do NOT default fresh browsers into the raw county-wide list — the comp-verified farm
+      // cockpit is the first impression the homepage sells (Jul 2026 audit). miamicw stays a
+      // labeled option in the selector.
     }
     setMarket(_saved||'miami',true);
   }catch(e){console.error('market',e);}
@@ -2291,7 +2315,11 @@ function gotoViolations(addr){showTabByName('violations');var s=document.getElem
 function gotoEstates(){showTabByName('all');var f=document.getElementById('ownerTypeFilter');if(f)f.value='estate';var s=document.getElementById('propSearch');if(s)s.value='';try{filterTable();}catch(e){}window.scrollTo(0,0);}
 // Follow-ups saved on Pipeline cards surface here — deals are won on the 4th-7th touch.
 function renderFollowups(){
-  var el=document.getElementById('followupsDue'); if(el==null||typeof getPipeline!=='function')return;
+  // Renders into BOTH the Miami Overview card and the Pipeline-tab strip — follow-ups must be
+  // visible in every market, or scheduled callbacks silently rot (Jul 2026 audit).
+  var els=[document.getElementById('followupsDue'),document.getElementById('followupsDuePipe')].filter(Boolean);
+  if(!els.length||typeof getPipeline!=='function')return;
+  var el={set innerHTML(h){els.forEach(function(e){e.innerHTML=h;});}};
   var data=getPipeline(); var today=new Date().toISOString().slice(0,10);
   var due=Object.keys(data).map(function(k){return data[k];})
     .filter(function(e){return e.followup&&e.followup<=today&&e.stage!=='sold';})
@@ -2412,10 +2440,24 @@ function buildOverviewMarket(market){
 }
 
 // ── DEAL CARD HEADER (live satellite photo + Zillow link) ──
+// ZIP-aware listing slugs (Jul 2026 audit): hardcoding "-Miami-FL" sent Homestead-grid addresses
+// to DIFFERENT REAL HOUSES in Miami proper. ZIP alone disambiguates on Zillow; city label is cosmetic.
+function _addrParts(d){
+  var raw=(''+((d&&d.address)||'')).replace(/#/g,'').trim();
+  var m=raw.match(/^(.*?),\s*([A-Za-z .·-]+?)\s*(\d{5})?\s*$/); // "123 MAIN ST, LAKELAND 33801" → street/city/zip
+  var street=(m?m[1]:raw).trim(), city=(m&&m[2])?m[2].trim():'', zip=(m&&m[3])||'';
+  if(!zip){
+    var mu=(''+((d&&d.maps_url)||'')).match(/\+FL\+(\d{5})/i); if(mu)zip=mu[1];
+  }
+  if(!zip&&d&&d.zip)zip=''+d.zip;
+  if(!zip){try{var nb=d&&(d.neighborhood||d._nb);if(nb&&window.NB_ZIPS&&NB_ZIPS[nb]&&NB_ZIPS[nb].length)zip=''+NB_ZIPS[nb][0];}catch(e){}}
+  if(!city){var CITY_NB={'Homestead':'Homestead','Redland':'Homestead','Hialeah':'Hialeah','Doral':'Doral'};city=CITY_NB[d&&(d.neighborhood||d._nb)]||'Miami';}
+  return {street:street,city:city,zip:zip};
+}
 function zillowUrl(d){
   if(d&&d.zillow_url)return d.zillow_url;
-  var addr=(''+((d&&d.address)||'')).replace(/#/g,'').trim().replace(/\s+/g,'-');
-  return 'https://www.zillow.com/homes/'+addr+'-Miami-FL_rb/';
+  var p=_addrParts(d), slug=p.street.replace(/,/g,'').replace(/\s+/g,'-');
+  return 'https://www.zillow.com/homes/'+slug+(p.zip?'-'+p.zip:'-'+p.city.replace(/\s+/g,'-')+'-FL')+'_rb/';
 }
 var _geoCache=null;
 function _loadGeo(){if(_geoCache)return _geoCache;try{_geoCache=JSON.parse(localStorage.getItem('mep_geo')||'{}');}catch(e){_geoCache={};}return _geoCache;}
@@ -2452,11 +2494,12 @@ function loadDealPhotos(){
 }
 // Per-property "currently for sale?" links across brokerages (no public listings API exists; these check live).
 function listingsBar(d){
-  var a=(''+(d.address||'')).replace(/#/g,'').trim(), dash=a.replace(/\s+/g,'-');
+  var p=_addrParts(d), a=p.street, dash=a.replace(/,/g,'').replace(/\s+/g,'-');
+  var loc=p.city+' FL'+(p.zip?' '+p.zip:'');
   var z=zillowUrl(d);
-  var realtor='https://www.realtor.com/realestateandhomes-search/'+dash+'_Miami_FL';
-  var redfin='https://www.google.com/search?q='+encodeURIComponent('redfin '+a+' Miami FL');
-  var all='https://www.google.com/search?q='+encodeURIComponent(a+' Miami FL for sale');
+  var realtor='https://www.realtor.com/realestateandhomes-search/'+dash+'_'+p.city.replace(/\s+/g,'-')+'_FL'+(p.zip?'_'+p.zip:'');
+  var redfin='https://www.google.com/search?q='+encodeURIComponent('redfin '+a+' '+loc);
+  var all='https://www.google.com/search?q='+encodeURIComponent(a+' '+loc+' for sale');
   function lk(h,t){return '<a href="'+h+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:#6fa8ff;text-decoration:none;font-weight:600;">'+t+'</a>';}
   var sep='<span style="color:var(--faint);">&middot;</span>';
   return '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 14px;background:rgba(0,106,255,.07);border-bottom:1px solid var(--border);font-size:10.5px;">'
@@ -3698,9 +3741,9 @@ function exportPipelineCsv(){
   var data=getPipeline();
   var rows=Object.keys(data).map(function(k){var e=data[k];
     var stage=e.stage; PIPE_STAGES.forEach(function(s){if(s.key===e.stage)stage=s.label;});
-    return [e.address,e.neighborhood||'',stage,e.purchase||'',e.arv||'',e.repair||'',(estNetProfit(e.arv,e.repair||0,e.purchase)||''),e.followup||'',e.score||'',(e.log||[]).map(function(l){return (''+l.t).slice(0,10)+' '+l.note;}).join(' | ')];});
+    return [e.address,e.neighborhood||'',stage,(e.owner||''),(e._m1||''),(e._m3||e.mail_city||''),e.purchase||'',e.arv||'',e.repair||'',(estNetProfit(e.arv,e.repair||0,e.purchase)||''),e.followup||'',e.score||'',(e.log||[]).map(function(l){return (''+l.t).slice(0,10)+' '+l.note;}).join(' | ')];});
   if(!rows.length){alert('Pipeline is empty — add deals first.');return;}
-  downloadFile('maco-pipeline-'+_today()+'.csv',toCsv(['Address','Neighborhood','Stage','Purchase','ARV','Repair','Est Profit','Follow-up','Score','Call Log'],rows));
+  downloadFile('maco-pipeline-'+_today()+'.csv',toCsv(['Address','Neighborhood','Stage','Owner','Owner Mailing Street','Owner Mailing City/State/Zip','Purchase','ARV','Repair','Est Profit','Follow-up','Score','Call Log'],rows));
 }
 // Printable driving-for-dollars checklist: current filter, grouped by neighborhood, street order.
 function openDriveList(){
@@ -3903,7 +3946,15 @@ function openLetterPicker(source){
   var cands=[];
   if(source==='pipeline'){
     var data=getPipeline();
-    Object.keys(data).forEach(function(a){cands.push({addr:a,nb:data[a].neighborhood||'',folio:_folioForAddr(a)});});
+    window._lpOC={}; // leads-market pipeline entries carry their own baked mailing record — key it by addr for the merge
+    Object.keys(data).forEach(function(a){
+      var en=data[a];
+      if(en&&en._m1){
+        var mm=(''+(en._m3||'')).match(/^(.*?)\s+([A-Za-z]{2})\s+(\d{5}(?:-\d+)?)$/);
+        window._lpOC[a]={o:en.owner||'',ma:en._m1,mc:(mm?mm[1]:(en.mail_city||'')),ms:(mm?mm[2].toUpperCase():(en.owner_state||'FL')),mz:(mm?mm[3]:'')};
+      }
+      cands.push({addr:a,nb:en.neighborhood||'',folio:_folioForAddr(a)});
+    });
     if(!cands.length){toast('Pipeline is empty — add deals first, or use Print Letters on All Properties.');return;}
   }else if(source==='viols'){
     (window._violFiltered||[]).slice(0,200).forEach(function(v){cands.push({addr:v.address,nb:v.neighborhood||'',folio:v.folio||''});});
@@ -3932,11 +3983,13 @@ function openLetterPicker(source){
     return '<label style="display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px solid #e5e0d5;cursor:pointer;font-size:13.5px;'+(c.skip?'opacity:.62;':'')+'">'
       +'<input type="checkbox" class="lp-check"'+(c.skip?'':' checked')+' data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'"'+(c.polk?' data-polk="'+c.polk+'"':'')+' data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
       +'<span style="flex:1;"><strong>'+_escHtml(c.addr)+'</strong> <span style="color:#888;">&middot; '+_escHtml(c.nb)+(own?' &middot; '+_escHtml(own):'')+'</span>'+(c.skip?' <span style="color:#c97a6a;font-size:11px;font-weight:700;">&middot; '+_escHtml(c.skip)+'</span>':'')+'</span>'
+      +'<a href="'+zillowUrl({address:c.addr})+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Check whether this property is currently listed before you mail it" style="font-size:11px;color:#006AFF;white-space:nowrap;font-weight:700;text-decoration:none;">Listed?</a>'
       +(ti?'<span style="font-size:11px;color:#9a7b2d;white-space:nowrap;font-weight:700;">mailed '+ti.n+'&times; &middot; last '+ti.last+'</span>':'<span style="font-size:11px;color:#aaa;white-space:nowrap;">never mailed</span>')
       +'</label>';
   }).join('');
   document.getElementById('printBody').innerHTML=
     '<div class="print-section"><h3>Who gets a letter?</h3>'
+    +'<div style="font-size:11.5px;color:#9a7b2d;margin:2px 0 6px;">Mailing a listed property wastes postage &mdash; spot-check your top rows with the <b style="color:#006AFF;">Listed?</b> link first.</div>'
     +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">'
       +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=true});_lpCount()">Select all</button>'
       +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=false});_lpCount()">Select none</button>'
@@ -4436,6 +4489,7 @@ function _currentDealFor(addr){
 function buildPipeline(){
   var board=document.getElementById('pipelineBoard');
   if(!board)return;
+  try{renderFollowups();}catch(e){} // due-today strip at the top of the board, every market
   var data=migratePipeline(getPipeline());
   // Live-sync: pipeline cards froze a snapshot from the day they were added; ARVs/repairs have since
   // been recomputed from county-verified sqft + live comps. Sync any field the user has NOT hand-edited.
@@ -4479,18 +4533,22 @@ function renderPipelineCard(entry, stage){
     var d=l.t? (''+l.t).slice(0,10):''; return '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;"><span style="color:var(--gold);">'+d+'</span> '+pcEsc(l.note)+'</div>';
   }).join('')+'</div>' : '';
   // The pipeline card is the call screen — owner, mail history, and the property links live here.
+  // Leads-market entries carry their own owner record (_m1/_m3/owner) — fall back to it so a
+  // Broward estate doesn't lose its owner at exactly the "contact them" step (Jul 2026 audit).
   var _fol=_folioForAddr(entry.address);
   var _own=_fol&&window._ownerSnap&&_ownerSnap[_fol];
+  var _isLead=!!entry._pid;
+  var _oName=(_own&&_own.o)||entry.owner||'', _oCity=(_own&&_own.mc)||entry.mail_city||'', _oState=(_own&&_own.ms)||entry.owner_state||'';
   var _ti=touchInfo(entry.address);
   var contactHtml='<div style="margin-top:6px;font-size:11.5px;color:var(--muted);line-height:1.5;">'
-    +(_own&&_own.o?('Owner: <span style="color:var(--ivory);">'+pcEsc(_own.o)+'</span>'+(_own.mc?' &middot; '+pcEsc(_own.mc):'')+'<br>'):'')
+    +(_oName?('Owner: <span style="color:var(--ivory);">'+pcEsc(_oName)+'</span>'+(entry._m1?' &middot; '+pcEsc(entry._m1)+(_oCity?', '+pcEsc(_oCity):''):(_oCity?' &middot; '+pcEsc(_oCity):''))+'<br>'):'')
     +(_ti?('Mailed '+_ti.n+'&times; &middot; last '+_ti.last+'<br>'):'')
     +'<a href="'+zillowUrl({address:entry.address})+'" target="_blank" style="color:var(--bronze);">Zillow</a> &middot; '
     +'<a href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(entry.address+' FL')+'" target="_blank" style="color:var(--bronze);">Maps</a>'
     +(_fol?' &middot; <a href="'+_paFolioUrl(_fol)+'" target="_blank" style="color:var(--bronze);">PA Record</a>':'')
-    +' &middot; <a href="javascript:void(0)" onclick="gotoProperty(\''+a+'\')" style="color:var(--bronze);">All Properties &#8599;</a>'
-    +' &middot; <a href="javascript:void(0)" onclick="gotoViolations(\''+a+'\')" style="color:var(--bronze);">Code &amp; Liens &#8599;</a>'
-    +(_own&&_own.o?' '+skipTraceLinks({owner:_own.o,mail_city:_own.mc,mail_state:_own.ms}).replace(/class="btn btn-outline"/g,'style="color:var(--bronze);font-size:11.5px;"'):'')
+    +(_isLead?'':' &middot; <a href="javascript:void(0)" onclick="gotoProperty(\''+a+'\')" style="color:var(--bronze);">All Properties &#8599;</a>'
+      +' &middot; <a href="javascript:void(0)" onclick="gotoViolations(\''+a+'\')" style="color:var(--bronze);">Code &amp; Liens &#8599;</a>')
+    +(_oName?' '+skipTraceLinks({owner:_oName,mail_city:_oCity,mail_state:_oState}).replace(/class="btn btn-outline"/g,'style="color:var(--bronze);font-size:11.5px;"'):'')
   +'</div>';
   card.innerHTML=
     '<div class="pc-score">'+entry.score+'</div>'+
@@ -4944,6 +5002,7 @@ function uwSetMode(m){
   calcUnderwriter();
 }
 function uwOpenConstruction(){
+  try{closeUnderwriter();}catch(e){} // leaving the modal open while the market flips underneath it stranded users (Jul 2026 audit)
   var b = document.querySelector('#tabBar button[data-tab="construction"]');
   if(b){ b.click(); }
 }

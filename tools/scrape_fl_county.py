@@ -35,7 +35,7 @@ COUNTIES={
  # single-county farms because the user wants the full county surfaced, not a 600-row slice.
  # Gentler pull params (pagesize/cap/pace): Miami-Dade is the biggest county and the FDOR host throttles
  # heavy pulls, so smaller pages + slower pacing + a lower cap actually FINISH instead of hanging.
- 'miami':  {'co':23,'label':'Miami-Dade','var':'MIAMI','out':'miami-leads.js','zpre':('330','331','332'),'topn':2500,'pagesize':1000,'cap':12000,'pace':2.5},
+ 'miami':  {'co':23,'label':'Miami-Dade','var':'MIAMI','out':'miami-leads.js','zpre':('330','331','332'),'topn':2500,'pagesize':1000,'cap':12000,'pace':2.5,'sweep':12},
 }
 
 def query(where, last_oid, geom=True, pagesize=2000):
@@ -97,6 +97,25 @@ def centroid(geo):
         if pts: return (round(sum(p[1] for p in pts)/len(pts),6), round(sum(p[0] for p in pts)/len(pts),6))
     return (None,None)
 
+# Miami-Dade zip → investor-recognizable area (PHY_CITY is 'Miami' county-wide; zips are what
+# investors actually farm by). Covers the high-volume zips; unmapped zips fall back to PHY_CITY.
+MIAMI_ZIP_AREA={
+ '33125':'Little Havana','33126':'Flagami','33127':'Wynwood/Little Haiti','33128':'Downtown','33129':'Brickell/Coconut Grove',
+ '33130':'Little Havana','33131':'Brickell','33132':'Downtown','33133':'Coconut Grove','33134':'Coral Gables',
+ '33135':'Little Havana','33136':'Overtown','33137':'Upper Eastside','33138':'Upper Eastside','33139':'Miami Beach',
+ '33140':'Miami Beach','33141':'North Beach','33142':'Brownsville','33143':'South Miami','33144':'Flagami',
+ '33145':'Shenandoah','33146':'Coral Gables','33147':'West Little River','33150':'Little Haiti','33154':'Bal Harbour/Surfside',
+ '33155':'Westchester','33156':'Pinecrest','33157':'Palmetto Bay','33158':'Palmetto Bay','33160':'Sunny Isles/NMB',
+ '33161':'North Miami','33162':'North Miami Beach','33165':'Westchester','33166':'Miami Springs/Doral','33167':'North Miami',
+ '33168':'North Miami','33169':'Miami Gardens','33170':'Goulds','33172':'Doral','33173':'Kendall',
+ '33174':'Sweetwater','33175':'Tamiami','33176':'Kendall','33177':'Three Lakes','33178':'Doral',
+ '33179':'NE Miami-Dade','33180':'Aventura','33181':'North Miami','33182':'Tamiami West','33183':'Kendale Lakes',
+ '33184':'Tamiami','33185':'West Kendall','33186':'Kendall SE','33187':'Redland','33189':'Cutler Bay',
+ '33190':'Cutler Bay','33193':'West Kendall','33196':'West Kendall','33157':'Palmetto Bay','33055':'Miami Gardens',
+ '33056':'Miami Gardens','33054':'Opa-locka','33010':'Hialeah','33012':'Hialeah','33013':'Hialeah',
+ '33014':'Hialeah','33015':'Miami Lakes','33016':'Hialeah','33018':'Hialeah Gardens','33030':'Homestead',
+ '33031':'Redland','33032':'Princeton/Naranja','33033':'Homestead','33034':'Florida City','33035':'Homestead',
+}
 def run(key):
     c=COUNTIES[key]
     # Push the core filter server-side: single-family, this county, in the flip value band, NON-homestead
@@ -109,28 +128,59 @@ def run(key):
     # owners. This is exactly how Broward baked 600 estate/entity leads cleanly.
     where=("DOR_UC='001' AND CO_NO=%d AND JV>=60000 AND JV<=650000 AND (JV_HMSTD=0 OR JV_HMSTD IS NULL)"%c['co'])
     print('=== %s County (CO_NO=%d) === single-family from FDOR statewide roll'%(c['label'],c['co']))
-    feats=[]; last_oid=0; first=True; asmt=''
+    feats=[]; first=True; asmt=''
     PAGE=c.get('pagesize',2000); CAP=c.get('cap',25000); PACE=c.get('pace',0.6)
-    while True:
-        d=query(where, last_oid, pagesize=PAGE)
-        if d is None:
-            if first: raise SystemExit('first page failed — service unreachable, wait a few min and re-run.')
-            print('   page failed after retries — baking the %d parcels already pulled.'%len(feats)); break
-        f=d.get('features',[])
-        if first:
-            if not f: raise SystemExit('0 rows for CO_NO=%d — county number is WRONG for %s; do not bake.'%(c['co'],c['label']))
-            a0=f[0]['attributes']; asmt=str(int(num(a0.get('ASMNT_YR')) or 0) or '')
-            samp=[(str(x['attributes'].get('PHY_ADDR1') or '').strip(), str(int(num(x['attributes'].get('PHY_ZIPCD')))) ) for x in f[:5]]
-            print('   SELF-CHECK roll year %s · sample: %s'%(asmt, '; '.join('%s (%s)'%(a,z) for a,z in samp))); first=False
-        if not f: break
-        feats+=f; print('   ...%d parcels'%len(feats))
-        last_oid=max(int(num(x['attributes'].get('OBJECTID')) or 0) for x in f)
-        if len(f)<PAGE: break
-        time.sleep(PACE)                            # pacing between pages (gentler for throttled big counties)
-        # Sample cap: these counties have huge out-of-state SFH pools and full enumeration hits flaky
-        # deep-cursor timeouts. The cap is a large, representative sample; we take the top-N by motivation
-        # score from it (every parcel is already a valid non-homestead flip-band SFH lead).
-        if len(feats)>=CAP: print('   (%d sample cap reached — taking top leads from this sample)'%CAP); break
+    def crawl(bounded_where, cap, seed_first):
+        # One OBJECTID-cursor crawl over a WHERE clause; returns (features, ok, still_first)
+        nonlocal asmt
+        out=[]; last=0; fst=seed_first
+        while True:
+            d=query(bounded_where+(' AND OBJECTID>%d'%last if last else ''), 0, pagesize=PAGE)
+            if d is None:
+                if fst: return out, False, fst
+                print('   page failed after retries — keeping the %d parcels from this segment.'%len(out)); return out, True, fst
+            f=d.get('features',[])
+            if fst and f:
+                a0=f[0]['attributes']; asmt=str(int(num(a0.get('ASMNT_YR')) or 0) or '')
+                samp=[(str(x['attributes'].get('PHY_ADDR1') or '').strip(), str(int(num(x['attributes'].get('PHY_ZIPCD')))) ) for x in f[:5]]
+                print('   SELF-CHECK roll year %s · sample: %s'%(asmt, '; '.join('%s (%s)'%(a,z) for a,z in samp))); fst=False
+            if not f: return out, True, fst
+            out+=f; print('   ...%d parcels'%(len(feats)+len(out)))
+            last=max(int(num(x['attributes'].get('OBJECTID')) or 0) for x in f)
+            if len(f)<PAGE or len(out)>=cap: return out, True, fst
+            time.sleep(PACE)
+    SWEEP=c.get('sweep',0)
+    if SWEEP:
+        # Segmented sweep (big counties): FDOR OBJECTIDs cluster by municipality, so a single
+        # first-N crawl skews the sample geographically AND heavy deep scans get load-shed.
+        # Probe the county's OBJECTID span, split into SWEEP segments, take CAP/SWEEP from each —
+        # spreads coverage across the whole county in lighter, shed-resistant queries.
+        probe=query(where, 0, pagesize=1)
+        if probe is None or not probe.get('features'): raise SystemExit('span probe failed — service unreachable, wait a few min and re-run.')
+        lo=int(num(probe['features'][0]['attributes'].get('OBJECTID')))
+        hi_d=None
+        try:
+            body_hi=dict(where=where); import urllib.request as _ur, urllib.parse as _up
+            req=_ur.Request(SERVICE+'/query', data=_up.urlencode({'where':where,'outFields':'OBJECTID','returnGeometry':'false','f':'json','resultRecordCount':1,'orderByFields':'OBJECTID DESC'}).encode(), headers=UA)
+            hi_d=json.load(_ur.urlopen(req, timeout=120))
+        except Exception: hi_d=None
+        hi=int(num(((hi_d or {}).get('features') or [{}])[0].get('attributes',{}).get('OBJECTID'))) if hi_d and hi_d.get('features') else lo+5000000
+        print('   sweep: OBJECTID span %d..%d in %d segments (cap %d/segment)'%(lo,hi,SWEEP,CAP//SWEEP))
+        step=max(1,(hi-lo)//SWEEP+1); okseg=0
+        for s in range(SWEEP):
+            a1,b1=lo+s*step, lo+(s+1)*step
+            seg,ok,first=crawl(where+(' AND OBJECTID>=%d AND OBJECTID<%d'%(a1,b1)), CAP//SWEEP, first)
+            feats+=seg; okseg+=1 if ok else 0
+            time.sleep(PACE)
+        print('   sweep done: %d/%d segments ok · %d parcels'%(okseg,SWEEP,len(feats)))
+        if first: raise SystemExit('every sweep segment failed — service unreachable, wait a few min and re-run.')
+        if okseg<SWEEP*0.5: raise SystemExit('under half the sweep segments succeeded (%d/%d) — coverage would be skewed; NOT baking. Re-run later.'%(okseg,SWEEP))
+    else:
+        seg,ok,first=crawl(where, CAP, first)
+        feats=seg
+        if first and not ok: raise SystemExit('first page failed — service unreachable, wait a few min and re-run.')
+        if not feats: raise SystemExit('0 rows for CO_NO=%d — county number is WRONG for %s; do not bake.'%(c['co'],c['label']))
+        if len(feats)>=CAP: print('   (%d sample cap reached — taking top leads from this sample)'%CAP)
     # zip self-check: what fraction of parcels fall in the EXPECTED zip prefixes for this county?
     zips=[str(int(num(x['attributes'].get('PHY_ZIPCD')))) for x in feats]
     hit=sum(1 for z in zips if z[:3] in c['zpre'])
@@ -165,13 +215,19 @@ def run(key):
         elif age>=45: sc+=10
         ozr=num(a.get('OWN_ZIPCD')); ozip=('%05d'%int(ozr)) if ozr else ''   # zero-pad: NE zips lose a leading 0 as numbers
         mail3=((a.get('OWN_CITY') or '').strip()+(' '+mst if mst else '')+(' '+ozip if ozip else '')).strip()
+        zstr=str(int(num(a.get('PHY_ZIPCD'))))
         city=(a.get('PHY_CITY') or '').strip().title() or c['label']   # PHY_CITY if present, else county
+        # Miami-Dade: PHY_CITY says 'Miami' for most of the county — investors farm by NEIGHBORHOOD,
+        # so label from the zip instead (falls back to PHY_CITY for zips not in the map).
+        if key=='miami': city=MIAMI_ZIP_AREA.get(zstr, city)
+        sqft=int(num(a.get('TOT_LVG_AR')))
         just_land=int(num(a.get('LND_VAL')))
-        cands.append({'a':addr.title(),'c':city,'z':str(int(num(a.get('PHY_ZIPCD')))),
+        cands.append({'a':addr.title(),'c':city,'z':zstr,
           'o':own,'m1':m1.title(),'m3':mail3,'mst':mst or 'FL','oos':1 if oos else 0,'abs':1 if absentee else 0,
           'tag':cls,'sc':min(sc,100),'mkt':just,'asr':int(num(a.get('AV_NSD'))),'tax':int(num(a.get('TV_NSD'))),
           'bld':max(0,just-just_land),'lnd':just_land,'lot':round(num(a.get('LND_SQFOOT'))/43560,2),
           'held':held,'lsY':(sy if sy>1900 else None),'lsP':sp or None,'rt':None,
+          'sqft':(sqft if sqft>200 else None),'yb':(yr if yr>1800 else None),
           'pid':fol,'st':fol,'lat':lat,'lng':lng})
     cands.sort(key=lambda x:(-x['sc'],-x['mkt'])); cands=cands[:c.get('topn',600)]
     markets=sorted(set(x['c'] for x in cands))
