@@ -676,6 +676,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 <script defer src="fdor-mailing-miami.js?v=1"></script>
 <script defer src="fdor-enrich.js?v=1"></script>
 <script defer src="zip-value-bands.js?v=1"></script>
+<script defer src="auctions-fl.js?v=1"></script>
 </head>
 <body>
 
@@ -1840,7 +1841,8 @@ function buildPolk(){
     var ps0=document.getElementById('polkStats');if(ps0)ps0.innerHTML='';return;}
   var ban=document.getElementById('polkBanner');
   if(ban&&!ban.dataset.done){ban.dataset.done='1';
-    ban.innerHTML='<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:14px 18px;margin-bottom:16px;">'
+    ban.innerHTML=(function(){try{return _aucPanel(county);}catch(e){return '';}})()
+      +'<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:14px 18px;margin-bottom:16px;">'
       +'<div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:6px;">'+county+' County &mdash; motivated-seller snapshot</div>'
       +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; '+(/^\d{4}-\d{2}-\d{2}$/.test(meta.snapshot||'')?('<strong>refreshed '+meta.snapshot+'</strong>'+(meta.roll?' ('+meta.roll+')':'')):('annual '+(meta.snapshot||'—')+' tax roll'))+'.</div>'
       +(function(){
@@ -1975,6 +1977,40 @@ function polkToggleDetail(pid){
       }else{fl.style.display='none';}
     }
   }
+}
+// ── FORECLOSURE AUCTIONS (auctions-fl.js — county RealAuction calendars, scheduled sales only) ──
+// A separate deal-flow stream: judgment already entered, sale ~20-35 days out. Late-stage by
+// nature (not an early distress signal) and honestly labeled as such. Zero overlap with the
+// estate/entity lead lists by design — different populations.
+function _aucCountyKey(county){return {'Miami-Dade':'miamidade','Broward':'broward','Lee':'lee','Polk':'polk','Collier':'collier','Lake':'lake'}[county]||null;}
+function _aucRows(county){
+  var k=_aucCountyKey(county); if(!k)return [];
+  return (((window.AUCTIONS||{}).rows)||[]).filter(function(r){return r.county===k;})
+    .sort(function(a,b){return (''+a.auction_date).localeCompare(''+b.auction_date);});
+}
+function _aucToggle(){var b=document.getElementById('aucBody'),c=document.getElementById('aucCaret');if(!b)return;var open=b.style.display!=='none';b.style.display=open?'none':'block';if(c)c.innerHTML=open?'&#9662;':'&#9652;';}
+function _aucPanel(county){
+  var rows=_aucRows(county), meta=(window.AUCTIONS||{}).meta||{};
+  if(!rows.length)return '';
+  var shown=rows.slice(0,120);
+  var body=shown.map(function(r){
+    var addr=r.address?(r.address+(r.csz?', '+r.csz.replace(/, FL-?\s*/,' FL '):'')):('Case '+r.case+' — address not yet posted by the clerk');
+    return '<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;flex-wrap:wrap;">'
+      +'<span style="min-width:88px;font-weight:800;color:var(--gold);white-space:nowrap;">'+r.auction_date+'</span>'
+      +'<span style="flex:1;color:var(--ivory-soft);min-width:200px;">'+_escHtml(addr)+'</span>'
+      +'<span style="white-space:nowrap;color:var(--muted);">'+(r.judgment?('judgment '+fmtK(r.judgment)):'')+(r.assessed?(' &middot; assessed '+fmtK(r.assessed)):'')+'</span>'
+      +'<span style="white-space:nowrap;">'+(r.address?'<a href="'+zillowUrl({address:(''+r.address).split(',')[0]+((r.csz||'').match(/\d{5}/)?', X '+(r.csz.match(/\d{5}/)||[''])[0]:'')})+'" target="_blank" rel="noopener" style="color:#6fa8ff;font-weight:700;">Zillow</a>':'')+'</span>'
+    +'</div>';
+  }).join('');
+  return '<div style="background:var(--bg-card);border:1px solid rgba(232,195,74,.3);border-left:3px solid var(--gold);border-radius:10px;padding:14px 18px;margin:0 0 16px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;" onclick="_aucToggle()">'
+      +'<span style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);font-weight:700;">Foreclosure auctions &middot; '+county+' &middot; next '+(meta.window_days||60)+' days ('+rows.length+')</span>'
+      +'<span id="aucCaret" style="color:var(--gold);">&#9662;</span></div>'
+    +'<div id="aucBody" style="display:none;">'
+      +'<div style="font-size:11px;color:var(--muted);margin:8px 0 4px;line-height:1.5;">Scheduled sales from the county&rsquo;s official foreclosure-auction calendar (as of '+(meta.as_of||'')+'). Late-stage signal &mdash; judgment entered, sale weeks away. Owners can still sell before the sale date; act fast and verify the case status with the clerk before relying on it.</div>'
+      +body
+      +(rows.length>shown.length?'<div style="font-size:11px;color:var(--muted);padding-top:6px;">Showing first '+shown.length+' of '+rows.length+' by date.</div>':'')
+    +'</div></div>';
 }
 // ── FDOR enrichment joins (fdor-enrich.js + zip-value-bands.js) ──
 // sqft/year-built from the state tax roll, and ZIP-level qualified-sale $/sf bands.
