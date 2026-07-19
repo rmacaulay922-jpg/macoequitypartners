@@ -27,6 +27,17 @@ window.MACO = (function () {
   // book directly. Leave "" and the demo page uses the request form instead.
   var SCHEDULING_URL = '';
 
+  // STRIPE PAYMENT LINKS — paste your three Payment Link URLs here and every plan
+  // card's button becomes "Subscribe" pointing straight at checkout. Leave "" and
+  // the buttons keep sending people to the free trial (current behavior).
+  // Create them at dashboard.stripe.com → Payment Links (recurring monthly), and
+  // turn on the customer portal so "cancel anytime" is self-serve.
+  var STRIPE_LINKS = {
+    'founding':      '',   // $50/mo
+    'standard':      '',   // $75/mo
+    'market-select': ''    // $85/mo
+  };
+
   // Set to a number (e.g. 25) to advertise a founding-member cap. Leave null to
   // show NO count (never invent a live countdown — see brand rules).
   var FOUNDING_MEMBER_LIMIT = null;
@@ -277,9 +288,19 @@ window.MACO = (function () {
         '<p class="plan__desc">' + esc(p.desc) + '</p>' +
         '<ul class="plan__features">' + feats + '</ul>' +
         notes +
-        '<a class="da-btn ' + (p.featured ? 'da-btn--primary' : 'da-btn--dark') + ' plan__cta" ' +
-          'href="' + esc(p.href) + '?plan=' + esc(p.id) + '" data-track="book_demo_click" ' +
-          'data-plan="' + esc(p.id) + '">' + esc(p.cta) + ' <span aria-hidden="true">&rarr;</span></a>' +
+        (function () {
+          var pay = STRIPE_LINKS[p.id];
+          if (pay) {
+            // Payment link configured — the button goes straight to checkout; trial stays one click away.
+            return '<a class="da-btn ' + (p.featured ? 'da-btn--primary' : 'da-btn--dark') + ' plan__cta" ' +
+              'href="' + esc(pay) + '" data-track="subscribe_click" data-plan="' + esc(p.id) + '">' +
+              'Subscribe — ' + esc(p.price) + esc(p.cadence) + ' <span aria-hidden="true">&rarr;</span></a>' +
+              '<p class="plan__note" style="text-align:center;margin-top:8px">or <a href="trial.html?plan=' + esc(p.id) + '" style="text-decoration:underline">try free for 7 days first</a></p>';
+          }
+          return '<a class="da-btn ' + (p.featured ? 'da-btn--primary' : 'da-btn--dark') + ' plan__cta" ' +
+            'href="' + esc(p.href) + '?plan=' + esc(p.id) + '" data-track="book_demo_click" ' +
+            'data-plan="' + esc(p.id) + '">' + esc(p.cta) + ' <span aria-hidden="true">&rarr;</span></a>';
+        })() +
       '</article>';
     }).join('');
     track('pricing_viewed', { location: containerId });
@@ -389,6 +410,7 @@ window.MACO = (function () {
     contactEmail: CONTACT_EMAIL,
     formEndpoint: FORM_ENDPOINT,
     schedulingUrl: SCHEDULING_URL,
+    stripeLinks: STRIPE_LINKS,
     foundingMemberLimit: FOUNDING_MEMBER_LIMIT,
     plans: PLANS,
     reports: REPORTS,
