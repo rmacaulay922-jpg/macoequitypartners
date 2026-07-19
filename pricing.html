@@ -139,7 +139,7 @@
         r.price + '</span></div>';
     }).join('');
     document.getElementById('report-price-table').innerHTML = rows;
-    document.getElementById('report-footnote').textContent = MACO.reportsFootnote + ' Custom scopes are quoted before any work begins.';
+    document.getElementById('report-footnote').textContent = MACO.reportsFootnote;
     MACO.wireTracking();
   }catch(e){}
   try{document.documentElement.classList.add('anim');var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.06});document.querySelectorAll('.da-section,.plan').forEach(function(el){el.classList.add('rv');io.observe(el);});}catch(e){document.querySelectorAll('.rv').forEach(function(el){el.classList.add('on');});}
