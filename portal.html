@@ -1641,7 +1641,7 @@ var TRIAL_MS=7*24*3600*1000;
 // ── ENGAGEMENT BEACONS — logins & interest clicks email Ryan through the site's existing
 // FormSubmit pipeline (no accounts, no cookies, nothing stored server-side). Operator
 // browsers (mep_op_unlocked) never send, and login pings are deduped to 1/browser/day.
-var BEACON_URL='https://formsubmit.co/ajax/rmac@macoequitypartners.com';
+var BEACON_URL='https://formsubmit.co/ajax/deals@macoequitypartners.com';
 function _beacon(event, detail){
   try{
     if(localStorage.getItem('mep_op_unlocked')==='1')return; // Ryan's own browsers stay silent
@@ -1669,7 +1669,7 @@ function ctaSend(addr, area, btn){
   })
   .catch(function(){ // network/service hiccup -> fall back to the visitor's mail app
     if(btn){btn.disabled=false;btn.innerHTML='&#9993; I\u2019m Interested \u2014 Talk to Maco';}
-    location.href='mailto:rmac@macoequitypartners.com?subject='+encodeURIComponent('Interested in '+addr+' (Maco portal)');
+    location.href='mailto:deals@macoequitypartners.com?subject='+encodeURIComponent('Interested in '+addr+' (Maco portal)');
   });
 }
 
@@ -4007,8 +4007,8 @@ function maxOfferRow(d){
     +'<span style="font-weight:800;color:'+(mo?'var(--ivory)':'var(--red)')+';white-space:nowrap;">'+(mo?fmt$(mo):'No price works')+'</span></div>';
 }
 // ── DIRECT-MAIL LETTERS — pick exactly who gets one, then mail-merge against an editable template ──
-var LETTER_KEY='mep_letter_tpl_v2'; // v2: new default with Ryan's real contact info + cash/quick-close language
-var SENDER_KEY='mep_sender';        // subscriber/trial sender identity — letters must go out under THEIR name, not Ryan's
+var LETTER_KEY='mep_letter_tpl_v3'; // v3: contact details merged from the sender store, never hardcoded
+var SENDER_KEY='mep_sender';        // sender identity for ALL accounts — letters go out under whoever is logged in
 function _escHtml(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function _senderId(){try{var s=JSON.parse(localStorage.getItem(SENDER_KEY)||'null');return (s&&s.name&&s.phone)?s:null;}catch(e){return null;}}
 function letterTpl(){
@@ -4026,23 +4026,29 @@ function letterTpl(){
 '{{your_phone}}\n'+
 '{{your_email}}');
   }
+  // Operator default. Same merge fields as the subscriber template — the sender's
+  // real name and mobile are NOT written into this file. This repo is public
+  // (it is what GitHub Pages serves), so anything hardcoded here is readable by
+  // anyone who views source. Identity is entered once and kept in localStorage.
   return (
 'Dear {{owner_first}},\n\n'+
-'My name is Ryan Macaulay. I’m a local Miami investor with Maco Equity Partners, and I’m writing to you personally about your property at {{property_address}}.\n\n'+
+'My name is {{your_name}}. I’m a local Miami investor with Maco Equity Partners, and I’m writing to you personally about your property at {{property_address}}.\n\n'+
 'I buy houses in {{neighborhood}} directly from owners — no agents, no commissions, no repairs, and no need to clean anything out. We pay cash, we can close in as little as two weeks if you need speed, and we’re completely flexible on timing and terms if you don’t. If the property has open code violations or liens, we take care of those at closing.\n\n'+
 '{{value_line}}\n\n'+
-'If selling has ever crossed your mind — even if you just want to know what the house would bring today — call or text me at (305) 710-0733. I live and work right here in Miami, and I’m happy to meet you in person at the property or anywhere that’s convenient.\n\n'+
+'If selling has ever crossed your mind — even if you just want to know what the house would bring today — call or text me at {{your_phone}}. I live and work right here in Miami, and I’m happy to meet you in person at the property or anywhere that’s convenient.\n\n'+
 'Respectfully,\n\n'+
-'Ryan Macaulay\n'+
+'{{your_name}}\n'+
 'Maco Equity Partners\n'+
-'(305) 710-0733\n'+
-'rmac@macoequitypartners.com');
+'{{your_phone}}\n'+
+'{{your_email}}');
 }
-// One-time sender-identity gate for subscriber/trial accounts: letters can't merge until name+phone are set.
+// One-time sender-identity gate. Applies to EVERY account including the operator:
+// no personal name or number is hardcoded in this file (the repo is public), so a
+// letter run cannot merge until the sender enters their own details once.
 function _senderGate(nextFn){
   document.getElementById('printBody').innerHTML=
     '<div class="print-section"><h3>Before your first letter run — whose name goes on these?</h3>'
-    +'<div style="font-size:12px;color:#666;margin:6px 0 12px;">Letters are sent under <b>your</b> name and phone. Set them once; you can change them any time in the template editor.</div>'
+    +'<div style="font-size:12px;color:#666;margin:6px 0 12px;">Letters go out under <b>your</b> name and phone — an owner needs a person to call back. Set them once; change them any time in the template editor. Stored only in this browser.</div>'
     +'<div style="display:grid;gap:10px;max-width:420px;">'
     +'<label style="font-size:11px;color:#888;">Your name<input id="sndName" type="text" style="width:100%;padding:9px 10px;font-size:13px;box-sizing:border-box;" placeholder="e.g. Chris Alvarez"></label>'
     +'<label style="font-size:11px;color:#888;">Your phone<input id="sndPhone" type="text" style="width:100%;padding:9px 10px;font-size:13px;box-sizing:border-box;" placeholder="e.g. (305) 555-0134"></label>'
@@ -4133,7 +4139,7 @@ function _folioForAddr(addr){
 }
 // Step 1: pick recipients. source 'pipeline' = your pipeline deals; 'filter' = the current All-Properties filter.
 function openLetterPicker(source){
-  if(_subOp()&&!_senderId()){_senderGate(function(){openLetterPicker(source);});return;} // subscriber/trial: set YOUR name/phone before any letter run
+  if(!_senderId()){_senderGate(function(){openLetterPicker(source);});return;} // every account sets name/phone once — the template merges them, nothing is hardcoded
   var cands=[];
   if(source==='pipeline'){
     var data=getPipeline();
@@ -4285,7 +4291,9 @@ function printSelectedLetters(){
         : '<div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1f3a2e;padding-bottom:14px;margin-bottom:26px;">'
           +'<img src="/logo-full.png?v=logo2" alt="Maco Equity Partners" style="height:64px;width:auto;">'
           +'<div><div style="font-size:17px;font-weight:700;letter-spacing:.06em;color:#1f3a2e;">MACO EQUITY PARTNERS</div>'
-          +'<div style="font-size:10.5px;color:#666;letter-spacing:.04em;">Miami, Florida &middot; (305) 710-0733 &middot; rmac@macoequitypartners.com</div></div>'
+          +'<div style="font-size:10.5px;color:#666;letter-spacing:.04em;">Miami, Florida'
+            +(_snd&&_snd.phone?' &middot; '+_escHtml(_snd.phone):'')
+            +' &middot; '+_escHtml(_snd&&_snd.email?_snd.email:'deals@macoequitypartners.com')+'</div></div>'
         +'</div>';
       out.push('<div style="page-break-after:always;background:#fff;font:13.5px/1.7 Georgia,serif;color:#111;padding:58pt 64pt;margin-bottom:14px;box-sizing:border-box;">'
         +_head
