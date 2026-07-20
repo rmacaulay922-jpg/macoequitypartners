@@ -61,6 +61,12 @@ window.MACO = (function () {
     'market-select': 'https://buy.stripe.com/28E7sMbRo4KE1p33DF7Zu0d'    // $85/mo — verified
   };
 
+  // Stripe-hosted customer portal. Activated 2026-07-20 in the Maco Stripe account;
+  // "Cancel subscriptions" is on and set to cancel at the END of the billing period,
+  // which is exactly what the site promises. A subscriber can now cancel, update a
+  // card and pull invoices without emailing anyone. Blank it to hide the links.
+  var BILLING_PORTAL_URL = 'https://billing.stripe.com/p/login/00wbJ25t05OIffTgqr7Zu00';
+
   // Set to a number (e.g. 25) to advertise a founding-member cap. Leave null to
   // show NO count (never invent a live countdown — see brand rules).
   var FOUNDING_MEMBER_LIMIT = null;
@@ -615,6 +621,7 @@ window.MACO = (function () {
     formEndpoint: FORM_ENDPOINT,
     schedulingUrl: SCHEDULING_URL,
     stripeLinks: STRIPE_LINKS,
+    billingPortalUrl: BILLING_PORTAL_URL,
     foundingMemberLimit: FOUNDING_MEMBER_LIMIT,
     plans: PLANS,
     reports: REPORTS,
