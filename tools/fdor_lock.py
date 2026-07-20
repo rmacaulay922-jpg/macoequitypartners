@@ -108,3 +108,43 @@ def fdor_lock(owner, wait_seconds=0):
                 os.remove(LOCK_PATH)
         except OSError:
             pass
+
+
+# ---------------------------------------------------------------------------
+# Pre-flight: is the service answering AT ALL?
+# ---------------------------------------------------------------------------
+def fdor_available(timeout=60):
+    """One light probe, no retries. Returns (ok, detail).
+
+    FDOR has two distinct failure modes and they need opposite responses:
+
+      * per-query throttling after a heavy pull — a light query still works, and
+        waiting out the ~8.5 min cooldown is the right move;
+      * daily quota exhaustion — EVERYTHING fails, including a 1-row query and
+        even bare service metadata, and no amount of waiting inside a run helps.
+
+    Both report the same "Cannot perform query. Invalid query parameters.", which
+    is why they get confused. Measured 2026-07-20: a 1-row probe succeeded at
+    02:07 and failed at 06:26 after ~3.5h of hammering, with metadata failing too
+    — the quota was gone for the day and every further request was waste.
+
+    Call this before starting a crawl. If it says no, exit immediately: a
+    multi-hour retry grind against a spent quota achieves nothing and plausibly
+    keeps the block alive.
+    """
+    import json as _json, urllib.request as _req, urllib.parse as _parse
+    body = {'where': '1=1', 'outFields': 'OBJECTID', 'returnGeometry': 'false',
+            'f': 'json', 'resultRecordCount': 1}
+    try:
+        r = _req.Request(SERVICE_QUERY, data=_parse.urlencode(body).encode(),
+                         headers={'User-Agent': 'Mozilla/5.0 (maco-preflight)'})
+        d = _json.load(_req.urlopen(r, timeout=timeout))
+    except Exception as e:
+        return False, 'probe raised: %s' % str(e)[:120]
+    if 'error' in d:
+        return False, str(d['error'].get('message', 'error'))[:120]
+    return True, 'ok (%d row)' % len(d.get('features', []))
+
+
+SERVICE_QUERY = ('https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/'
+                 'services/Florida_Statewide_Cadastral/FeatureServer/0/query')

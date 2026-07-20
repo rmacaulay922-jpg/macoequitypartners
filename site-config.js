@@ -19,28 +19,26 @@ window.MACO = (function () {
   'use strict';
 
   /* ---- Business basics ----------------------------------------------------
-     Two addresses, deliberately separate, because they fail in different ways.
+     CONTACT_EMAIL is what VISITORS SEE — every address printed on the site.
+     Generic on purpose: the business, not a person.
 
-     CONTACT_EMAIL is what VISITORS SEE — every address printed on the site and
-     every mailto: link. Generic on purpose: the business, not a person.
+     FORM_TOKEN is where submissions are actually DELIVERED. It is FormSubmit's
+     opaque alias for the confirmed mailbox, NOT an address — which is the point.
+     A naked address in a form action sits in the page source for anyone who hits
+     view-source, and Ryan's personal address was doing exactly that on every page
+     with a form. The token delivers to the same inbox and reveals nothing.
 
-     FORM_DELIVERY_EMAIL is where form submissions are actually DELIVERED.
-     FormSubmit requires a one-time confirmation per destination address, and an
-     unconfirmed address drops submissions with no bounce and no error — the form
-     appears to work and the lead is simply gone. So this stays pointed at the
-     address that is already confirmed and receiving until deals@ is proven.
+     Verified 2026-07-20: posting to .../ajax/<token> returned success and the mail
+     landed in the mailbox, with no re-activation prompt.
 
-     TO SWITCH DELIVERY OVER (do these in order, see tools/inbox-README.md):
-       1. Create deals@macoequitypartners.com (the domain already routes to
-          Microsoft 365 — it is an alias or a new user, not a new signup).
-       2. Fix the SPF record, or your replies will fail SPF and land in spam.
-       3. Set FORM_DELIVERY_EMAIL below to CONTACT_EMAIL.
-       4. Deploy, submit a form, click the FormSubmit confirmation that arrives
-          at deals@, then submit AGAIN and confirm the second one lands.
-     Do not do step 3 before step 1, and do not skip step 4. */
-  var CONTACT_EMAIL       = 'deals@macoequitypartners.com';
-  var FORM_DELIVERY_EMAIL = 'rmac@macoequitypartners.com';   // ← step 3 changes this to CONTACT_EMAIL
-  var FORM_ENDPOINT       = 'https://formsubmit.co/' + FORM_DELIVERY_EMAIL;
+     If you later want deliveries to go somewhere else, submit one form to the new
+     naked address FIRST, click the FormSubmit activation mail it sends, then paste
+     the token from that mail here. Never point this at an unconfirmed address —
+     FormSubmit drops those silently, with a 200 and no bounce, and the lead is
+     simply gone. See tools/inbox-README.md. */
+  var CONTACT_EMAIL = 'deals@macoequitypartners.com';
+  var FORM_TOKEN    = '5e19f366f86955c08f1bb62e50b8361c';
+  var FORM_ENDPOINT = 'https://formsubmit.co/' + FORM_TOKEN;
 
   // Paste a scheduling URL (Calendly / SavvyCal / Google Appt) to let visitors
   // book directly. Leave "" and the demo page uses the request form instead.
