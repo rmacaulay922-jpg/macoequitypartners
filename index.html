@@ -82,7 +82,7 @@ a{color:inherit;text-decoration:none;}
 
 /* ===== HERO (cinematic, dark — aerial footage) ===== */
 .hero{position:relative;min-height:min(78vh,720px);background:var(--dark);display:flex;flex-direction:column;overflow:hidden;}
-.hero .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 38%;display:block;}
+.hero .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;}
 /* Slow drift on top of the footage — reads as a helicopter holding a wide orbit. */
 .hero img.bg{animation:heli 52s ease-in-out infinite alternate;transform-origin:52% 46%;}
 @keyframes heli{
@@ -93,11 +93,12 @@ a{color:inherit;text-decoration:none;}
 /* Heavier top + bottom scrim so the wordmark, headline and status strip always clear the footage.
    The bottom stop is near-opaque: the headline sits on it, not on the water. */
 .hero .scrim{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(rgba(15,17,14,.32) 0%,rgba(15,17,14,.05) 14%,rgba(15,17,14,.16) 28%,
-    rgba(15,17,14,.62) 38%,rgba(15,17,14,.86) 52%,rgba(15,17,14,.95) 70%,rgba(15,17,14,.98) 100%);}
+  background:linear-gradient(rgba(15,17,14,.26) 0%,rgba(15,17,14,.02) 18%,rgba(15,17,14,.04) 56%,
+    rgba(15,17,14,.40) 68%,rgba(15,17,14,.80) 80%,rgba(15,17,14,.93) 90%,rgba(15,17,14,.97) 100%);}
 /* A second, left-weighted wash: the copy column stays legible even over a bright frame. */
 .hero .scrim2{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(103deg,rgba(15,17,14,.66) 0%,rgba(15,17,14,.28) 40%,transparent 68%);}
+  background:linear-gradient(100deg,rgba(15,17,14,.88) 0%,rgba(15,17,14,.58) 36%,
+    rgba(15,17,14,.14) 60%,transparent 78%);}
 .hero .glow{position:absolute;inset:0;background:radial-gradient(46% 50% at 84% 14%,rgba(232,80,31,.10),transparent 60%);pointer-events:none;}
 /* Anchor targets must clear the sticky bar, or #how/#board land underneath it. */
 #product,#signals,#board,#how,#top{scroll-margin-top:78px;}
