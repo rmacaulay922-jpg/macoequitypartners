@@ -18,7 +18,9 @@
 #     Building/improvement value has no own field → JV - LND_VAL. Acres → LND_SQFOOT / 43560.
 #   • We request outFields=* (verified to work) and read every field defensively with .get(), so a field that
 #     is absent for a given county degrades gracefully instead of erroring the whole query.
-import sys, json, re, time, datetime, urllib.request, urllib.parse
+import sys, json, re, time, datetime, urllib.request, urllib.parse, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fdor_lock import fdor_lock
 REPO='C:/Users/rmaca/OneDrive/Documents/GitHub/macoequitypartners'
 SERVICE='https://services9.arcgis.com/Gh9awoU677aKree0/arcgis/rest/services/Florida_Statewide_Cadastral/FeatureServer/0'
 UA={'User-Agent':'Mozilla/5.0'}
@@ -247,4 +249,6 @@ def run(key):
 if __name__=='__main__':
     if len(sys.argv)<2 or sys.argv[1] not in COUNTIES:
         print('usage: python scrape_fl_county.py [broward|lee|collier|miami]'); sys.exit(1)
-    run(sys.argv[1])
+    # One FDOR job at a time — see tools/fdor_lock.py for why.
+    with fdor_lock('leads:'+sys.argv[1]):
+        run(sys.argv[1])

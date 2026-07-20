@@ -4,6 +4,8 @@
 # from $100 quitclaims; stats are computed locally (server-side statistics 400 on this host);
 # throttles are ridden out with full 8.5-minute cooldowns, and partials are saved to disk.
 import sys, os, re, json, time, urllib.request, urllib.parse, datetime
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from fdor_lock import fdor_lock
 
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT  = os.path.join(REPO, 'zip-value-bands.js')
@@ -76,12 +78,26 @@ def main():
         if m: bands = json.loads(m.group(1))
     print('bands file has %d zips; baking %d more' % (len(bands), len(zips)), flush=True)
     ok, thin, fail = 0, [], []
+    # Circuit breaker. Every zip runs its own 5-attempt ladder, so a throttled service
+    # meant 74 zips x 5 attempts = up to 370 hammering requests that kept the throttle
+    # engaged and produced nothing. Observed 2026-07-20: this ground for two hours,
+    # failed all 74, AND starved the leads crawl running beside it.
+    # When the service is down, the correct move is to stop, not to keep knocking.
+    STREAK_ABORT = 4
+    streak = 0
     for i, z in enumerate(zips):
         print('[%d/%d] zip %s' % (i + 1, len(zips), z), flush=True)
         b = band_for_zip(z)
-        if b is None: fail.append(z); print('   FAILED (throttle exhausted) — continuing', flush=True)
-        elif 'thin' in b: thin.append('%s(n=%d)' % (z, b['thin']))
-        else: bands[z] = b; ok += 1
+        if b is None:
+            fail.append(z); streak += 1
+            print('   FAILED (throttle exhausted) — continuing', flush=True)
+            if streak >= STREAK_ABORT:
+                print('ABORT: %d zips failed back to back — the service is throttling, not '
+                      'flaking. Stopping so we stop making it worse; %d zips baked this run. '
+                      'Re-run when the cooldown has cleared.' % (streak, ok), flush=True)
+                break
+        elif 'thin' in b: thin.append('%s(n=%d)' % (z, b['thin'])); streak = 0
+        else: bands[z] = b; ok += 1; streak = 0
         # save partials every 10 zips so a crash never loses the run
         if i % 10 == 9: _write(bands)
         time.sleep(4)
@@ -98,4 +114,7 @@ def _write(bands):
     open(OUT, 'w', encoding='utf-8').write(js)
 
 if __name__ == '__main__':
-    main()
+    # One FDOR job at a time — see tools/fdor_lock.py. Waits up to 40 min for the
+    # leads crawl rather than giving up, since this runs unattended overnight.
+    with fdor_lock('bands:miami', wait_seconds=2400):
+        main()
