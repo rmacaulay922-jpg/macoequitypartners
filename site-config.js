@@ -505,6 +505,87 @@ window.MACO = (function () {
     } catch (e) {}
   }
 
+  /* ---- Submit forms in place ----------------------------------------------
+     FormSubmit ignores _next on a tokenised endpoint (verified 2026-07-20: two
+     live submissions and two curl posts, with and without a URL fragment, all
+     landed on formsubmit.co's own branded "Thanks!" page and never redirected).
+     So a visitor who filled in the contact form got dumped on a third-party page
+     carrying someone else's logo, with our confirmation never shown.
+
+     Posting to the /ajax/ endpoint instead keeps them on the page: CORS is open
+     from the live origin (verified from a browser on macoequitypartners.com, 200
+     + {"success":"true"}), so we submit in the background and reveal the site's
+     own confirmation.
+
+     If anything at all goes wrong — network, CORS, a non-200 — it falls back to
+     a normal browser submit. A lead reaching FormSubmit's ugly page is a poor
+     experience; a lead not reaching Ryan is a lost customer, and that trade is
+     never worth taking. ---------------------------------------------------- */
+  var AJAX_ENDPOINT = FORM_ENDPOINT.replace('formsubmit.co/', 'formsubmit.co/ajax/');
+
+  function _formSuccess(form) {
+    var banner = document.getElementById('sentBanner');
+    if (banner) {
+      banner.classList.add('show');
+      form.reset();
+      banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      // No banner on this page — replace the form so the outcome is unmistakable.
+      var note = document.createElement('div');
+      note.className = 'da-sent show';
+      note.setAttribute('role', 'status');
+      note.style.cssText = 'display:block;padding:18px 20px';
+      note.textContent = 'Thanks — that reached us. We reply to everything, usually the same day.';
+      if (form.parentNode) form.parentNode.replaceChild(note, form);
+    }
+  }
+
+  function wireForms() {
+    var forms = document.querySelectorAll('form[data-maco-form], form[action*="formsubmit.co"]');
+    Array.prototype.forEach.call(forms, function (form) {
+      if (form.__macoWired) return;
+      form.__macoWired = true;
+      form.addEventListener('submit', function (ev) {
+        if (form.__macoFallback) return;            // let the native submit through
+        ev.preventDefault();
+        var btn = form.querySelector('[type="submit"]');
+        var label = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+        var payload = {};
+        try {
+          new FormData(form).forEach(function (v, k) { if (k !== '_next') payload[k] = v; });
+        } catch (e) {
+          form.__macoFallback = true; form.submit(); return;
+        }
+
+        fetch(AJAX_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+          .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+          .then(function () { if (btn) { btn.disabled = false; btn.innerHTML = label; } _formSuccess(form); })
+          .catch(function () {
+            // Never swallow a lead — hand it back to the browser to submit normally.
+            if (btn) { btn.disabled = false; btn.innerHTML = label; }
+            form.__macoFallback = true;
+            form.submit();
+          });
+      });
+    });
+    return forms.length;
+  }
+
+  // Auto-wire so no page has to remember to call it.
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { try { wireForms(); } catch (e) {} });
+    } else {
+      try { wireForms(); } catch (e) {}
+    }
+  }
+
   // ---- Reveal safety net -------------------------------------------------
   // Pages fade content in with .rv/.on driven by IntersectionObserver. If IO
   // never fires (rare: some background tabs, throttled renderers), content
@@ -542,6 +623,7 @@ window.MACO = (function () {
     renderMarkets: renderMarkets,
     wireTracking: wireTracking,
     prefillFromQuery: prefillFromQuery,
-    showSentBanner: showSentBanner
+    showSentBanner: showSentBanner,
+    wireForms: wireForms
   };
 })();
