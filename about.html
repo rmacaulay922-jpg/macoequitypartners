@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="da.css">
 <style>
 :root{--page:#F7F7F4;--paper:#F3EFE4;--panel:#FDFDFB;--ink:#131512;--soft:#4A4E49;--mute:#6B6F6A;--faint:#9A9E97;
   --line:rgba(19,21,18,.12);--line2:rgba(19,21,18,.08);--orange:#E8501F;--orange-dk:#C43A1A;
@@ -24,10 +25,6 @@
 *{box-sizing:border-box;}
 body{margin:0;background:var(--page);color:var(--ink);font-family:var(--sans);}a{color:inherit;text-decoration:none;}
 .site{max-width:1200px;margin:0 auto;}
-.mark{transform:rotate(45deg);display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:22px;height:22px;}.mark i{border-radius:2px;background:#131512;}.mark i.c{background:var(--orange);}
-.nav{display:flex;align-items:center;justify-content:space-between;padding:16px 34px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(247,247,244,.92);backdrop-filter:blur(8px);z-index:100;}
-.brand{display:flex;align-items:center;gap:11px;}.brand .wm{font-weight:800;font-size:15px;}
-.navlinks{display:flex;gap:20px;font-size:12.5px;font-weight:500;color:var(--mute);}.navlinks a:hover{color:var(--ink);}.navlinks a.on{color:var(--ink);font-weight:700;}
 .btn{position:relative;font-weight:700;font-size:12.5px;padding:12px 22px;border-radius:6px;display:inline-block;cursor:pointer;white-space:nowrap;transition:transform .16s,background .16s;}
 .btn-o{background:var(--orange);color:#fff;box-shadow:0 10px 24px -10px rgba(232,80,31,.6);}.btn-o:hover{transform:translateY(-2px);background:var(--orange-dk);}
 .btn-ghost{border:1.5px solid var(--ink);color:var(--ink);}.btn-ghost:hover{transform:translateY(-2px);background:rgba(19,21,18,.05);}
@@ -75,21 +72,40 @@ h2.t{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:10px 0 0;font
 .final .in{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#F1EEE4;padding:20px;}
 .final h3{font-size:clamp(24px,3.4vw,34px);font-weight:800;letter-spacing:-.02em;margin:0 0 12px;}.final p{color:#c4c9b8;font-size:15px;max-width:52ch;margin:0 auto 18px;}.final .em{font-family:var(--mono);font-size:11px;color:#8b9280;margin-top:14px;}
 .foot{padding:22px 40px;font-family:var(--mono);font-size:10px;color:var(--faint);text-align:center;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;}.foot a{color:var(--mute);letter-spacing:.08em;}.foot .lk{display:flex;gap:16px;flex-wrap:wrap;}
-@media (max-width:760px){.navlinks{display:none;}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;}}
 </style>
 <script src="site-config.js"></script>
 </head>
 <body>
 <div class="site">
-  <nav class="nav">
-    <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO</span></a>
-    <div class="navlinks">
-      <a href="index.html#product">Product</a><a href="index.html#how">How It Works</a><a href="markets.html">Markets</a><a href="pricing.html">Pricing</a><a href="reports.html">Reports</a><a href="research.html">Research</a><a href="about.html" class="on">About</a>
-    </div>
-    <div style="display:flex;gap:10px;align-items:center">
-      <a href="portal.html" style="font-size:12.5px;font-weight:600;color:var(--ink)">Log in</a>
-      <a class="btn btn-o" href="trial.html">Start free trial</a>
+  <nav class="topbar" id="topbar" aria-label="Primary">
+    <div class="in">
+      <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO<em>DEAL ANALYZER</em></span></a>
+      <div class="lk">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#how">How It Works</a>
+        <a href="markets.html">Markets</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="reports.html">Reports</a>
+        <a href="research.html">Research</a>
+        <a href="about.html" class="on" aria-current="page">About</a>
+      </div>
+      <div class="rt">
+        <a href="portal.html" class="login" data-track="login_click">Log in</a>
+        <a href="trial.html" class="trial" data-track="trial_click">Start free trial</a>
+        <button class="tbburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="tbmob"><span></span><span></span><span></span></button>
+      </div>
+      <div class="tbmob" id="tbmob">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#how">How It Works</a>
+        <a href="markets.html">Markets</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="reports.html">Reports</a>
+        <a href="research.html">Research</a>
+        <a href="about.html" class="on">About</a>
+        <a href="portal.html" data-track="login_click">Log in</a>
+        <a href="trial.html" class="trial" data-track="trial_click">Start free trial</a>
+      </div>
     </div>
   </nav>
 
@@ -215,5 +231,15 @@ h2.t{font-weight:800;letter-spacing:-.03em;line-height:1.04;margin:10px 0 0;font
 /* Form delivery is centralised in site-config.js — see FORM_DELIVERY_EMAIL.
    The action attribute above is only the no-JS fallback. */
 try{if(window.MACO){document.querySelectorAll('form[data-maco-form]').forEach(function(f){f.action=MACO.formEndpoint;});}}catch(e){}
+</script>
+<script>
+(function(){
+  var bar=document.getElementById('topbar');if(!bar)return;
+  var b=bar.querySelector('.tbburger'),m=document.getElementById('tbmob');
+  if(b){b.addEventListener('click',function(){var o=bar.getAttribute('data-open')==='1';
+    bar.setAttribute('data-open',o?'0':'1');b.setAttribute('aria-expanded',o?'false':'true');});}
+  if(m)m.addEventListener('click',function(e){if(e.target.closest('a')){
+    bar.setAttribute('data-open','0');if(b)b.setAttribute('aria-expanded','false');}});
+})();
 </script>
 </body></html>

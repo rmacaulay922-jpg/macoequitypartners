@@ -26,37 +26,36 @@
 <a class="da-skip" href="#main">Skip to content</a>
 
 <!-- ============ NAV ============ -->
-<nav class="da-nav" id="daNav" aria-label="Primary">
-  <div class="da-nav__brand">
-    <a href="index.html" aria-label="Maco Equity Partners — home"><img src="logo-full.png?v=logo2" alt="Maco Equity Partners"></a>
-    <span class="da-badge">Deal Analyzer</span>
-  </div>
-  <div class="da-nav__links">
-    <a href="index.html#product">Product</a>
-    <a href="index.html#how">How It Works</a>
-    <a href="markets.html">Markets</a>
-    <a href="pricing.html" aria-current="page">Pricing</a>
-    <a href="reports.html">Reports</a>
-    <a href="research.html">Research</a>
-    <a href="about.html">About</a>
-  </div>
-  <div class="da-nav__actions">
-    <a class="da-nav__login" href="portal.html" data-track="login_click">Deal Analyzer Login</a>
-    <a class="da-btn da-btn--primary" href="trial.html" data-track="trial_click">Start Free Trial</a>
-    <button class="da-nav__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="daMobile"><span></span><span></span><span></span></button>
+<nav class="topbar" id="topbar" aria-label="Primary">
+  <div class="in">
+    <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO<em>DEAL ANALYZER</em></span></a>
+    <div class="lk">
+      <a href="index.html#product">Product</a>
+      <a href="index.html#how">How It Works</a>
+      <a href="markets.html">Markets</a>
+      <a href="pricing.html" class="on" aria-current="page">Pricing</a>
+      <a href="reports.html">Reports</a>
+      <a href="research.html">Research</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="rt">
+      <a href="portal.html" class="login" data-track="login_click">Log in</a>
+      <a href="trial.html" class="trial" data-track="trial_click">Start free trial</a>
+      <button class="tbburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="tbmob"><span></span><span></span><span></span></button>
+    </div>
+    <div class="tbmob" id="tbmob">
+      <a href="index.html#product">Product</a>
+      <a href="index.html#how">How It Works</a>
+      <a href="markets.html">Markets</a>
+      <a href="pricing.html" class="on">Pricing</a>
+      <a href="reports.html">Reports</a>
+      <a href="research.html">Research</a>
+      <a href="about.html">About</a>
+      <a href="portal.html" data-track="login_click">Log in</a>
+      <a href="trial.html" class="trial" data-track="trial_click">Start free trial</a>
+    </div>
   </div>
 </nav>
-<div class="da-mobile" id="daMobile">
-  <a href="index.html#product">Product</a>
-  <a href="index.html#how">How It Works</a>
-  <a href="markets.html">Markets</a>
-  <a href="pricing.html">Pricing</a>
-  <a href="reports.html">Reports</a>
-  <a href="research.html">Research</a>
-  <a href="about.html">About</a>
-  <a href="portal.html" data-track="login_click">Deal Analyzer Login</a>
-  <a class="da-btn da-btn--primary" href="trial.html" data-track="trial_click">Start Free Trial</a>
-</div>
 
 <!-- ============ HERO ============ -->
 <header class="da-section" id="main" style="padding-top:56px">
@@ -123,9 +122,6 @@
 
 <script>
 (function(){
-  var nav=document.getElementById('daNav'),burger=nav&&nav.querySelector('.da-nav__burger'),mob=document.getElementById('daMobile');
-  if(burger){burger.addEventListener('click',function(){var o=nav.getAttribute('data-open')==='1';nav.setAttribute('data-open',o?'0':'1');burger.setAttribute('aria-expanded',o?'false':'true');});
-    if(mob)mob.addEventListener('click',function(e){if(e.target.closest('a')){nav.setAttribute('data-open','0');burger.setAttribute('aria-expanded','false');}});}
   try{
     MACO.renderPlans('plan-grid');
     // The à-la-carte catalogue. Reports are scoped and quoted per request, so this
@@ -143,6 +139,16 @@
     MACO.wireTracking();
   }catch(e){}
   try{document.documentElement.classList.add('anim');var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.06});document.querySelectorAll('.da-section,.plan').forEach(function(el){el.classList.add('rv');io.observe(el);});}catch(e){document.querySelectorAll('.rv').forEach(function(el){el.classList.add('on');});}
+})();
+</script>
+<script>
+(function(){
+  var bar=document.getElementById('topbar');if(!bar)return;
+  var b=bar.querySelector('.tbburger'),m=document.getElementById('tbmob');
+  if(b){b.addEventListener('click',function(){var o=bar.getAttribute('data-open')==='1';
+    bar.setAttribute('data-open',o?'0':'1');b.setAttribute('aria-expanded',o?'false':'true');});}
+  if(m)m.addEventListener('click',function(e){if(e.target.closest('a')){
+    bar.setAttribute('data-open','0');if(b)b.setAttribute('aria-expanded','false');}});
 })();
 </script>
 </body>

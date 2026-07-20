@@ -13,6 +13,7 @@
 <meta property="og:image" content="https://macoequitypartners.com/og-card.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Start your free trial — Maco Deal Analyzer</title>
+<link rel="stylesheet" href="da.css">
 <style>
 @font-face { font-family: 'Schibsted Grotesk'; font-style: normal; font-weight: 400 900; font-display: swap; src: url("assets/da-19.woff2") format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2014, U+2019; }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url("assets/da-07.woff2") format('woff2'); }
@@ -55,16 +56,36 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
 <body>
 <div class="page">
 
-  <div class="nav">
-    <a href="index.html" style="display:flex;align-items:center;gap:14px">
-      <img src="assets/da-01.png?v=logo2" alt="Maco Equity Partners" style="height:42px;width:auto;display:block">
-      <span class="mono" style="font-size:8.5px;font-weight:600;letter-spacing:.12em;color:#6B6F6A;border:1px solid rgba(19,21,18,.18);padding:3px 7px;border-radius:2px">DEAL ANALYZER</span>
-    </a>
-    <div style="display:flex;gap:22px;align-items:center;font:500 12px 'Schibsted Grotesk',sans-serif">
-      <a href="pricing.html">Pricing</a>
-      <a href="portal.html" style="font-weight:600">Log in</a>
+  <nav class="topbar" id="topbar" aria-label="Primary">
+    <div class="in">
+      <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO<em>DEAL ANALYZER</em></span></a>
+      <div class="lk">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#how">How It Works</a>
+        <a href="markets.html">Markets</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="reports.html">Reports</a>
+        <a href="research.html">Research</a>
+        <a href="about.html">About</a>
+      </div>
+      <div class="rt">
+        <a href="portal.html" class="login" data-track="login_click">Log in</a>
+        <a href="trial.html" class="trial" data-track="trial_click">Start free trial</a>
+        <button class="tbburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="tbmob"><span></span><span></span><span></span></button>
+      </div>
+      <div class="tbmob" id="tbmob">
+        <a href="index.html#product">Product</a>
+        <a href="index.html#how">How It Works</a>
+        <a href="markets.html">Markets</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="reports.html">Reports</a>
+        <a href="research.html">Research</a>
+        <a href="about.html">About</a>
+        <a href="portal.html" data-track="login_click">Log in</a>
+        <a href="trial.html" class="trial" data-track="trial_click">Start free trial</a>
+      </div>
     </div>
-  </div>
+  </nav>
 
   <div class="wrap">
     <div>
@@ -149,5 +170,15 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
 /* Form delivery is centralised in site-config.js — see FORM_DELIVERY_EMAIL.
    The action attribute above is only the no-JS fallback. */
 try{if(window.MACO){document.querySelectorAll('form[data-maco-form]').forEach(function(f){f.action=MACO.formEndpoint;});}}catch(e){}
+</script>
+<script>
+(function(){
+  var bar=document.getElementById('topbar');if(!bar)return;
+  var b=bar.querySelector('.tbburger'),m=document.getElementById('tbmob');
+  if(b){b.addEventListener('click',function(){var o=bar.getAttribute('data-open')==='1';
+    bar.setAttribute('data-open',o?'0':'1');b.setAttribute('aria-expanded',o?'false':'true');});}
+  if(m)m.addEventListener('click',function(e){if(e.target.closest('a')){
+    bar.setAttribute('data-open','0');if(b)b.setAttribute('aria-expanded','false');}});
+})();
 </script>
 </body></html>
