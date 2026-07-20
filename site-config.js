@@ -13,6 +13,11 @@
      • To show a founding-member count, set FOUNDING_MEMBER_LIMIT to a number.
        Leave it null to hide any count (recommended until you decide a real cap).
    Nothing else needs to change. Save the file and it takes effect.
+
+   ONE CAVEAT: every page loads this as site-config.js?v=YYYYMMDD. There is no
+   build step, so that stamp is what busts the CDN and browser cache. After you
+   edit this file, bump the ?v= on the <script> tags too, or visitors keep the
+   old copy for as long as their cache holds it.
    ============================================================================= */
 
 window.MACO = (function () {
