@@ -683,6 +683,40 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 </head>
 <body>
 
+<!-- BOOT OVERLAY — the portal loads 13 deferred data files; until they land the
+     market dropdown and boards are half-empty. Cover the gap with a spinner
+     instead of letting a subscriber think this is all there is. -->
+<div id="bootOverlay" style="position:fixed;inset:0;z-index:9999;background:#131512;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .35s ease;">
+  <svg width="54" height="54" viewBox="0 0 54 54" style="animation:bootSpin 1.6s linear infinite;">
+    <g fill="none" stroke="#E8501F" stroke-width="3.5">
+      <circle cx="27" cy="27" r="20" opacity=".18"/>
+      <path d="M27 7 a20 20 0 0 1 17.3 10" stroke-linecap="round"/>
+    </g>
+    <circle cx="27" cy="27" r="6" fill="#E8501F"/>
+  </svg>
+  <div style="font:600 11px 'IBM Plex Mono',monospace;letter-spacing:.18em;color:#B8915A;text-transform:uppercase;" id="bootMsg">Loading county records&hellip;</div>
+  <style>@keyframes bootSpin{to{transform:rotate(360deg)}}</style>
+</div>
+<script>
+(function(){
+  // Reveal when every lead file has evaluated (or after 12s so a slow/missing
+  // file can never brick the page). MIAMI_LEADS may legitimately be empty —
+  // presence of the global is the signal, not its length.
+  var WANT=['POLK_LEADS','LAKE_LEADS','BROWARD_LEADS','LEE_LEADS','COLLIER_LEADS','ZIP_BANDS'];
+  var t0=Date.now();
+  function ready(){return WANT.every(function(k){return typeof window[k]!=='undefined';});}
+  function done(){var o=document.getElementById('bootOverlay');if(!o)return;
+    o.style.opacity='0';setTimeout(function(){o.parentNode&&o.parentNode.removeChild(o);},380);}
+  (function poll(){
+    if(ready()||Date.now()-t0>12000){done();return;}
+    var m=document.getElementById('bootMsg');
+    if(m){var n=WANT.filter(function(k){return typeof window[k]!=='undefined';}).length;
+      m.textContent='Loading county records… '+n+' of '+WANT.length+' markets';}
+    setTimeout(poll,120);
+  })();
+})();
+</script>
+
 <!-- LOGIN GATE -->
 <div id="loginGate">
   <canvas id="bgCanvas"></canvas>
@@ -1910,6 +1944,26 @@ function polkWhy(l){
   return s;
 }
 function _polkLink(href,label,title){return '<a class="btn btn-outline" style="font-size:10px;padding:5px 9px;" href="'+href+'" target="_blank" rel="noopener"'+(title?' title="'+title+'"':'')+'>'+label+'</a>';}
+// Recorded qualified sales in the lead's ZIP — the actual rows the band was
+// computed from (FDOR arm's-length QUAL_CD 01/02). Real comps, honestly scoped:
+// same ZIP, not radius-picked, so they anchor the band rather than an exact ARV.
+function _zipCompsHtml(l){
+  var bd=_bandFor(l);
+  if(!bd||!bd.comps||!bd.comps.length)return '';
+  var rows=bd.comps.map(function(c){
+    return '<tr><td style="padding:4px 8px 4px 0;color:var(--ivory-soft);">'+c.a
+      +'</td><td style="padding:4px 8px;text-align:right;">'+(c.sf?c.sf.toLocaleString()+' sf':'&mdash;')
+      +'</td><td style="padding:4px 8px;text-align:right;">'+(c.y||'&mdash;')
+      +'</td><td style="padding:4px 0 4px 8px;text-align:right;font-weight:700;">$'+c.p.toLocaleString()
+      +' <span style="color:var(--muted);font-weight:400;">($'+c.ppsf+'/sf)</span></td></tr>';
+  }).join('');
+  return '<div style="margin-top:12px;">'
+    +'<div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px;">'
+    +'Recorded sales &middot; ZIP '+(l.z||'')+' &middot; '+bd.n+' qualified sales in the band ('+bd.asOf+')</div>'
+    +'<table style="width:100%;border-collapse:collapse;font-size:11.5px;">'+rows+'</table>'
+    +'<div style="font-size:10px;color:var(--muted);margin-top:4px;">FDOR arm&rsquo;s-length sales in this ZIP &mdash; the rows behind the sale band. Comp the exact block before offering.</div>'
+    +'</div>';
+}
 function polkDossierHtml(l){
   var row=function(k,v){return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">'+k+'</span><span style="color:var(--ivory);font-weight:600;">'+v+'</span></div>';};
   var data='<div style="background:var(--bg-soft,var(--bg-card));border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
@@ -1950,7 +2004,7 @@ function polkDossierHtml(l){
       +_polkLink(polkZillowUrl(l),'Zillow','Check if it is currently listed')
     +'</div></div>';
   var flood='<div id="flood-'+l.pid+'" style="margin-top:8px;font-size:11.5px;line-height:1.5;"></div>';
-  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'+data+owner+why+flood+recLinks+ownLinks+'</div>';
+  return '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">'+data+_zipCompsHtml(l)+owner+why+flood+recLinks+ownLinks+'</div>';
 }
 // ── FEMA FLOOD ZONE (NFHL layer 28, keyless + CORS-open) — near-mandatory underwriting input in
 // South Florida. Point query by parcel coords, cached in localStorage, fails soft to nothing.
@@ -2098,7 +2152,7 @@ function _bandFor(l){
     if(_teardownLead(l))return null; // land-value-only parcel — a house-price band would be flatly wrong
     var e=_fdorFor(l); if(!e||!e.sqft||e.sqft<400)return null;
     var b=(window.ZIP_BANDS||{})[''+(l.z||'')]; if(!b||!b.med||b.n<8)return null;
-    return {lo:Math.round(b.p25*e.sqft),mid:Math.round(b.med*e.sqft),hi:Math.round(b.p75*e.sqft),n:b.n,ppsf:b.med,sqft:e.sqft,asOf:b.as_of||''};
+    return {lo:Math.round(b.p25*e.sqft),mid:Math.round(b.med*e.sqft),hi:Math.round(b.p75*e.sqft),n:b.n,ppsf:b.med,sqft:e.sqft,asOf:b.as_of||'',comps:b.comps||[]};
   }catch(e){return null;}
 }
 function renderPolk(){
@@ -2121,7 +2175,7 @@ function renderPolk(){
         var cells='<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>'
           +'<div class="metric-cell"><div class="metric-lbl">Building</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>';
         cells+=bd
-          ?'<div class="metric-cell" style="border-right:none;" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Sale Band</div><div class="metric-val" style="font-size:14px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+bd.n+' qual. sales · ZIP $/sf</div></div>'
+          ?'<div class="metric-cell" style="border-right:none;" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Est. Value · ZIP sales</div><div class="metric-val" style="font-size:16px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' · '+bd.n+' sales</div></div>'
           :'<div class="metric-cell" style="border-right:none;"><div class="metric-lbl">Taxable</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.tax)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">non-homestead</div></div>';
         return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+cells+'</div>';
       })()

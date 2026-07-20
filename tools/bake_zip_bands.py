@@ -44,16 +44,22 @@ def query(where, last_oid, out_fields):
 def band_for_zip(z):
     where = ("DOR_UC='001' AND QUAL_CD1 IN ('01','02') AND SALE_YR1>=2024 "
              "AND TOT_LVG_AR>500 AND SALE_PRC1>50000 AND PHY_ZIPCD=%s" % z)
-    rows, last = [], 0
+    rows, sales, last = [], [], 0
     while True:
-        d = query(where, last, 'OBJECTID,SALE_PRC1,TOT_LVG_AR')
+        d = query(where, last, 'OBJECTID,SALE_PRC1,TOT_LVG_AR,PHY_ADDR1,SALE_YR1')
         if d is None: return None            # terminal — caller records the failure honestly
         f = d.get('features', [])
         if not f: break
         for x in f:
             a = x['attributes']
             sp, sf = num(a.get('SALE_PRC1')), num(a.get('TOT_LVG_AR'))
-            if sp > 0 and sf > 0: rows.append(sp / sf)
+            if sp > 0 and sf > 0:
+                rows.append(sp / sf)
+                addr = (a.get('PHY_ADDR1') or '').strip()
+                yr = int(num(a.get('SALE_YR1')))
+                if addr and 60 <= sp / sf <= 1200:
+                    sales.append({'a': addr.title(), 'p': int(sp), 'sf': int(sf),
+                                  'ppsf': int(round(sp / sf)), 'y': yr})
         last = max(int(num(x['attributes'].get('OBJECTID'))) for x in f)
         if len(f) < 2000: break
         time.sleep(3)
@@ -62,15 +68,30 @@ def band_for_zip(z):
     k = int(len(rows) * 0.05)
     rows = rows[k:len(rows) - k] if len(rows) > 2 * k else rows
     if len(rows) < 8: return {'thin': len(rows)}
+    # Keep the 6 most recent as displayable comps — real recorded arm's-length
+    # sales, the same rows the band statistics were computed from.
+    sales.sort(key=lambda r: -r['y'])
+    comps = sales[:6]
     def pct(q):
         i = q * (len(rows) - 1); lo = int(i)
         return rows[lo] + (rows[min(lo + 1, len(rows) - 1)] - rows[lo]) * (i - lo)
     return {'med': round(pct(0.5)), 'p25': round(pct(0.25)), 'p75': round(pct(0.75)),
-            'n': len(rows), 'as_of': '%d-%02d' % (NOW.year, NOW.month)}
+            'n': len(rows), 'as_of': '%d-%02d' % (NOW.year, NOW.month), 'comps': comps}
 
 def main():
     arg = (sys.argv[1] if len(sys.argv) > 1 else 'miami').strip()
-    zips = MIAMI_ZIPS if arg == 'miami' else [z.strip() for z in arg.split(',') if re.match(r'^\d{5}$', z.strip())]
+    if arg == 'all':
+        # Every ZIP that appears on any county lead board, plus the Miami list —
+        # so one nightly run gives every market bands AND comps, not just Miami.
+        import glob as _g
+        found = set(MIAMI_ZIPS)
+        for lf in _g.glob(os.path.join(REPO, '*-leads.js')):
+            found |= set(re.findall(r'"z":"(\d{5})"', open(lf, encoding='utf-8').read()))
+        zips = sorted(found)
+    elif arg == 'miami':
+        zips = MIAMI_ZIPS
+    else:
+        zips = [z.strip() for z in arg.split(',') if re.match(r'^\d{5}$', z.strip())]
     # Load the existing bands file and MERGE — other counties' bands must survive.
     bands = {}
     if os.path.exists(OUT):
