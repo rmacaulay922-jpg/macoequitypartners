@@ -362,9 +362,9 @@ a.market-umb__name:hover{color:var(--accent)}
 .topbar .login{font-size:13px;font-weight:600;color:var(--cream);padding:9px 15px;border-radius:7px;
   border:1px solid rgba(241,238,228,.32)}
 .topbar .login:hover{border-color:var(--cream)}
-.topbar .in .trial{font-weight:700;font-size:13px;padding:10px 19px;border-radius:7px;
+.topbar .rt .trial{font-weight:700;font-size:13px;padding:10px 19px;border-radius:7px;
   background:var(--orange);color:#fff}
-.topbar .in .trial:hover{background:var(--orange-dk)}
+.topbar .rt .trial:hover{background:var(--orange-dk)}
 .tbburger{display:none;flex-direction:column;gap:4px;background:none;border:0;cursor:pointer;padding:9px}
 .tbburger span{width:21px;height:2px;background:var(--cream);display:block}
 .tbmob{display:none;position:absolute;top:100%;left:0;right:0;z-index:-1;flex-direction:column;
@@ -379,8 +379,8 @@ a.market-umb__name:hover{color:var(--accent)}
 .topbar[data-open="1"] .tbmob{display:flex}
 @media (max-width:1020px){.topbar .in .lk{display:none}.tbburger{display:flex}}
 @media (max-width:620px){
-  .topbar .in .trial{display:none}   /* .in only — the drop panel keeps its CTA */
-  .topbar .in .wm em{display:none}
+  .topbar .rt .trial{display:none}   /* .rt only — never the drop panel's own CTA */
+  .topbar .in > .brand .wm em{display:none}
   .topbar .in{height:58px;gap:10px}
   .topbar .login{padding:8px 13px}
 }

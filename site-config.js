@@ -46,15 +46,16 @@ window.MACO = (function () {
   // book directly. Leave "" and the demo page uses the request form instead.
   var SCHEDULING_URL = '';
 
-  // STRIPE PAYMENT LINKS — paste your three Payment Link URLs here and every plan
-  // card's button becomes "Subscribe" pointing straight at checkout. Leave "" and
-  // the buttons keep sending people to the free trial (current behavior).
-  // Create them at dashboard.stripe.com → Payment Links (recurring monthly), and
-  // turn on the customer portal so "cancel anytime" is self-serve.
+  // STRIPE PAYMENT LINKS — live, verified against the Stripe checkout pages on
+  // 2026-07-19: each opens "Maco Equity Partners LLC · Subscribe to Maco Deal
+  // Analyzer — <plan>" at the right price, recurring monthly.
+  // Blank any string to send that plan's card back to the trial only.
+  // Still worth doing in Stripe: turn on the customer portal so "cancel anytime"
+  // is self-serve rather than an email to you.
   var STRIPE_LINKS = {
-    'founding':      '',   // $50/mo
-    'standard':      '',   // $75/mo
-    'market-select': ''    // $85/mo
+    'founding':      'https://buy.stripe.com/eVqbJ21cK1ys4Bffmn7Zu0b',   // $50/mo — verified
+    'standard':      'https://buy.stripe.com/14AeVe8Fcb926Jn4HJ7Zu0c',   // $75/mo — verified
+    'market-select': 'https://buy.stripe.com/28E7sMbRo4KE1p33DF7Zu0d'    // $85/mo — verified
   };
 
   // Set to a number (e.g. 25) to advertise a founding-member cap. Leave null to
@@ -382,11 +383,18 @@ window.MACO = (function () {
         (function () {
           var pay = STRIPE_LINKS[p.id];
           if (pay) {
-            // Payment link configured — the button goes straight to checkout; trial stays one click away.
+            // Payment link configured. The TRIAL stays the primary button and checkout
+            // is the secondary link — deliberately, for two reasons. Every page promises
+            // "7-day free trial, no card", and a Subscribe-first card contradicts that.
+            // And for a product with no reviews and no track record yet, asking for a
+            // card before anyone has seen a lead board is the harder sell. Swap the two
+            // once the trial-to-paid rate says people are converting anyway.
             return '<a class="da-btn ' + (p.featured ? 'da-btn--primary' : 'da-btn--dark') + ' plan__cta" ' +
-              'href="' + esc(pay) + '" data-track="subscribe_click" data-plan="' + esc(p.id) + '">' +
-              'Subscribe — ' + esc(p.price) + esc(p.cadence) + ' <span aria-hidden="true">&rarr;</span></a>' +
-              '<p class="plan__note" style="text-align:center;margin-top:8px">or <a href="trial.html?plan=' + esc(p.id) + '" style="text-decoration:underline">try free for 7 days first</a></p>';
+              'href="' + esc(p.href) + '?plan=' + esc(p.id) + '" data-track="trial_click" ' +
+              'data-plan="' + esc(p.id) + '">' + esc(p.cta) + ' <span aria-hidden="true">&rarr;</span></a>' +
+              '<p class="plan__note" style="text-align:center;margin-top:8px">or ' +
+              '<a href="' + esc(pay) + '" data-track="subscribe_click" data-plan="' + esc(p.id) + '" ' +
+              'style="text-decoration:underline">subscribe now — ' + esc(p.price) + esc(p.cadence) + '</a></p>';
           }
           return '<a class="da-btn ' + (p.featured ? 'da-btn--primary' : 'da-btn--dark') + ' plan__cta" ' +
             'href="' + esc(p.href) + '?plan=' + esc(p.id) + '" data-track="book_demo_click" ' +
