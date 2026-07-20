@@ -1,0 +1,73 @@
+/* =============================================================================
+   Shared top bar — STANDALONE.
+
+   da.css already carries these rules, but the legal pages (privacy / terms /
+   disclosures) run on styles.css and pulling da.css into them would drop its
+   :root palette on top of theirs and repaint the page. So this file is
+   self-contained: every value is either a literal or a custom property declared
+   ON .topbar itself, never on :root. It can be linked next to any stylesheet
+   without touching that page's theme.
+
+   Keep in step with the .topbar block in da.css and the inline copy in
+   index.html if you change the bar's appearance.
+   ============================================================================= */
+
+.topbar{
+  --tb-gut:clamp(22px,4.2vw,72px);
+  --tb-cream:#F1EEE4;
+  --tb-orange:#E8501F;
+  --tb-orange-dk:#C43A1A;
+  --tb-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+  --tb-sans:'Schibsted Grotesk',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  position:sticky;top:0;z-index:1200;
+  background:rgba(15,17,14,.97);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(241,238,228,.13);
+  font-family:var(--tb-sans);
+}
+.topbar *{box-sizing:border-box}
+.topbar a{text-decoration:none}
+.topbar .in{display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:0 var(--tb-gut);height:64px;max-width:1800px;margin:0 auto}
+.topbar .brand{display:flex;align-items:center;gap:11px;flex:0 0 auto}
+.topbar .mark{transform:rotate(45deg);display:grid;grid-template-columns:repeat(3,1fr);
+  gap:3px;width:22px;height:22px;flex:0 0 auto}
+.topbar .mark i{border-radius:2px;background:var(--tb-cream);display:block}
+.topbar .mark i.c{background:var(--tb-orange)}
+.topbar .wm{font-weight:800;font-size:16px;letter-spacing:.02em;color:#F7F7F4}
+.topbar .wm em{font-style:normal;font-family:var(--tb-mono);font-size:9px;letter-spacing:.14em;
+  color:var(--tb-orange);border:1px solid rgba(232,80,31,.45);border-radius:4px;
+  padding:2px 6px;margin-left:9px;vertical-align:2px}
+.topbar .in .lk{display:flex;gap:26px;font-size:13.5px;font-weight:500;
+  color:rgba(247,247,244,.78);list-style:none;margin:0;padding:0}
+.topbar .lk a{padding:6px 0;border-bottom:2px solid transparent;color:inherit}
+.topbar .lk a:hover{color:#fff}
+.topbar .lk a.on{color:#fff;font-weight:700;border-bottom-color:var(--tb-orange)}
+.topbar .rt{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.topbar .login{font-size:13px;font-weight:600;color:var(--tb-cream);padding:9px 15px;
+  border-radius:7px;border:1px solid rgba(241,238,228,.32)}
+.topbar .login:hover{border-color:var(--tb-cream)}
+.topbar .rt .trial{font-weight:700;font-size:13px;padding:10px 19px;border-radius:7px;
+  background:var(--tb-orange);color:#fff}
+.topbar .rt .trial:hover{background:var(--tb-orange-dk)}
+.topbar .tbburger{display:none;flex-direction:column;gap:4px;background:none;border:0;
+  cursor:pointer;padding:9px}
+.topbar .tbburger span{width:21px;height:2px;background:var(--tb-cream);display:block}
+.topbar .tbmob{display:none;position:absolute;top:100%;left:0;right:0;z-index:-1;
+  flex-direction:column;padding:6px var(--tb-gut) 20px;background:rgba(15,17,14,.98);
+  backdrop-filter:blur(10px);border-bottom:1px solid rgba(241,238,228,.13);
+  max-height:calc(100vh - 100%);overflow-y:auto;
+  box-shadow:0 18px 30px -18px rgba(0,0,0,.7)}
+.topbar .tbmob a{padding:13px 0;font-size:15px;font-weight:600;color:var(--tb-cream);
+  border-bottom:1px solid rgba(241,238,228,.1)}
+.topbar .tbmob a:last-child{border-bottom:0}
+.topbar .tbmob .trial{margin-top:14px;text-align:center;background:var(--tb-orange);
+  color:#fff;font-weight:700;padding:13px 20px;border-radius:7px;border-bottom:0}
+.topbar[data-open="1"] .tbmob{display:flex}
+@media (max-width:1020px){.topbar .in .lk{display:none}.topbar .tbburger{display:flex}}
+@media (max-width:620px){
+  .topbar .rt .trial{display:none}     /* .rt only — the drop panel keeps its CTA */
+  .topbar .in > .brand .wm em{display:none}
+  .topbar .in{height:58px;gap:10px}
+  .topbar .login{padding:8px 13px}
+}
+@media (max-width:400px){.topbar .wm{font-size:15px}}

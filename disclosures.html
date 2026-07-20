@@ -11,6 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" href="favicon.png?v=logo2">
 <link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="topbar.css">
 <style>
   .legal{max-width:760px;margin:0 auto;padding:4rem 5vw 7rem}
   .legal h2{font-family:'Schibsted Grotesk',serif;font-weight:400;font-size:1.5rem;color:var(--ivory);margin:2.6rem 0 .8rem}
@@ -20,20 +21,35 @@
 </style>
 </head>
 <body>
-<nav class="nav" id="nav">
-  <a href="index.html" class="nav-logo">
-    <img src="logo-mark.png?v=logo2" alt="Maco Equity Partners logo">
-    <span class="text">Maco <span class="accent">·</span> Equity Partners</span>
-  </a>
-  <ul class="nav-links">
-    <li><a href="markets.html">Markets</a></li>
-    <li><a href="pricing.html">Pricing</a></li>
-    <li><a href="reports.html">Reports</a></li>
-    <li><a href="research.html">Research</a></li>
-    <li><a href="about.html">About</a></li>
-    <li><a href="portal.html">Log in</a></li>
-    <li><a href="trial.html" class="nav-cta">Start free trial</a></li>
-  </ul>
+<nav class="topbar" id="topbar" aria-label="Primary">
+  <div class="in">
+    <a href="index.html" class="brand"><span class="mark"><i></i><i></i><i></i><i></i><i class="c"></i><i></i><i></i><i></i><i></i></span><span class="wm">MACO<em>DEAL ANALYZER</em></span></a>
+    <div class="lk">
+      <a href="index.html#product">Product</a>
+      <a href="index.html#how">How It Works</a>
+      <a href="markets.html">Markets</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="reports.html">Reports</a>
+      <a href="research.html">Research</a>
+      <a href="about.html">About</a>
+    </div>
+    <div class="rt">
+      <a href="portal.html" class="login">Log in</a>
+      <a href="trial.html" class="trial">Start free trial</a>
+      <button class="tbburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="tbmob"><span></span><span></span><span></span></button>
+    </div>
+    <div class="tbmob" id="tbmob">
+      <a href="index.html#product">Product</a>
+      <a href="index.html#how">How It Works</a>
+      <a href="markets.html">Markets</a>
+      <a href="pricing.html">Pricing</a>
+      <a href="reports.html">Reports</a>
+      <a href="research.html">Research</a>
+      <a href="about.html">About</a>
+      <a href="portal.html">Log in</a>
+      <a href="trial.html" class="trial">Start free trial</a>
+    </div>
+  </div>
 </nav>
 
 <section class="page-hero">
@@ -74,6 +90,16 @@
 <script>
   const nav=document.getElementById('nav');
   window.addEventListener('scroll',()=>{if(window.scrollY>60)nav.classList.add('scrolled');else nav.classList.remove('scrolled');});
+</script>
+<script>
+(function(){
+  var bar=document.getElementById('topbar');if(!bar)return;
+  var b=bar.querySelector('.tbburger'),m=document.getElementById('tbmob');
+  if(b)b.addEventListener('click',function(){var o=bar.getAttribute('data-open')==='1';
+    bar.setAttribute('data-open',o?'0':'1');b.setAttribute('aria-expanded',o?'false':'true');});
+  if(m)m.addEventListener('click',function(e){if(e.target.closest('a')){
+    bar.setAttribute('data-open','0');if(b)b.setAttribute('aria-expanded','false');}});
+})();
 </script>
 </body>
 </html>
