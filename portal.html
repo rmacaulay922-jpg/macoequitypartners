@@ -672,7 +672,11 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 <script defer src="broward-leads.js?v=1"></script>
 <script defer src="lee-leads.js?v=1"></script>
 <script defer src="collier-leads.js?v=1"></script>
-<script defer src="miami-leads.js?v=1"></script>
+<script defer src="miami-leads.js?v=2"></script>
+<script defer src="broward-flags.js?v=2"></script>
+<script defer src="lee-flags.js?v=2"></script>
+<script defer src="collier-flags.js?v=2"></script>
+<script defer src="lake-flags.js?v=2"></script>
 <script defer src="mia-homestead.js?v=1"></script>
 <script defer src="mia-homestead-city.js?v=1"></script>
 <script defer src="crime-bands.js?v=1"></script>
@@ -2147,6 +2151,24 @@ function _badZipLead(l){
   if(l.z&&l.z!=='0'&&l.z!==0)return false;
   return !/\d{5}/.test(''+(l.m3||'')); // owner mailing zip rescues it
 }
+// County distress flags (open code case / expired permit / recorded lien) from each
+// county's OWN verified ArcGIS endpoint — see tools/scrape_county_flags.py. Keyed by parcel.
+function _flagsFor(l){
+  try{
+    var m=(window._market||'').toLowerCase();
+    var g=window[(m||'').toUpperCase()+'_FLAGS']; if(!g||!l)return null;
+    var k=(''+(l.pid||'')).toUpperCase().replace(/[^A-Z0-9]/g,'');
+    return g[k]||null;
+  }catch(e){return null;}
+}
+function _flagChips(l){
+  var f=_flagsFor(l); if(!f)return '';
+  var b=[];
+  if(f.code)  b.push('<span title="Open code-enforcement case: '+(f.code.type||'').replace(/"/g,'')+'" style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.45);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Code case</span>');
+  if(f.permit)b.push('<span title="'+(f.permit.status||'Permit')+' permit: '+(f.permit.type||'').replace(/"/g,'')+'" style="background:rgba(232,133,74,.16);color:#e8854a;border:1px solid rgba(232,133,74,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+((f.permit.status||'').toLowerCase().indexOf('expir')>=0?'Expired permit':'Open permit')+'</span>');
+  if(f.lien)  b.push('<span title="'+(f.lien.kind||'Lien')+(f.lien.amt?': $'+f.lien.amt.toLocaleString():'')+'" style="background:rgba(184,145,90,.18);color:var(--gold);border:1px solid rgba(184,145,90,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Lien'+(f.lien.amt?' $'+Math.round(f.lien.amt/1000)+'k':'')+'</span>');
+  return b.join('');
+}
 function _bandFor(l){
   try{
     if(_teardownLead(l))return null; // land-value-only parcel — a house-price band would be flatly wrong
@@ -2155,12 +2177,45 @@ function _bandFor(l){
     return {lo:Math.round(b.p25*e.sqft),mid:Math.round(b.med*e.sqft),hi:Math.round(b.p75*e.sqft),n:b.n,ppsf:b.med,sqft:e.sqft,asOf:b.as_of||'',comps:b.comps||[]};
   }catch(e){return null;}
 }
+function _marketOverview(county,meta){
+  var all=(_LSRC()||[]);
+  if(!all.length)return '';
+  var band=0,est=[],oos=0,est_ct=0,held=0,flagged=0,hoods={};
+  for(var i=0;i<all.length;i++){var l=all[i];
+    hoods[l.c]=1;
+    if(l.oos)oos++;
+    if(l.tag==='probate')est_ct++;
+    if(l.held!=null&&l.held>=15)held++;
+    if(_flagsFor(l))flagged++;
+    var bd=_bandFor(l); if(bd){band++; est.push(bd.mid);}
+  }
+  est.sort(function(a,b){return a-b;});
+  var medEst=est.length?est[Math.floor(est.length/2)]:0;
+  var nh=Object.keys(hoods).length;
+  var snap=(meta&&meta.snapshot)||'';
+  function stat(v,l){return '<div style="text-align:center;padding:0 14px;"><div style="font-size:20px;font-weight:800;color:var(--ivory);">'+v+'</div><div style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;">'+l+'</div></div>';}
+  return '<div style="grid-column:1/-1;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 8px;margin-bottom:4px;">'
+    +'<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;">'
+      +stat(all.length.toLocaleString(),'Leads on board')
+      +stat(nh,'Neighborhoods')
+      +stat(medEst?fmtK(medEst):'&mdash;','Median est. value')
+      +stat(oos.toLocaleString(),'Out-of-state owners')
+      +stat(est_ct.toLocaleString(),'Estates / probate')
+      +stat(held.toLocaleString(),'Held 15yr+')
+      +(flagged?stat(flagged.toLocaleString(),'Code/permit/lien'):'')
+    +'</div>'
+    +'<div style="text-align:center;font-size:10.5px;color:var(--muted);margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">'
+      +county+' &middot; '+band+' of '+all.length+' leads carry a ZIP sale band &middot; refreshed '+snap
+      +' &middot; every figure is a public-record estimate — verify before offering.</div>'
+  +'</div>';
+}
 function renderPolk(){
   var L=polkFiltered(), g=document.getElementById('polkGrid'); if(!g)return;
   var county=(_LMETA().county||'County');
   if(!L.length){g.innerHTML='<div style="color:var(--muted);padding:20px;">No '+county+' leads match these filters.</div>';return;}
   var pip=(typeof getPipeline==='function')?getPipeline():{};
-  g.innerHTML=L.slice(0,400).map(function(l){
+  var _ov=_marketOverview(county,_LMETA());
+  g.innerHTML=_ov+L.slice(0,400).map(function(l){
     // pid is digits-only, so single-quoting is safe — JSON.stringify's double quotes would
     // terminate the double-quoted onclick attribute and silently break the buttons.
     var ts=polkTagStyle(l.tag), addr=l.a+', '+l.c+' '+(l.z||''), inPipe=!!pip[addr], pj="'"+l.pid+"'";
@@ -2169,11 +2224,18 @@ function renderPolk(){
         +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+' &middot; #'+(l.st||l.pid)+(function(){var e=_fdorFor(l);return e?((e.sqft?' &middot; '+e.sqft.toLocaleString()+' SF':'')+(e.yb?' &middot; built '+e.yb:'')):'';})()+'</div></div>'
         +'<span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;white-space:nowrap;">'+ts[1]+'</span></div>'
       +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 4px;">'+l.o+'</div>'
-      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
+      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}var _fc=_flagChips(l);if(_fc)b.push(_fc);return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
       +(function(){
         var bd=_bandFor(l);
-        var cells='<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>'
-          +'<div class="metric-cell"><div class="metric-lbl">Building</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>';
+        var _e=_fdorFor(l);
+        var _noCV=(!l.bld||l.bld<=0);   // Miami county-wide (PaGISView) carries no county value/building
+        var cell1=_noCV
+          ?'<div class="metric-cell"><div class="metric-lbl">Beds / Baths</div><div class="metric-val" style="font-size:16px;">'+((l.bed||'?')+' / '+(l.bath||'?'))+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>'
+          :'<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>';
+        var cell2=_noCV
+          ?'<div class="metric-cell"><div class="metric-lbl">Size</div><div class="metric-val" style="font-size:16px;">'+((_e&&_e.sqft)?_e.sqft.toLocaleString()+' SF':'&mdash;')+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+((l.yb)?'built '+l.yb:'')+'</div></div>'
+          :'<div class="metric-cell"><div class="metric-lbl">Building</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>';
+        var cells=cell1+cell2;
         cells+=bd
           ?'<div class="metric-cell" style="border-right:none;" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Est. Value · ZIP sales</div><div class="metric-val" style="font-size:16px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' · '+bd.n+' sales</div></div>'
           :'<div class="metric-cell" style="border-right:none;"><div class="metric-lbl">Taxable</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.tax)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">non-homestead</div></div>';
