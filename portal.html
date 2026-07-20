@@ -664,6 +664,9 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
   .hdr-name{font-size:13px}
 }
 </style>
+<!-- Not deferred: BEACON_URL is read at script-evaluation time, so MACO must already
+     exist by then or every beacon silently falls back to the hardcoded address. -->
+<script src="site-config.js"></script>
 <script defer src="polk-leads.js?v=5"></script>
 <script defer src="lake-leads.js?v=1"></script>
 <script defer src="broward-leads.js?v=1"></script>
@@ -1638,10 +1641,21 @@ var ACCESS_CODES={
   'DA-TRIAL-19':{who:'Trial 19',kind:'trial'},'DA-TRIAL-20':{who:'Trial 20',kind:'trial'}
 };
 var TRIAL_MS=7*24*3600*1000;
-// ── ENGAGEMENT BEACONS — logins & interest clicks email Ryan through the site's existing
+// ── ENGAGEMENT BEACONS — logins & interest clicks email through the site's existing
 // FormSubmit pipeline (no accounts, no cookies, nothing stored server-side). Operator
 // browsers (mep_op_unlocked) never send, and login pings are deduped to 1/browser/day.
-var BEACON_URL='https://formsubmit.co/ajax/deals@macoequitypartners.com';
+//
+// This MUST target the delivery address, not the address shown on the site. FormSubmit
+// silently discards posts to an unconfirmed address — no bounce, no error, and the
+// fetch resolves 200 — so pointing this at deals@ before that mailbox exists throws
+// every login ping and every "I'm Interested" click away with no trace. Prefers
+// MACO.formEndpoint (site-config.js) so FORM_DELIVERY_EMAIL really is the one knob;
+// the literal is only the fallback for when that script has not loaded.
+var BEACON_URL=(function(){
+  try{ if(window.MACO&&MACO.formEndpoint)
+    return MACO.formEndpoint.replace('formsubmit.co/','formsubmit.co/ajax/'); }catch(e){}
+  return 'https://formsubmit.co/ajax/rmac@macoequitypartners.com';
+})();
 function _beacon(event, detail){
   try{
     if(localStorage.getItem('mep_op_unlocked')==='1')return; // Ryan's own browsers stay silent

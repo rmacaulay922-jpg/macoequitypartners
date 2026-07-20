@@ -42,7 +42,7 @@ a{color:inherit;text-decoration:none;}
 :root{--gut:clamp(22px,4.2vw,72px);}   /* one gutter for every band — scales with the viewport */
 
 /* ===== TOP BAR (own row, above the photo — nav + logins never sit on the image) ===== */
-.topbar{position:sticky;top:0;z-index:60;background:rgba(15,17,14,.97);backdrop-filter:blur(10px);
+.topbar{position:sticky;top:0;z-index:1200;background:rgba(15,17,14,.97);backdrop-filter:blur(10px);
   border-bottom:1px solid rgba(241,238,228,.13);}
 .topbar .in{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:0 var(--gut);height:64px;}
 .topbar .mark i{background:var(--cream);}.topbar .mark i.c{background:var(--orange);}
@@ -50,7 +50,7 @@ a{color:inherit;text-decoration:none;}
 .topbar .wm{font-weight:800;font-size:16px;letter-spacing:.02em;color:var(--page);}
 .topbar .wm em{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--orange);
   border:1px solid rgba(232,80,31,.45);border-radius:4px;padding:2px 6px;margin-left:9px;vertical-align:2px;}
-.topbar .lk{display:flex;gap:26px;font-size:13.5px;font-weight:500;color:rgba(247,247,244,.78);}
+.topbar .in .lk{display:flex;gap:26px;font-size:13.5px;font-weight:500;color:rgba(247,247,244,.78);}
 .topbar .lk a{padding:6px 0;border-bottom:2px solid transparent;}
 .topbar .lk a:hover{color:#fff;}
 .topbar .lk a.on{color:#fff;font-weight:700;border-bottom-color:var(--orange);}
@@ -58,15 +58,18 @@ a{color:inherit;text-decoration:none;}
 .topbar .login{font-size:13px;font-weight:600;color:var(--cream);padding:9px 15px;border-radius:7px;
   border:1px solid rgba(241,238,228,.32);}
 .topbar .login:hover{border-color:var(--cream);}
-.topbar .trial{font-weight:700;font-size:13px;padding:10px 19px;border-radius:7px;background:var(--orange);color:#fff;}
-.topbar .trial:hover{background:var(--orange-dk);}
+.topbar .in .trial{font-weight:700;font-size:13px;padding:10px 19px;border-radius:7px;background:var(--orange);color:#fff;}
+.topbar .in .trial:hover{background:var(--orange-dk);}
 .tbburger{display:none;flex-direction:column;gap:4px;background:none;border:0;cursor:pointer;padding:9px;}
 .tbburger span{width:21px;height:2px;background:var(--cream);display:block;}
-.tbmob{display:none;flex-direction:column;padding:6px var(--gut) 20px;background:rgba(15,17,14,.98);
-  border-bottom:1px solid rgba(241,238,228,.13);}
+.tbmob{display:none;position:absolute;top:100%;left:0;right:0;z-index:-1;
+  flex-direction:column;padding:6px var(--gut) 20px;background:rgba(15,17,14,.98);
+  backdrop-filter:blur(10px);border-bottom:1px solid rgba(241,238,228,.13);
+  max-height:calc(100vh - 100%);overflow-y:auto;
+  box-shadow:0 18px 30px -18px rgba(0,0,0,.7);}
 .tbmob a{padding:13px 0;font-size:15px;font-weight:600;color:var(--cream);border-bottom:1px solid rgba(241,238,228,.1);}
 .tbmob a:last-child{border-bottom:0;}
-.topbar[data-open="1"] + .tbmob{display:flex;}
+.topbar[data-open="1"] .tbmob{display:flex;}
 .mark{transform:rotate(45deg);display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:22px;height:22px;}
 .mark i{border-radius:2px;background:var(--ink);}.mark i.c{background:var(--orange);}
 .btn{position:relative;overflow:hidden;font-weight:700;font-size:14px;padding:14px 24px;border-radius:8px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;white-space:nowrap;transition:transform .16s,background .16s;border:none;}
@@ -95,6 +98,8 @@ a{color:inherit;text-decoration:none;}
 .hero .scrim2{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(100deg,rgba(15,17,14,.95) 0%,rgba(15,17,14,.66) 40%,transparent 70%);}
 .hero .glow{position:absolute;inset:0;background:radial-gradient(50% 55% at 82% 16%,rgba(232,80,31,.20),transparent 62%);pointer-events:none;}
+/* Anchor targets must clear the sticky bar, or #how/#board land underneath it. */
+#product,#signals,#board,#how,#top{scroll-margin-top:78px;}
 .hspace{flex:1 1 auto;min-height:30px;}
 .htext{position:relative;z-index:3;padding:0 var(--gut) 34px;max-width:820px;}
 /* Lightened from #FFA378 and bumped to 600. At 11.5px this counts as small text
@@ -138,7 +143,8 @@ a{color:inherit;text-decoration:none;}
 
 /* map room */
 .maproom{display:grid;grid-template-columns:1fr 1.06fr;border:1px solid rgba(19,21,18,.14);border-radius:14px;overflow:hidden;box-shadow:0 40px 76px -44px rgba(19,21,18,.45);}
-.mapwrap{position:relative;height:720px;background:#E9E7E0;overflow:hidden;border-right:1px solid var(--line);}
+.mapwrap{position:relative;height:720px;background:#E9E7E0;overflow:hidden;isolation:isolate;
+  border-right:1px solid var(--line);}
 #map{position:absolute;inset:0;}
 .mchip{position:absolute;z-index:1000;font-family:var(--mono);letter-spacing:.1em;background:rgba(247,247,244,.92);border-radius:6px;box-shadow:0 4px 12px rgba(19,21,18,.12);pointer-events:none;}
 .mchip.tr{right:12px;top:12px;font-size:8px;color:#8A8577;padding:5px 9px;letter-spacing:.14em;}
@@ -242,7 +248,7 @@ a{color:inherit;text-decoration:none;}
 .mkts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .county{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--panel);transition:transform .18s,box-shadow .18s;}
 .county:hover{transform:translateY(-3px);box-shadow:0 20px 40px -28px rgba(19,21,18,.4);}
-.cmwrap{position:relative;height:150px;background:#E9E7E0;}
+.cmwrap{position:relative;height:150px;background:#E9E7E0;isolation:isolate;}
 .cmap{position:absolute;inset:0;}
 .cflag{position:absolute;left:11px;top:10px;z-index:600;font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:#1B704A;background:rgba(247,247,244,.9);padding:3px 8px;border-radius:5px;pointer-events:none;display:flex;align-items:center;gap:5px;}
 .cflag i{width:5px;height:5px;border-radius:50%;background:#27A268;animation:blink 1.5s infinite;}
@@ -340,12 +346,12 @@ a{color:inherit;text-decoration:none;}
 .pw-pc em{position:absolute;top:6px;right:6px;font-style:normal;font-family:var(--mono);font-size:9px;font-weight:800;color:#E8501F;}
 
 /* responsive */
-@media (max-width:1020px){.topbar .lk{display:none;}.tbburger{display:flex;}}
+@media (max-width:1020px){.topbar .in .lk{display:none;}.tbburger{display:flex;}}
 /* Below ~620px the bar cannot hold brand + two CTAs + burger. Drop the trial
    button (it is the first item in the drop panel) and shrink the badge. */
 @media (max-width:620px){
-  .topbar .trial{display:none;}
-  .topbar .wm em{display:none;}
+  .topbar .in .trial{display:none;}   /* .in only — the drop panel keeps its CTA */
+  .topbar .in .wm em{display:none;}
   .topbar .in{height:58px;gap:10px;}
   .topbar .login{padding:8px 13px;}
 }
@@ -394,8 +400,7 @@ a{color:inherit;text-decoration:none;}
         <button class="tbburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="tbmob"><span></span><span></span><span></span></button>
       </div>
     </div>
-  </nav>
-  <div class="tbmob" id="tbmob">
+    <div class="tbmob" id="tbmob">
     <a href="#product">Product</a>
     <a href="#how">How It Works</a>
     <a href="markets.html">Markets</a>
@@ -404,8 +409,9 @@ a{color:inherit;text-decoration:none;}
     <a href="research.html">Research</a>
     <a href="about.html">About</a>
     <a href="portal.html">Log in</a>
-    <a href="trial.html" class="trial">Start free trial</a>
-  </div>
+      <a href="trial.html" class="trial">Start free trial</a>
+    </div>
+  </nav>
 
   <!-- ===== HERO ===== -->
   <header class="hero" id="product">
@@ -423,7 +429,7 @@ a{color:inherit;text-decoration:none;}
     <div class="htext">
       <span class="eb">Off-market deal analyzer · South Florida</span>
       <h1>All of South Florida, <span class="o">ranked by sunrise.</span></h1>
-      <p>Maco scores every off-market home in South Florida from the counties' own records — so you wake up to the three worth calling.</p>
+      <p>Maco scores off-market homes across six Florida counties from those counties' own records — so you wake up to the three worth calling.</p>
       <div class="hcta">
         <a class="btn btn-o" href="trial.html">Start free trial →<span class="shine"></span></a>
         <a class="btn btn-ghost-lt" href="#board">Explore the map ↓</a>
@@ -433,7 +439,7 @@ a{color:inherit;text-decoration:none;}
       <span><span class="dot"></span>SCANNING SOUTH FLORIDA</span>
       <span style="color:rgba(241,238,228,.3)">·</span>
       <span><b id="hstat">27,682</b> DISTRESS SIGNALS TRACKED</span>
-      <span class="r">READS COUNTY OPEN DATA, FDOR, CLERK &amp; APPRAISER · COUNTS STAMPED WITH VERIFIED DATES</span>
+      <span class="r">READS COUNTY OPEN DATA, FDOR, CLERK &amp; APPRAISER · DEPTH VARIES BY COUNTY · MIAMI-DADE RUNS DEEPEST</span>
     </div>
   </header>
 
@@ -442,11 +448,11 @@ a{color:inherit;text-decoration:none;}
     <div class="sgrid">
       <div>
         <span class="eb">The signals nationwide tools skip</span>
-        <h2>Every distress signal in the county. <span class="o-in">One score.</span></h2>
+        <h2>The distress signals your county publishes. <span class="o-in">One score.</span></h2>
         <p>Absentee owners, code cases, liens and estates are where off-market deals hide. Maco reads them from each county's own records on a rolling schedule, then rolls them into a single 0–100 score.</p>
       </div>
       <div class="cards">
-        <div class="card hot"><span class="lv">LIVE<i></i></span><span class="lb">Absentee / out-of-state owners</span><h4 data-to="2494">2,494</h4></div>
+        <div class="card hot"><span class="lb">Absentee / out-of-state owners</span><h4 data-to="2494">2,494</h4></div>
         <div class="card"><span class="lv">LIVE<i></i></span><span class="lb">Recorded liens</span><h4 id="live-liens" data-to="17042">17,042</h4></div>
         <div class="card"><span class="lv">LIVE<i></i></span><span class="lb">Open code cases</span><h4 id="live-cases" data-to="7788">7,788</h4></div>
         <div class="card"><span class="lb">Estates &amp; probate</span><h4 data-to="358">358</h4></div>
@@ -797,7 +803,7 @@ a{color:inherit;text-decoration:none;}
           "Estate on title: confirm who has authority to sign before you spend on title.",
           "Mail the out-of-state address, not the property.",
           "Drive it — an unsafe-structure case can mean roof or worse."],
-    margin:"Clears a 17% margin at these assumptions.",verdict:"WORTH A CALL",
+    margin:"Holds the 15% margin target at any buy under $239,200.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:2,score:88,grade:"A",addr:"12·· SE 4th St",city:"Fort Lauderdale",zip:"33301",bb:"3 / 2",sf:"1,704",yr:"1958",
@@ -821,7 +827,7 @@ a{color:inherit;text-decoration:none;}
           "24 years held, no homestead: this is a rental he stopped visiting.",
           "AE zone — quote flood before you commit to a number.",
           "Confirm the 2009 roof age against the permit date."],
-    margin:"Clears a 21% margin at these assumptions.",verdict:"WORTH A CALL",
+    margin:"Holds the 15% margin target at any buy under $349,600.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:3,score:86,grade:"B",addr:"4·· NW 3rd St",city:"Pompano Beach",zip:"33060",bb:"3 / 1",sf:"1,240",yr:"1965",
@@ -845,7 +851,7 @@ a{color:inherit;text-decoration:none;}
           "Homesteaded and occupied: he needs somewhere to go. Lead with timeline, not price.",
           "Ask what was permitted — an open interior alteration can hide a gutted kitchen.",
           "X zone here, so flood does not eat the deal."],
-    margin:"Clears a 16% margin at these assumptions.",verdict:"WORTH A CALL",
+    margin:"Holds the 15% margin target at any buy under $207,650.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal building & permits · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:4,score:84,grade:"B",addr:"23·· McKinley St",city:"Hollywood",zip:"33020",bb:"2 / 1",sf:"1,066",yr:"1954",
@@ -869,7 +875,7 @@ a{color:inherit;text-decoration:none;}
           "In-state owner, one county over: a phone call beats a letter here.",
           "2/1 at 1,066 SF — price the addition before you assume the exit.",
           "No permits since 1998 means every system is original."],
-    margin:"Clears a 13% margin — thin, but real.",verdict:"WORTH A CALL",
+    margin:"Holds 15% only under $220,850 — a narrow window on a small footprint.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:5,score:81,grade:"B",addr:"8·· W 4th Ave",city:"Hialeah",zip:"33010",bb:"4 / 2",sf:"1,588",yr:"1961",
@@ -893,7 +899,7 @@ a{color:inherit;text-decoration:none;}
           "Two units: get both rent rolls before you price it as a flip.",
           "Run it through the hold model too — the DSCR may beat the flip here.",
           "Eleven years held at $206K basis: he has room to deal."],
-    margin:"Clears a 15% margin at these assumptions.",verdict:"WORTH A CALL",
+    margin:"Holds the 15% margin target at any buy under $272,800.",verdict:"WORTH A CALL",
     src:"Miami-Dade Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FL Div. of Corporations · FEMA NFHL · FDLE"},
 
    {rank:6,score:70,grade:"C",addr:"15·· SW 8th St",city:"Miami",zip:"33135",bb:"3 / 2",sf:"1,320",yr:"1949",
@@ -917,7 +923,7 @@ a{color:inherit;text-decoration:none;}
           "Corner lot is the only thing carrying this. Check the zoning case first.",
           "At 1949 with no permits on file, budget structural contingency, not cosmetic.",
           "Revisit if repairs come in under $100K after a walkthrough."],
-    margin:"Margin compresses below 8% at this repair estimate.",verdict:"PASS",
+    margin:"Needs a buy under $280,300 to hold 15% — unlikely at $134K of repairs.",verdict:"PASS",
     src:"Miami-Dade Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:7,score:68,grade:"C",addr:"1·· NE 9th St",city:"Homestead",zip:"33030",bb:"3 / 2",sf:"1,442",yr:"1998",
@@ -941,7 +947,7 @@ a{color:inherit;text-decoration:none;}
           "Bought 2019 at $244K: not enough equity to absorb a real discount.",
           "Park it. Re-score if a code case or lien lands.",
           "Watch the block — a second signal here makes it a call."],
-    margin:"One signal, thin comps — does not clear the bar.",verdict:"PASS",
+    margin:"$207,700 ceiling, one signal, three comps — not worth chasing.",verdict:"PASS",
     src:"Miami-Dade Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"}
   ];
   function ramp(s){return s>=90?'#E8501F':s>=84?'#D9722A':'#9E8763';}
@@ -1007,7 +1013,7 @@ a{color:inherit;text-decoration:none;}
   }
   function icon(d,sel){var sz=sel?30:26;
     return L.divIcon({className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],
-      html:'<div style="position:relative">'+(sel?'<div style="position:absolute;left:50%;top:50%;width:'+(sz+16)+'px;height:'+(sz+16)+'px;transform:translate(-50%,-50%);border:2px solid #E8501F;border-radius:13px;opacity:.5"></div>':'')+
+      html:'<div style="position:relative">'+(sel?'<div style="position:absolute;left:50%;top:50%;width:'+(sz+16)+'px;height:'+(sz+16)+'px;transform:translate(-50%,-50%);border:2px solid #E8501F;border-radius:13px;opacity:.5;pointer-events:none"></div>':'')+
       '<div class="mk'+(sel?' sel':'')+'" style="position:relative;min-width:'+sz+'px;height:'+sz+'px;padding:0 6px;background:'+ramp(d.score)+'">'+d.score+'</div></div>'});}
   function select(id){selectedId=id;
     markers.forEach(function(m){m.setIcon(icon(m._d,m._d.rank===id));m.setZIndexOffset(m._d.rank===id?1000:0);});
