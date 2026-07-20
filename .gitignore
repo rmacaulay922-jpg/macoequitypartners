@@ -69,3 +69,6 @@ tools/field-intel/2*.html
 
 # Inbound leads: real contact details, never publish
 tools/inbox/
+
+# FDOR mutex — runtime state, machine-local
+tools/.fdor.lock

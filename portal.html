@@ -1683,7 +1683,10 @@ function ctaSend(addr, area, btn){
   })
   .catch(function(){ // network/service hiccup -> fall back to the visitor's mail app
     if(btn){btn.disabled=false;btn.innerHTML='&#9993; I\u2019m Interested \u2014 Talk to Maco';}
-    location.href='mailto:deals@macoequitypartners.com?subject='+encodeURIComponent('Interested in '+addr+' (Maco portal)');
+    // Beacon failed. Send them to the contact form, which posts to the confirmed
+    // address — a mailto: here would open their mail app addressed to a mailbox
+    // that does not exist yet, losing exactly the lead we most want to keep.
+    location.href='about.html?re='+encodeURIComponent(addr)+'#contact';
   });
 }
 
