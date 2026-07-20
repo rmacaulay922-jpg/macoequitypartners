@@ -1469,9 +1469,9 @@ function dealDossierHtml(d,idx){
           (rs?tile('Status','Recently Sold',(d.last_sale_price?fmt$(d.last_sale_price):''),'#e8854a')
              :(!_arvVerified(d)?tile('Est. Net Profit','Pending','baked ARV &mdash; awaiting live comps','#e8854a')
              :(!d.repair?tile('Est. Net Profit','&mdash;','repair unscoped &mdash; no honest profit math yet','#e8854a')
-             :tile('Est. Net Profit',fmtK(profit),_flipMonths()+'-mo flip @ 65% ARV buy',profit>0?'var(--green)':'var(--red)'))))+
-          (((!_arvVerified(d)||!d.repair)&&!rs)?tile('Max Offer','&mdash;',(!_arvVerified(d)?'no offer off a baked ARV &mdash; comp it first':'no offer with an unscoped repair &mdash; walk it first'),'#e8854a')
-            :tile('Max Offer',(maxOfferFor(d.arv,d.repair)?fmtK(maxOfferFor(d.arv,d.repair)):'&mdash;'),'clears '+fmtK(targetProfit())+' net &middot; 65% ARV = '+fmtK(d.arv*0.65),'var(--ivory)'))+
+             :tile('Est. Net Profit',fmtK(profit),_flipMonths()+'-mo flip, modelled at a 65%-of-ARV buy &mdash; sellers rarely go that low',profit>0?'var(--green)':'var(--red)'))))+
+          (((!_arvVerified(d)||!d.repair)&&!rs)?tile('Walk-away max','&mdash;',(!_arvVerified(d)?'no ceiling off a baked ARV &mdash; comp it first':'no ceiling with an unscoped repair &mdash; walk it first'),'#e8854a')
+            :tile('Walk-away max',(maxOfferFor(d.arv,d.repair)?fmtK(maxOfferFor(d.arv,d.repair)):'&mdash;'),'your ceiling to clear '+fmtK(targetProfit())+' &middot; not an opening offer &middot; as-is retail &asymp; '+fmtK(_asIsValue(d)),'var(--ivory)'))+
         '</div>'+
       '</div>'+
     '</div>'+
@@ -2857,7 +2857,7 @@ function buyGrade(d){
   var mot=Math.round((d._score||0)-roiBonus(d.arv,d.repair));
   var motTag=mot>=55?' &middot; seller looks motivated':(mot<32?' &middot; seller shows little distress (harder to win)':'');
   var res;
-  if(profit<=0||margin<4)res={g:'D',t:'Pass',c:'#e0664a',bg:'rgba(224,102,74,.15)',why:'Only ~'+Math.round(margin)+'% of ARV ('+fmtK(profit)+') at a 65%-of-ARV buy &mdash; too thin to risk'+(mot>=55?' unless you steal it well under that.':'.')};
+  if(profit<=0||margin<4)res={g:'D',t:'Pass',c:'#e0664a',bg:'rgba(224,102,74,.15)',why:'Only ~'+Math.round(margin)+'% of ARV ('+fmtK(profit)+') at a 65%-of-ARV buy of ARV at a 65%-of-ARV buy &mdash; and that buy price is a floor, not what a seller here takes'+(mot>=55?' unless you steal it well under that.':'.')};
   else if(margin<7.5)res={g:'C',t:'Thin',c:'#e8a14a',bg:'rgba(232,161,74,.15)',why:'Slim spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+') &mdash; needs a real discount'+(mot>=55?', and this seller may give one.':'.')};
   else if(margin<11)res={g:'B',t:'Solid',c:'#E8501F',bg:'rgba(232,80,31,.18)',why:'Healthy flip spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+')'+motTag+'.'};
   else res={g:'A',t:'Strong',c:'#4a9a6b',bg:'rgba(74,154,107,.18)',why:'Fat spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+')'+motTag+'.'};
@@ -4005,6 +4005,14 @@ function setTargetProfit(){
   v=parseInt((''+v).replace(/[^0-9]/g,''))||50000;
   localStorage.setItem(TARGET_KEY,v);
   DEALS50=null;try{buildDeals();}catch(e){}
+}
+// As-is retail: what the house is worth TODAY, unrepaired. Shown beside the
+// walk-away ceiling so the gap between what the math allows and what the house is
+// actually worth is visible rather than implied. ARV less repairs less a 6% buyer
+// risk premium — a buyer taking on someone else's project prices that risk in.
+function _asIsValue(d){
+  if(!d||!d.arv)return 0;
+  return Math.round((d.arv - (d.repair||0) - d.arv*0.06)/1000)*1000;
 }
 function maxOfferFor(arv,repair,target){
   if(!arv)return null; if(target==null)target=targetProfit();
