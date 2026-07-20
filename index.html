@@ -82,22 +82,23 @@ a{color:inherit;text-decoration:none;}
 
 /* ===== HERO (cinematic, dark — aerial footage) ===== */
 .hero{position:relative;min-height:min(78vh,720px);background:var(--dark);display:flex;flex-direction:column;overflow:hidden;}
-.hero .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 42%;display:block;}
+.hero .bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 26%;display:block;}
 /* Slow drift on top of the footage — reads as a helicopter holding a wide orbit. */
-.hero video.bg{animation:heli 46s ease-in-out infinite alternate;transform-origin:52% 46%;}
+.hero img.bg{animation:heli 52s ease-in-out infinite alternate;transform-origin:52% 46%;}
 @keyframes heli{
-  0%  {transform:scale(1.10) translate3d(0,0,0);}
-  50% {transform:scale(1.16) translate3d(-1.6%,-1%,0);}
-  100%{transform:scale(1.10) translate3d(1.4%,.8%,0);}
+  0%  {transform:scale(1.06) translate3d(0,0,0);}
+  50% {transform:scale(1.13) translate3d(-1.8%,-1.1%,0);}
+  100%{transform:scale(1.06) translate3d(1.5%,.9%,0);}
 }
 /* Heavier top + bottom scrim so the wordmark, headline and status strip always clear the footage.
    The bottom stop is near-opaque: the headline sits on it, not on the water. */
 .hero .scrim{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(rgba(15,17,14,.55) 0%,rgba(15,17,14,.16) 24%,rgba(15,17,14,.52) 56%,rgba(15,17,14,.88) 78%,rgba(15,17,14,.97) 100%);}
+  background:linear-gradient(rgba(15,17,14,.32) 0%,rgba(15,17,14,.05) 14%,rgba(15,17,14,.16) 28%,
+    rgba(15,17,14,.62) 38%,rgba(15,17,14,.86) 52%,rgba(15,17,14,.95) 70%,rgba(15,17,14,.98) 100%);}
 /* A second, left-weighted wash: the copy column stays legible even over a bright frame. */
 .hero .scrim2{position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(100deg,rgba(15,17,14,.95) 0%,rgba(15,17,14,.66) 40%,transparent 70%);}
-.hero .glow{position:absolute;inset:0;background:radial-gradient(50% 55% at 82% 16%,rgba(232,80,31,.20),transparent 62%);pointer-events:none;}
+  background:linear-gradient(103deg,rgba(15,17,14,.66) 0%,rgba(15,17,14,.28) 40%,transparent 68%);}
+.hero .glow{position:absolute;inset:0;background:radial-gradient(46% 50% at 84% 14%,rgba(232,80,31,.10),transparent 60%);pointer-events:none;}
 /* Anchor targets must clear the sticky bar, or #how/#board land underneath it. */
 #product,#signals,#board,#how,#top{scroll-margin-top:78px;}
 .hspace{flex:1 1 auto;min-height:30px;}
@@ -207,6 +208,8 @@ a{color:inherit;text-decoration:none;}
 .dnext div{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.4;color:var(--soft);}
 .dnext .ck{color:var(--orange);font-weight:800;flex:0 0 auto;}
 /* source stamp */
+.dnote{margin:11px 0 0;font-size:11.5px;line-height:1.5;color:var(--mute);
+  border-left:2px solid var(--accent-line,rgba(232,80,31,.4));padding-left:10px;}
 .dsrc{margin-top:16px;padding-top:12px;border-top:1px solid var(--line2);
   font-family:var(--mono);font-size:8.5px;letter-spacing:.05em;line-height:1.6;color:var(--faint);}
 .thumb::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(19,21,18,.55),rgba(19,21,18,.03));}
@@ -417,13 +420,8 @@ a{color:inherit;text-decoration:none;}
   <header class="hero" id="product">
     <!-- Aerial footage with the still as poster: the still is what shows on slow links,
          under reduced-motion, and anywhere the codec is unsupported. -->
-    <!-- No <source> in the markup on purpose. The clip is ~4.4MB and it is decoration:
-         attaching it is decided at runtime (see the hero-footage block in the script
-         at the foot of this file) so phones on cellular, data-saver users and anyone
-         who asked for less motion get the poster frame and download nothing. -->
-    <video class="bg" id="heroVid" muted loop playsinline preload="none"
-           data-src="hero-miami.mp4"
-           poster="hero-miami-aerial.jpg" aria-hidden="true" tabindex="-1"></video>
+    <img class="bg" id="heroImg" src="hero-miami-aerial.jpg" alt="" aria-hidden="true"
+         fetchpriority="high" decoding="async">
     <div class="scrim"></div><div class="scrim2"></div><div class="glow"></div>
     <div class="hspace"></div>
     <div class="htext">
@@ -477,7 +475,7 @@ a{color:inherit;text-decoration:none;}
           <div><div class="daddr" id="d-addr">—</div><div class="dmeta" id="d-meta">—</div></div>
         </div>
         <div class="dg">
-          <div class="c"><b id="d-arv">—</b><span>Comp value</span></div>
+          <div class="c"><b id="d-arv">—</b><span>After-repair value</span></div>
           <div class="c"><b id="d-rep">—</b><span>Repair est</span></div>
           <div class="c a"><b id="d-grade">—</b><span>Buy grade</span></div>
         </div>
@@ -502,6 +500,13 @@ a{color:inherit;text-decoration:none;}
 
         <div class="dsec"><h5>The math <i>at your assumptions</i></h5>
           <div class="dmath" id="d-mathbox"></div>
+        </div>
+
+        <div class="dsec"><h5>Reality check <i>what this actually sells for</i></h5>
+          <div class="dkv" id="d-reality"></div>
+          <p class="dnote">The walk-away maximum is what the math allows. It is not an
+          opening offer and it is rarely what a South Florida seller signs. The line that
+          matters is the last one.</p>
         </div>
 
         <div class="dsec"><h5>Comparable sales used <i id="d-compn">—</i></h5>
@@ -560,10 +565,10 @@ a{color:inherit;text-decoration:none;}
         <div class="mock">
           <div class="pw-bar">Top Deals by Deal Score<span class="pw-badge">50</span></div>
           <div class="pw-tr pw-th"><span>Address</span><span>ARV</span><span>Est. net profit</span><span>Score</span></div>
-          <div class="pw-tr"><span>17·· NW 36th Ct</span><span>$412K</span><span class="pw-grn">+$71K</span><span class="pw-sc">94</span></div>
-          <div class="pw-tr"><span>12·· SE 4th St</span><span>$596K</span><span class="pw-grn">+$96K</span><span class="pw-sc">88</span></div>
-          <div class="pw-tr"><span>4·· NW 3rd St</span><span>$389K</span><span class="pw-grn">+$58K</span><span class="pw-sc b">86</span></div>
-          <div class="pw-tr"><span>23·· McKinley St</span><span>$421K</span><span class="pw-grn">+$47K</span><span class="pw-sc b">84</span></div>
+          <div class="pw-tr"><span>17·· NW 36th Ct</span><span>$412K</span><span class="pw-grn">+$56K</span><span class="pw-sc">94</span></div>
+          <div class="pw-tr"><span>12·· SE 4th St</span><span>$596K</span><span class="pw-grn">+$65K</span><span class="pw-sc">88</span></div>
+          <div class="pw-tr"><span>4·· NW 3rd St</span><span>$389K</span><span style="color:#B9BCB4">+$13K</span><span class="pw-sc b">86</span></div>
+          <div class="pw-tr"><span>23·· McKinley St</span><span>$421K</span><span class="pw-grn">+$37K</span><span class="pw-sc b">84</span></div>
         </div>
       </div>
 
@@ -582,7 +587,7 @@ a{color:inherit;text-decoration:none;}
           <div class="pw-bar">Dossier · 17·· NW 36th Ct</div>
           <div class="pw-body">
             <div class="pw-scrow"><div class="pw-circle">94</div><div><div class="pw-addr">17·· NW 36th Ct</div><div class="pw-sub">OAKLAND PARK 33309 · 3 / 2 · 1,512 SF · 1962</div></div></div>
-            <div class="pw-metrics"><div class="pw-metric"><b>$412K</b><span>Comp ARV</span></div><div class="pw-metric"><b>$78K</b><span>Repair est</span></div><div class="pw-metric"><b style="color:#3DBE82">+$71K</b><span>Net profit</span></div></div>
+            <div class="pw-metrics"><div class="pw-metric"><b>$412K</b><span>Comp ARV</span></div><div class="pw-metric"><b>$48K</b><span>Repair est</span></div><div class="pw-metric"><b style="color:#3DBE82">+$56K</b><span>Net margin</span></div></div>
             <div class="pw-tags"><span class="pw-tag">2 LIENS</span><span class="pw-tag">VACANT</span><span class="pw-tag">ABSENTEE · GA</span></div>
           </div>
         </div>
@@ -605,12 +610,12 @@ a{color:inherit;text-decoration:none;}
             <div>
               <div class="pw-field"><span>ARV (after-repair value)</span><b class="cur">$412,000</b></div>
               <div class="pw-field"><span>Repair budget</span><b class="cur">$78,000</b></div>
-              <div class="pw-field"><span>Purchase price</span><b class="cur">$255,000</b></div>
+              <div class="pw-field"><span>Purchase price</span><b class="cur">$271,000</b></div>
             </div>
             <div class="pw-result">
               <div class="rl">Est. net profit</div>
-              <div class="big">+$71,400</div>
-              <div class="mg">17% margin · 7-mo flip</div>
+              <div class="big">+$56,000</div>
+              <div class="mg">13.6% margin · 7-mo flip</div>
               <div class="buy">BUY ✓</div>
             </div>
           </div>
@@ -653,14 +658,14 @@ a{color:inherit;text-decoration:none;}
           <div class="pw-bar">Pipeline</div>
           <div class="pw-kanban">
             <div class="pw-col"><div class="pw-colh"><span>Reviewing</span><i>2</i></div>
-              <div class="pw-pc"><em>94</em><b>17·· NW 36th Ct</b><span>+$71K</span></div>
-              <div class="pw-pc"><em>86</em><b>4·· NW 3rd St</b><span>+$58K</span></div>
+              <div class="pw-pc"><em>94</em><b>17·· NW 36th Ct</b><span>+$56K</span></div>
+              <div class="pw-pc"><em>84</em><b>23·· McKinley St</b><span>+$37K</span></div>
             </div>
             <div class="pw-col"><div class="pw-colh"><span>Contacted</span><i>1</i></div>
-              <div class="pw-pc"><em>88</em><b>12·· SE 4th St</b><span>+$96K</span></div>
+              <div class="pw-pc"><em>88</em><b>12·· SE 4th St</b><span>+$65K</span></div>
             </div>
             <div class="pw-col"><div class="pw-colh"><span>Offer</span><i>1</i></div>
-              <div class="pw-pc"><em>81</em><b>8·· W 4th Ave</b><span>+$54K</span></div>
+              <div class="pw-pc"><em>70</em><b>6·· SW 8th St</b><span>+$31K</span></div>
             </div>
           </div>
         </div>
@@ -685,7 +690,7 @@ a{color:inherit;text-decoration:none;}
         <div><span class="ck">✓</span> An honest verdict — it'll tell you to pass.</div>
       </div>
     </div>
-    <div class="ph"><img src="street-sfl.jpg" alt="Older single-family home in South Florida" decoding="async"><span class="cr">Fort Lauderdale, FL residence · CC BY-SA · Wikimedia Commons</span></div>
+    <div class="ph"><img src="neighborhood-aerial.jpg" alt="South Florida single-family neighborhood from the air at golden hour" loading="lazy" decoding="async"><span class="cr">South Florida single-family stock — the streets the county roll actually covers</span></div>
   </section>
 
   <!-- ===== MARKETS ===== -->
@@ -744,58 +749,35 @@ a{color:inherit;text-decoration:none;}
       bar.setAttribute('data-open','0');b.setAttribute('aria-expanded','false');}});
   })();
 
-  /* ---- Hero footage ----------------------------------------------------------
-     The poster frame is the baseline experience and always renders. The video is
-     only attached when it is genuinely wanted: it is decoration, not content, and
-     not worth 4.4MB of someone's data plan.
-
-     Skipped entirely when the visitor asked for less motion, has data-saver on,
-     is on a 2G/3G connection, or is on a small screen (where the clip is cropped
-     so hard there is little left to see). Otherwise it attaches after load so it
-     never competes with the page itself, and pauses off-screen. ------------------ */
+  /* ---- Hero drift ------------------------------------------------------------
+     The still carries a slow scale/translate loop so it reads as a helicopter
+     holding a wide orbit. Pure CSS (@keyframes heli); the reduced-motion block at
+     the foot of the stylesheet disables it, so there is nothing to do here beyond
+     dropping the animation on browsers that asked for less motion. ---------------- */
   (function(){
-    var v=document.getElementById('heroVid');if(!v)return;
-    var net=navigator.connection||navigator.mozConnection||navigator.webkitConnection||{};
-    var slow=/2g/.test(net.effectiveType||'')||net.saveData===true;
-    if(reduce||slow||window.innerWidth<700)return;   // poster only
-
-    function attach(){
-      if(v.querySelector('source'))return;
-      var s=document.createElement('source');
-      s.src=v.getAttribute('data-src'); s.type='video/mp4';
-      var play=function(){var p=v.play();if(p&&p.catch)p.catch(function(){});};
-      /* Wait for data before playing. Calling play() straight after load() aborts
-         the play promise, so the first frame only ever arrives via this listener. */
-      v.addEventListener('loadeddata',play);
-      v.addEventListener('canplay',play);
-      v.appendChild(s); v.load();
-      if(window.IntersectionObserver){
-        new IntersectionObserver(function(es){es.forEach(function(e){
-          if(e.isIntersecting)play(); else try{v.pause();}catch(err){}});},{threshold:.01}).observe(v);
-      }
-    }
-    if(document.readyState==='complete')attach();
-    else window.addEventListener('load',attach);
+    var img=document.getElementById('heroImg');
+    if(img&&reduce)img.style.animation='none';
   })();
+
   /* Sample dossiers. Shape mirrors what the analyzer emits for a real parcel:
      score components, owner/title, value + repair basis, public-record flags,
      the offer ledger, the comps that produced the value, and the call list.
      Masked addresses and illustrative figures - flagged SAMPLE DATA in the panel. */
   var DEALS=[
    {rank:1,score:94,grade:"A",addr:"17·· NW 36th Ct",city:"Oakland Park",zip:"33309",bb:"3 / 2",sf:"1,512",yr:"1962",
-    folio:"4942 21 07 0···",arv:"$412K",rep:"$78K",lat:26.172,lng:-80.132,
+    folio:"4942 21 07 0···",arv:"$412K",rep:"$48K",lat:26.172,lng:-80.132,
     tags:["RECORDED LIEN","ESTATE","ABSENTEE","HIGH EQUITY"],
     read:"Recorded code-enforcement lien, estate on title, owner's mail forwards out of state — three independent signals on one parcel.",
     brk:[["Distress signals",33,35],["Equity position",24,25],["Owner profile",18,20],["Condition &amp; vintage",14,15],["Market strength",5,5]],
     owner:[["Owner type","Estate / heirs"],["Held since","1998 · 27 yrs"],["Mailing address","Out of state — OH","hi"],
            ["Homestead exemption","None on file"],["Deed on record","Warranty, 06/1998"],["Modeled equity","~$291K (est.)","hi"]],
-    value:[["Comp value band","$395K – $430K"],["Working value","$412K","hi"],["Value basis","6 sales, 0.4 mi, 12 mo"],
-           ["Repair basis","$52/SF × 1,512 SF"],["Repair estimate","$78K"],["Condition read","Original kitchen/bath (permit gap)","mut"]],
+    value:[["Comp value band","$395K – $430K"],["Working value after repair","$412,000","hi"],["Value basis","6 sales, 0.4 mi, 12 mo"],
+           ["Repair basis","$32/SF x 1,512 SF"],["Repair estimate","$48,000"],["Condition read","Original kitchen/bath (permit gap)","mut"]],
     record:[["Open code cases","1 · unsafe structure","hi"],["Recorded liens","$8,410 municipal","hi"],
             ["Permits","None since 2004"],["FEMA flood zone","AE — insurance required"],["Area crime band","Moderate (FDLE)"],
             ["Last sale","06/1998 · $121,000"]],
-    math:[["Working value after repair","$412,000"],["Repairs","−$78,000","neg"],["Closing, carry &amp; sale costs","−$33,000","neg"],
-          ["Target margin @ 15%","−$61,800","neg"],["Indicated maximum offer","$239,200","tot"]],
+    math:[["After-repair value","$412,000"],["Repairs","-$48,000","neg"],["Closing, carry &amp; sale costs","-$37,000","neg"],["Target margin @ 12%","-$49,000","neg"],["Your walk-away maximum","$278,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$339,000"],["What a motivated seller here takes","$271,000","hi"],["Gap to your walk-away max","$7,000",""],["Your margin at that price","$56,000 (13.6%)","hi"]],
     comps:[["18·· NW 34th Ct","0.3 mi","Apr 2026","$421,000","$278"],
            ["36·· NW 17th Ave","0.4 mi","Feb 2026","$404,500","$266"],
            ["17·· NW 38th St","0.2 mi","Jan 2026","$398,000","$271"]],
@@ -803,23 +785,23 @@ a{color:inherit;text-decoration:none;}
           "Estate on title: confirm who has authority to sign before you spend on title.",
           "Mail the out-of-state address, not the property.",
           "Drive it — an unsafe-structure case can mean roof or worse."],
-    margin:"Holds the 15% margin target at any buy under $239,200.",verdict:"WORTH A CALL",
+    margin:"At a realistic $271,000 buy your margin is $56,000 (13.6%) — under a 12% target, so it only works if repairs hold.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:2,score:88,grade:"A",addr:"12·· SE 4th St",city:"Fort Lauderdale",zip:"33301",bb:"3 / 2",sf:"1,704",yr:"1958",
-    folio:"5042 10 03 1···",arv:"$596K",rep:"$110K",lat:26.122,lng:-80.137,
+    folio:"5042 10 03 1···",arv:"$596K",rep:"$99K",lat:26.122,lng:-80.137,
     tags:["OPEN CODE CASE","ABSENTEE","LONG-HELD"],
     read:"Open unsafe-structure case on a 1958 frame; owner's mailing address is out of state and the parcel has not transferred since 2001.",
     brk:[["Distress signals",30,35],["Equity position",22,25],["Owner profile",17,20],["Condition &amp; vintage",14,15],["Market strength",5,5]],
     owner:[["Owner type","Individual"],["Held since","2001 · 24 yrs"],["Mailing address","Out of state — NY","hi"],
            ["Homestead exemption","None on file"],["Deed on record","Warranty, 11/2001"],["Modeled equity","~$430K (est.)","hi"]],
-    value:[["Comp value band","$565K – $624K"],["Working value","$596K","hi"],["Value basis","8 sales, 0.5 mi, 12 mo"],
-           ["Repair basis","$65/SF × 1,704 SF"],["Repair estimate","$110K"],["Condition read","Full gut assumed at this vintage","mut"]],
+    value:[["Comp value band","$565K – $624K"],["Working value after repair","$412,000","hi"],["Value basis","8 sales, 0.5 mi, 12 mo"],
+           ["Repair basis","$32/SF x 1,512 SF"],["Repair estimate","$48,000"],["Condition read","Full gut assumed at this vintage","mut"]],
     record:[["Open code cases","1 · unsafe structure","hi"],["Recorded liens","None of record"],
             ["Permits","Roof, 2009 · closed"],["FEMA flood zone","AE — insurance required"],["Area crime band","Moderate (FDLE)"],
             ["Last sale","11/2001 · $166,000"]],
-    math:[["Working value after repair","$596,000"],["Repairs","−$110,000","neg"],["Closing, carry &amp; sale costs","−$47,000","neg"],
-          ["Target margin @ 15%","−$89,400","neg"],["Indicated maximum offer","$349,600","tot"]],
+    math:[["After-repair value","$596,000"],["Repairs","-$99,000","neg"],["Closing, carry &amp; sale costs","-$54,000","neg"],["Target margin @ 12%","-$72,000","neg"],["Your walk-away maximum","$371,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$461,000"],["What a motivated seller here takes","$378,000","hi"],["Gap to your walk-away max","+$7,000","neg"],["Your margin at that price","$65,000 (10.9%)","hi"]],
     comps:[["4·· SE 12th Ave","0.3 mi","May 2026","$612,000","$351"],
            ["11·· SE 5th St","0.2 mi","Mar 2026","$588,000","$344"],
            ["13·· SE 2nd Ct","0.5 mi","Dec 2025","$571,500","$338"]],
@@ -827,23 +809,23 @@ a{color:inherit;text-decoration:none;}
           "24 years held, no homestead: this is a rental he stopped visiting.",
           "AE zone — quote flood before you commit to a number.",
           "Confirm the 2009 roof age against the permit date."],
-    margin:"Holds the 15% margin target at any buy under $349,600.",verdict:"WORTH A CALL",
+    margin:"At a realistic $378,000 buy your margin is $65,000 (10.9%) — under a 12% target, so it only works if repairs hold.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:3,score:86,grade:"B",addr:"4·· NW 3rd St",city:"Pompano Beach",zip:"33060",bb:"3 / 1",sf:"1,240",yr:"1965",
-    folio:"4842 34 11 0···",arv:"$389K",rep:"$92K",lat:26.234,lng:-80.125,
+    folio:"4842 34 11 0···",arv:"$389K",rep:"$52K",lat:26.234,lng:-80.125,
     tags:["EXPIRED PERMIT","TIRED","OWNER-OCCUPIED"],
     read:"A 2019 permit was pulled and never closed — a rehab that stalled. Owner still lives there, which changes the conversation.",
     brk:[["Distress signals",28,35],["Equity position",23,25],["Owner profile",15,20],["Condition &amp; vintage",15,15],["Market strength",5,5]],
     owner:[["Owner type","Individual"],["Held since","2006 · 19 yrs"],["Mailing address","Same as property","mut"],
            ["Homestead exemption","Active"],["Deed on record","Warranty, 03/2006"],["Modeled equity","~$246K (est.)","hi"]],
-    value:[["Comp value band","$362K – $405K"],["Working value","$389K","hi"],["Value basis","5 sales, 0.4 mi, 12 mo"],
-           ["Repair basis","$74/SF × 1,240 SF"],["Repair estimate","$92K"],["Condition read","Open permit implies work in progress","mut"]],
+    value:[["Comp value band","$362K – $405K"],["Working value after repair","$596,000","hi"],["Value basis","5 sales, 0.4 mi, 12 mo"],
+           ["Repair basis","$58/SF x 1,704 SF"],["Repair estimate","$99,000"],["Condition read","Open permit implies work in progress","mut"]],
     record:[["Open code cases","None"],["Recorded liens","None of record"],
             ["Permits","Interior alteration 2019 · expired","hi"],["FEMA flood zone","X — outside 100-yr"],
             ["Area crime band","Elevated (FDLE)"],["Last sale","03/2006 · $189,000"]],
-    math:[["Working value after repair","$389,000"],["Repairs","−$92,000","neg"],["Closing, carry &amp; sale costs","−$31,000","neg"],
-          ["Target margin @ 15%","−$58,350","neg"],["Indicated maximum offer","$207,650","tot"]],
+    math:[["After-repair value","$389,000"],["Repairs","-$52,000","neg"],["Closing, carry &amp; sale costs","-$35,000","neg"],["Target margin @ 12%","-$47,000","neg"],["Your walk-away maximum","$255,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$314,000"],["What a motivated seller here takes","$289,000","hi"],["Gap to your walk-away max","+$34,000","neg"],["Your margin at that price","$13,000 (3.3%)","neg"]],
     comps:[["3·· NW 5th St","0.3 mi","Apr 2026","$396,000","$319"],
            ["5·· NW 2nd Ave","0.4 mi","Feb 2026","$381,000","$307"],
            ["4·· NW 6th St","0.5 mi","Nov 2025","$372,500","$301"]],
@@ -851,23 +833,23 @@ a{color:inherit;text-decoration:none;}
           "Homesteaded and occupied: he needs somewhere to go. Lead with timeline, not price.",
           "Ask what was permitted — an open interior alteration can hide a gutted kitchen.",
           "X zone here, so flood does not eat the deal."],
-    margin:"Holds the 15% margin target at any buy under $207,650.",verdict:"WORTH A CALL",
+    margin:"A realistic $289,000 buy leaves $13,000 (3.3%). Not worth the risk at this repair number.",verdict:"PASS",
     src:"Broward County Property Appraiser · municipal building & permits · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:4,score:84,grade:"B",addr:"23·· McKinley St",city:"Hollywood",zip:"33020",bb:"2 / 1",sf:"1,066",yr:"1954",
-    folio:"5142 15 08 2···",arv:"$421K",rep:"$103K",lat:26.011,lng:-80.150,
+    folio:"5142 15 08 2···",arv:"$421K",rep:"$60K",lat:26.011,lng:-80.150,
     tags:["LIEN","LONG-HELD","SMALL FOOTPRINT"],
     read:"Held 20+ years with a fresh municipal lien — the classic tired-landlord signal. Small footprint caps the upside.",
     brk:[["Distress signals",25,35],["Equity position",24,25],["Owner profile",16,20],["Condition &amp; vintage",14,15],["Market strength",5,5]],
     owner:[["Owner type","Individual"],["Held since","2003 · 22 yrs"],["Mailing address","In state — Miami-Dade","mut"],
            ["Homestead exemption","None on file"],["Deed on record","Warranty, 08/2003"],["Modeled equity","~$318K (est.)","hi"]],
-    value:[["Comp value band","$398K – $442K"],["Working value","$421K","hi"],["Value basis","7 sales, 0.3 mi, 12 mo"],
-           ["Repair basis","$97/SF × 1,066 SF"],["Repair estimate","$103K"],["Condition read","1954 stock — assume systems","mut"]],
+    value:[["Comp value band","$398K – $442K"],["Working value after repair","$389,000","hi"],["Value basis","7 sales, 0.3 mi, 12 mo"],
+           ["Repair basis","$42/SF x 1,240 SF"],["Repair estimate","$52,000"],["Condition read","1954 stock — assume systems","mut"]],
     record:[["Open code cases","None"],["Recorded liens","$3,275 municipal","hi"],
             ["Permits","None since 1998"],["FEMA flood zone","AE — insurance required"],["Area crime band","Moderate (FDLE)"],
             ["Last sale","08/2003 · $148,500"]],
-    math:[["Working value after repair","$421,000"],["Repairs","−$103,000","neg"],["Closing, carry &amp; sale costs","−$34,000","neg"],
-          ["Target margin @ 15%","−$63,150","neg"],["Indicated maximum offer","$220,850","tot"]],
+    math:[["After-repair value","$421,000"],["Repairs","-$60,000","neg"],["Closing, carry &amp; sale costs","-$38,000","neg"],["Target margin @ 12%","-$51,000","neg"],["Your walk-away maximum","$272,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$336,000"],["What a motivated seller here takes","$286,000","hi"],["Gap to your walk-away max","+$14,000","neg"],["Your margin at that price","$37,000 (8.8%)","hi"]],
     comps:[["24·· Van Buren St","0.2 mi","Mar 2026","$433,000","$402"],
            ["22·· McKinley St","0.1 mi","Jan 2026","$415,000","$391"],
            ["23·· Harrison St","0.4 mi","Oct 2025","$402,000","$384"]],
@@ -875,23 +857,23 @@ a{color:inherit;text-decoration:none;}
           "In-state owner, one county over: a phone call beats a letter here.",
           "2/1 at 1,066 SF — price the addition before you assume the exit.",
           "No permits since 1998 means every system is original."],
-    margin:"Holds 15% only under $220,850 — a narrow window on a small footprint.",verdict:"WORTH A CALL",
+    margin:"At a realistic $286,000 buy your margin is $37,000 (8.8%) — under a 12% target, so it only works if repairs hold.",verdict:"WORTH A CALL",
     src:"Broward County Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:5,score:81,grade:"B",addr:"8·· W 4th Ave",city:"Hialeah",zip:"33010",bb:"4 / 2",sf:"1,588",yr:"1961",
-    folio:"04 3110 002 0···",arv:"$468K",rep:"$88K",lat:25.857,lng:-80.278,
+    folio:"04 3110 002 0···",arv:"$468K",rep:"$60K",lat:25.857,lng:-80.278,
     tags:["ABSENTEE","2 UNITS","RENT UPSIDE"],
     read:"Absentee owner on a two-unit layout — value-add if the rents sit under market. Underwrites as a hold as easily as a flip.",
     brk:[["Distress signals",22,35],["Equity position",23,25],["Owner profile",18,20],["Condition &amp; vintage",13,15],["Market strength",5,5]],
     owner:[["Owner type","LLC — FL registered"],["Held since","2014 · 11 yrs"],["Mailing address","Out of county — Broward","hi"],
            ["Homestead exemption","None on file"],["Deed on record","Special warranty, 05/2014"],["Modeled equity","~$262K (est.)","hi"]],
-    value:[["Comp value band","$441K – $489K"],["Working value","$468K","hi"],["Value basis","9 sales, 0.3 mi, 12 mo"],
-           ["Repair basis","$55/SF × 1,588 SF"],["Repair estimate","$88K"],["Condition read","Two-unit — scope doubles on kitchens","mut"]],
+    value:[["Comp value band","$441K – $489K"],["Working value after repair","$421,000","hi"],["Value basis","9 sales, 0.3 mi, 12 mo"],
+           ["Repair basis","$56/SF x 1,066 SF"],["Repair estimate","$60,000"],["Condition read","Two-unit — scope doubles on kitchens","mut"]],
     record:[["Open code cases","None"],["Recorded liens","None of record"],
             ["Permits","Electrical 2016 · closed"],["FEMA flood zone","X — outside 100-yr"],["Area crime band","Moderate (FDLE)"],
             ["Last sale","05/2014 · $206,000"]],
-    math:[["Working value after repair","$468,000"],["Repairs","−$88,000","neg"],["Closing, carry &amp; sale costs","−$37,000","neg"],
-          ["Target margin @ 15%","−$70,200","neg"],["Indicated maximum offer","$272,800","tot"]],
+    math:[["After-repair value","$468,000"],["Repairs","-$60,000","neg"],["Closing, carry &amp; sale costs","-$42,000","neg"],["Target margin @ 12%","-$56,000","neg"],["Your walk-away maximum","$310,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$380,000"],["What a motivated seller here takes","$353,000","hi"],["Gap to your walk-away max","+$43,000","neg"],["Your margin at that price","$13,000 (2.8%)","neg"]],
     comps:[["7·· W 6th Ave","0.2 mi","May 2026","$479,000","$298"],
            ["9·· W 3rd Ave","0.3 mi","Mar 2026","$462,500","$291"],
            ["8·· W 8th Ave","0.4 mi","Jan 2026","$451,000","$287"]],
@@ -899,23 +881,23 @@ a{color:inherit;text-decoration:none;}
           "Two units: get both rent rolls before you price it as a flip.",
           "Run it through the hold model too — the DSCR may beat the flip here.",
           "Eleven years held at $206K basis: he has room to deal."],
-    margin:"Holds the 15% margin target at any buy under $272,800.",verdict:"WORTH A CALL",
+    margin:"A realistic $353,000 buy leaves $13,000 (2.8%). Not worth the risk at this repair number.",verdict:"PASS",
     src:"Miami-Dade Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FL Div. of Corporations · FEMA NFHL · FDLE"},
 
    {rank:6,score:70,grade:"C",addr:"15·· SW 8th St",city:"Miami",zip:"33135",bb:"3 / 2",sf:"1,320",yr:"1949",
-    folio:"01 4103 007 0···",arv:"$538K",rep:"$134K",lat:25.766,lng:-80.219,
+    folio:"01 4103 007 0···",arv:"$538K",rep:"$116K",lat:25.766,lng:-80.219,
     tags:["CODE CASE","CORNER LOT","HEAVY SCOPE"],
     read:"Open code case and a corner lot, but a 1949 frame at this scope eats the spread. The signals are real; the math is not.",
     brk:[["Distress signals",27,35],["Equity position",21,25],["Owner profile",12,20],["Condition &amp; vintage",5,15],["Market strength",5,5]],
     owner:[["Owner type","Individual"],["Held since","2011 · 14 yrs"],["Mailing address","Same as property","mut"],
            ["Homestead exemption","Active"],["Deed on record","Warranty, 09/2011"],["Modeled equity","~$301K (est.)","hi"]],
-    value:[["Comp value band","$502K – $571K"],["Working value","$538K","hi"],["Value basis","6 sales, 0.4 mi, 12 mo"],
-           ["Repair basis","$101/SF × 1,320 SF"],["Repair estimate","$134K","hi"],["Condition read","1949 frame — structural risk","mut"]],
+    value:[["Comp value band","$502K – $571K"],["Working value after repair","$468,000","hi"],["Value basis","6 sales, 0.4 mi, 12 mo"],
+           ["Repair basis","$38/SF x 1,588 SF"],["Repair estimate","$60,000"],["Condition read","1949 frame — structural risk","mut"]],
     record:[["Open code cases","2 · zoning + unsafe","hi"],["Recorded liens","None of record"],
             ["Permits","None on file"],["FEMA flood zone","X — outside 100-yr"],["Area crime band","Elevated (FDLE)"],
             ["Last sale","09/2011 · $237,000"]],
-    math:[["Working value after repair","$538,000"],["Repairs","−$134,000","neg"],["Closing, carry &amp; sale costs","−$43,000","neg"],
-          ["Target margin @ 15%","−$80,700","neg"],["Indicated maximum offer","$280,300","tot"]],
+    math:[["After-repair value","$538,000"],["Repairs","-$116,000","neg"],["Closing, carry &amp; sale costs","-$48,000","neg"],["Target margin @ 12%","-$65,000","neg"],["Your walk-away maximum","$309,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$390,000"],["What a motivated seller here takes","$343,000","hi"],["Gap to your walk-away max","+$34,000","neg"],["Your margin at that price","$31,000 (5.8%)","neg"]],
     comps:[["14·· SW 10th St","0.3 mi","Apr 2026","$552,000","$418"],
            ["16·· SW 7th St","0.2 mi","Feb 2026","$529,000","$404"],
            ["15·· SW 12th Ave","0.5 mi","Dec 2025","$511,000","$396"]],
@@ -923,23 +905,23 @@ a{color:inherit;text-decoration:none;}
           "Corner lot is the only thing carrying this. Check the zoning case first.",
           "At 1949 with no permits on file, budget structural contingency, not cosmetic.",
           "Revisit if repairs come in under $100K after a walkthrough."],
-    margin:"Needs a buy under $280,300 to hold 15% — unlikely at $134K of repairs.",verdict:"PASS",
+    margin:"At a realistic $343,000 buy you clear $31,000 (5.8%). That is one surprise from zero.",verdict:"THIN — VERIFY REPAIRS",
     src:"Miami-Dade Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"},
 
    {rank:7,score:68,grade:"C",addr:"1·· NE 9th St",city:"Homestead",zip:"33030",bb:"3 / 2",sf:"1,442",yr:"1998",
-    folio:"10 7826 001 0···",arv:"$362K",rep:"$71K",lat:25.468,lng:-80.477,
+    folio:"10 7826 001 0···",arv:"$362K",rep:"$38K",lat:25.468,lng:-80.477,
     tags:["ABSENTEE","THIN COMPS"],
     read:"One real signal — an absentee owner — and the comp set thins out this far south. Not enough to move on.",
     brk:[["Distress signals",14,35],["Equity position",16,25],["Owner profile",20,20],["Condition &amp; vintage",15,15],["Market strength",3,5]],
     owner:[["Owner type","Individual"],["Held since","2019 · 6 yrs"],["Mailing address","Out of state — GA","hi"],
            ["Homestead exemption","None on file"],["Deed on record","Warranty, 07/2019"],["Modeled equity","~$118K (est.)","mut"]],
-    value:[["Comp value band","$338K – $381K"],["Working value","$362K","hi"],["Value basis","3 sales, 0.9 mi, 18 mo","mut"],
-           ["Repair basis","$49/SF × 1,442 SF"],["Repair estimate","$71K"],["Condition read","1998 build — cosmetic only","mut"]],
+    value:[["Comp value band","$338K – $381K"],["Working value after repair","$538,000","hi"],["Value basis","3 sales, 0.9 mi, 18 mo","mut"],
+           ["Repair basis","$88/SF x 1,320 SF"],["Repair estimate","$116,000"],["Condition read","1998 build — cosmetic only","mut"]],
     record:[["Open code cases","None"],["Recorded liens","None of record"],
             ["Permits","A/C 2021 · closed"],["FEMA flood zone","X — outside 100-yr"],["Area crime band","Moderate (FDLE)"],
             ["Last sale","07/2019 · $244,000"]],
-    math:[["Working value after repair","$362,000"],["Repairs","−$71,000","neg"],["Closing, carry &amp; sale costs","−$29,000","neg"],
-          ["Target margin @ 15%","−$54,300","neg"],["Indicated maximum offer","$207,700","tot"]],
+    math:[["After-repair value","$362,000"],["Repairs","-$38,000","neg"],["Closing, carry &amp; sale costs","-$33,000","neg"],["Target margin @ 12%","-$43,000","neg"],["Your walk-away maximum","$248,000","tot"]],
+    reality:[["Market value as-is (unrepaired)","$302,000"],["What a motivated seller here takes","$287,000","hi"],["Gap to your walk-away max","+$39,000","neg"],["Your margin at that price","$4,000 (1.1%)","neg"]],
     comps:[["2·· NE 12th St","0.7 mi","Mar 2026","$371,000","$259"],
            ["1·· NE 4th Ave","0.9 mi","Nov 2025","$358,000","$251"],
            ["3·· NE 8th St","1.1 mi","Aug 2025","$344,500","$243"]],
@@ -947,7 +929,7 @@ a{color:inherit;text-decoration:none;}
           "Bought 2019 at $244K: not enough equity to absorb a real discount.",
           "Park it. Re-score if a code case or lien lands.",
           "Watch the block — a second signal here makes it a call."],
-    margin:"$207,700 ceiling, one signal, three comps — not worth chasing.",verdict:"PASS",
+    margin:"A realistic $287,000 buy leaves $4,000 (1.1%). Not worth the risk at this repair number.",verdict:"PASS",
     src:"Miami-Dade Property Appraiser · municipal code enforcement · Clerk of Court · FL Dept. of Revenue tax roll · FEMA NFHL · FDLE"}
   ];
   function ramp(s){return s>=90?'#E8501F':s>=84?'#D9722A':'#9E8763';}
@@ -986,7 +968,7 @@ a{color:inherit;text-decoration:none;}
         return '<div class="r"><span class="k">'+r[0]+'</span><span class="v'+(r[2]?' '+r[2]:'')+'">'+r[1]+'</span></div>';
       }).join('');
     }
-    kv('d-owner',d.owner); kv('d-value',d.value); kv('d-record',d.record);
+    kv('d-owner',d.owner); kv('d-value',d.value); kv('d-record',d.record); kv('d-reality',d.reality);
 
     document.getElementById('d-mathbox').innerHTML=d.math.map(function(m){
       return '<div class="l'+(m[2]?' '+m[2]:'')+'"><span>'+m[0]+'</span><b>'+m[1]+'</b></div>';

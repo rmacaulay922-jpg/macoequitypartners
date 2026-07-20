@@ -334,3 +334,56 @@ a.market-umb__name:hover{color:var(--accent)}
 .src-grid>div{padding:12px 0;border-bottom:1px solid var(--rule)}
 .src-grid b{display:block;font:700 13.5px var(--sans);color:var(--ink);letter-spacing:-.005em}
 .src-grid span{display:block;margin-top:4px;font:400 12.5px/1.5 var(--sans);color:var(--ink-mute)}
+
+/* =============================================================================
+   SHARED TOP BAR — one chrome for every page.
+   The homepage grew its own dark sticky bar while markets/pricing/reports/etc.
+   were still on the older light .da-nav, so moving between tabs felt like moving
+   between two different sites. This is that bar, lifted out of index.html so
+   every page uses the same one. index.html keeps its own copy (its variables
+   differ); keep the two in step if you change either.
+   ============================================================================= */
+:root{--gut:clamp(22px,4.2vw,72px);--cream:#F1EEE4;--orange:#E8501F;--orange-dk:#C43A1A;}
+.topbar{position:sticky;top:0;z-index:1200;background:rgba(15,17,14,.97);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(241,238,228,.13)}
+.topbar .in{display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:0 var(--gut);height:64px;max-width:var(--maxw);margin:0 auto}
+.topbar .brand{display:flex;align-items:center;gap:11px;flex:0 0 auto}
+.topbar .brand img{height:34px;width:auto;display:block}
+.topbar .wm{font-weight:800;font-size:16px;letter-spacing:.02em;color:#F7F7F4}
+.topbar .wm em{font-style:normal;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+  color:var(--orange);border:1px solid rgba(232,80,31,.45);border-radius:4px;padding:2px 6px;
+  margin-left:9px;vertical-align:2px}
+.topbar .in .lk{display:flex;gap:26px;font-size:13.5px;font-weight:500;color:rgba(247,247,244,.78)}
+.topbar .lk a{padding:6px 0;border-bottom:2px solid transparent}
+.topbar .lk a:hover{color:#fff}
+.topbar .lk a.on{color:#fff;font-weight:700;border-bottom-color:var(--orange)}
+.topbar .rt{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.topbar .login{font-size:13px;font-weight:600;color:var(--cream);padding:9px 15px;border-radius:7px;
+  border:1px solid rgba(241,238,228,.32)}
+.topbar .login:hover{border-color:var(--cream)}
+.topbar .in .trial{font-weight:700;font-size:13px;padding:10px 19px;border-radius:7px;
+  background:var(--orange);color:#fff}
+.topbar .in .trial:hover{background:var(--orange-dk)}
+.tbburger{display:none;flex-direction:column;gap:4px;background:none;border:0;cursor:pointer;padding:9px}
+.tbburger span{width:21px;height:2px;background:var(--cream);display:block}
+.tbmob{display:none;position:absolute;top:100%;left:0;right:0;z-index:-1;flex-direction:column;
+  padding:6px var(--gut) 20px;background:rgba(15,17,14,.98);backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(241,238,228,.13);max-height:calc(100vh - 100%);overflow-y:auto;
+  box-shadow:0 18px 30px -18px rgba(0,0,0,.7)}
+.tbmob a{padding:13px 0;font-size:15px;font-weight:600;color:var(--cream);
+  border-bottom:1px solid rgba(241,238,228,.1)}
+.tbmob a:last-child{border-bottom:0}
+.tbmob .trial{margin-top:14px;text-align:center;background:var(--orange);color:#fff;font-weight:700;
+  padding:13px 20px;border-radius:7px;border-bottom:0}
+.topbar[data-open="1"] .tbmob{display:flex}
+@media (max-width:1020px){.topbar .in .lk{display:none}.tbburger{display:flex}}
+@media (max-width:620px){
+  .topbar .in .trial{display:none}   /* .in only — the drop panel keeps its CTA */
+  .topbar .in .wm em{display:none}
+  .topbar .in{height:58px;gap:10px}
+  .topbar .login{padding:8px 13px}
+}
+@media (max-width:400px){.topbar .wm{font-size:15px}}
+/* Anchor targets must clear the sticky bar. */
+[id]{scroll-margin-top:78px}
