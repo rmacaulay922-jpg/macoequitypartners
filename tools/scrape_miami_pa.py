@@ -112,7 +112,73 @@ def sale_year(dos):
         if 1900 < y <= NOW.year: return y
     return None
 
+ORG = 'https://services.arcgis.com/8Pc9XBTAsYuxx9Ny/arcgis/rest/services'
+
+def nf(v):
+    # Normalise any Miami-Dade folio to a bare 13-digit string. CCVIOL folios carry
+    # trailing spaces, liens store FOLIO_NUMBER as an int (dropping leading zeros), and
+    # PaGISView folios are zero-padded strings — all reconcile to 13 digits.
+    d = re.sub(r'\D', '', str(v or ''))
+    return d.zfill(13)[-13:] if d else ''
+
+def pull_set(path, where, out_fields, key_field, detail, page=2000, cap=80000):
+    """Pull a distress layer keyed by folio -> detail dict. Small sets, reliable host."""
+    out, offset = {}, 0
+    while len(out) < cap:
+        d = query_url(ORG + path + '/query', where, offset, out_fields, page)
+        if d is None: break
+        f = d.get('features', [])
+        if not f: break
+        for x in f:
+            a = x['attributes']; k = nf(a.get(key_field))
+            if k: out[k] = detail(a)
+        if len(f) < page: break
+        offset += page
+        time.sleep(0.15)
+    return out
+
+def query_url(url, where, offset, out_fields, page):
+    body = {'where': where, 'outFields': out_fields, 'returnGeometry': 'false', 'f': 'json',
+            'resultRecordCount': page, 'resultOffset': offset, 'orderByFields': 'OBJECTID'}
+    for t, delay in enumerate([0, 5, 20]):
+        if delay: time.sleep(delay)
+        try:
+            req = urllib.request.Request(url, data=urllib.parse.urlencode(body).encode(), headers=UA)
+            d = json.load(urllib.request.urlopen(req, timeout=90))
+            if 'error' in d: raise RuntimeError(d['error'].get('message', 'err'))
+            return d
+        except Exception as e:
+            print('   distress retry %d (%s)' % (t + 1, str(e)[:45]), flush=True)
+    return None
+
+def pull_distress():
+    """Open code cases, open building/unsafe violations, and recorded liens — the real
+    seller-motivation signals, and the reason a property is worth mailing. Same reliable
+    Miami-Dade host as the parcel roll. Returns folio -> {code|viol|lien: detail}."""
+    print('pulling distress layers (code cases / building violations / liens)...', flush=True)
+    flags = {}
+    def add(folio, kind, detail):
+        if folio: flags.setdefault(folio, {})[kind] = detail
+    code = pull_set('/CCVIOL_gdb/FeatureServer/0', "CASE_STATUS IN ('1','8','9')",
+                    'FOLIO,STAT_DESC,PROBLEM_DESC', 'FOLIO',
+                    lambda a: {'type': (a.get('PROBLEM_DESC') or a.get('STAT_DESC') or 'Code case').strip()[:60]})
+    for k, v in code.items(): add(k, 'code', v)
+    print('   open code cases: %d' % len(code), flush=True)
+    bviol = pull_set('/Open_Building_Violations/FeatureServer/0', "CLOSED_DATE IS NULL",
+                     'FOLIO,VIOL_NAME,CASE_TYPE', 'FOLIO',
+                     lambda a: {'type': (a.get('VIOL_NAME') or a.get('CASE_TYPE') or 'Unsafe structure').strip()[:60]})
+    for k, v in bviol.items(): add(k, 'viol', v)
+    print('   open building violations: %d' % len(bviol), flush=True)
+    lien = pull_set('/data_judgement/FeatureServer/0', "1=1",
+                    'FOLIO_NUMBER,TOTAL_FEES,PARCEL_TYPE', 'FOLIO_NUMBER',
+                    lambda a: {'amt': int(num(a.get('TOTAL_FEES'))), 'kind': (a.get('PARCEL_TYPE') or 'Lien').strip()})
+    for k, v in lien.items(): add(k, 'lien', v)
+    print('   liens/judgments: %d' % len(lien), flush=True)
+    print('   %d distinct parcels carry a distress flag' % len(flags), flush=True)
+    return flags
+
 def run():
+    DISTRESS = pull_distress()
     fields = ('FOLIO,TRUE_SITE_ADDR,TRUE_SITE_CITY,TRUE_SITE_ZIP_CODE,TRUE_OWNER1,TRUE_OWNER2,'
               'TRUE_MAILING_ADDR1,TRUE_MAILING_CITY,TRUE_MAILING_STATE,TRUE_MAILING_ZIP_CODE,'
               'BUILDING_HEATED_AREA,YEAR_BUILT,LOT_SIZE,BEDROOM_COUNT,BATHROOM_COUNT,PRICE_1,DOS_1,X_COORD,Y_COORD')
@@ -206,14 +272,25 @@ def run():
         yr = int(num(a.get('YEAR_BUILT'))); age = (NOW.year - yr) if yr > 1800 else 0
         sy = sale_year(a.get('DOS_1')); sp = int(num(a.get('PRICE_1')))
         held = (NOW.year - sy) if sy else None
-        signal = cls != 'other' or oos or absentee or (held is not None and held >= 15)
+        dfl = DISTRESS.get(fol) or {}      # code case / building violation / lien on THIS parcel
+
+        # A lead qualifies if it carries a recorded distress signal OR a motivated-owner
+        # signal. Distress (code case / violation / lien) is what actually makes an owner
+        # sell, so it both qualifies a lead on its own AND dominates the score.
+        signal = bool(dfl) or cls != 'other' or oos or absentee or (held is not None and held >= 15)
         if not signal: continue
-        sc = {'probate': 42, 'entity': 26, 'trust': 22, 'other': 8}[cls]
-        if oos: sc += 22
-        elif absentee: sc += 12
-        if held is not None: sc += 18 if held >= 25 else (12 if held >= 15 else (6 if held >= 8 else 0))
-        if age >= 55: sc += 14
-        elif age >= 45: sc += 10
+        sc = 0
+        # ── primary: recorded distress on the property ──
+        if dfl.get('code'): sc += 45     # open code-enforcement case
+        if dfl.get('viol'): sc += 42     # open building / unsafe-structure violation
+        if dfl.get('lien'): sc += 40     # recorded lien / judgment
+        # ── secondary: motivated-owner profile ──
+        sc += {'probate': 20, 'entity': 12, 'trust': 12, 'other': 0}[cls]
+        if oos: sc += 16
+        elif absentee: sc += 10
+        if held is not None: sc += 14 if held >= 25 else (9 if held >= 15 else (4 if held >= 8 else 0))
+        if age >= 55: sc += 8
+        elif age >= 45: sc += 5
         ozip = str(a.get('TRUE_MAILING_ZIP_CODE') or '')[:5]
         mail3 = ((a.get('TRUE_MAILING_CITY') or '').strip() + (' ' + mst if mst else '') + (' ' + ozip if ozip else '')).strip()
         area = MIAMI_ZIP_AREA.get(z, (a.get('TRUE_SITE_CITY') or 'Miami').strip().title())
@@ -227,10 +304,59 @@ def run():
             'held': held, 'lsY': sy, 'lsP': sp or None, 'rt': None,
             'sqft': (sqft if sqft > 200 else None), 'yb': (yr if yr > 1800 else None),
             'bed': int(num(a.get('BEDROOM_COUNT'))) or None, 'bath': num(a.get('BATHROOM_COUNT')) or None,
-            'pid': fol, 'st': fol})
+            'pid': fol, 'st': fol,
+            # the distress that drove the score, carried on the lead for the chips + tags
+            'code': 1 if dfl.get('code') else 0, 'viol': 1 if dfl.get('viol') else 0, 'lien': 1 if dfl.get('lien') else 0,
+            '_d': dfl})
+    # Coverage-aware selection. Distress (code/violation/lien) still ranks at the very top,
+    # but two guards keep the board usable across the whole county instead of collapsing
+    # into a handful of enforcement-heavy neighborhoods:
+    #   • a per-neighborhood cap so no single area (e.g. West Little River) dominates, and
+    #   • reserved room for strong owner-signal leads, so incorporated cities that run their
+    #     OWN code systems (Hialeah, City of Miami — Little Havana/Overtown) — and therefore
+    #     carry little COUNTY distress data — still surface their estates and out-of-state owners.
+    cands.sort(key=lambda x: (-x['sc'], -x['mkt']))
+    def take(pool, cap, limit):
+        per, out = {}, []
+        for c in pool:
+            if per.get(c['c'], 0) >= cap: continue
+            out.append(c); per[c['c']] = per.get(c['c'], 0) + 1
+            if len(out) >= limit: break
+        return out
+    distress = [c for c in cands if c.get('code') or c.get('viol') or c.get('lien')]
+    owner    = [c for c in cands if not (c.get('code') or c.get('viol') or c.get('lien'))]
+    picked = take(distress, 110, int(TOPN * 0.72)) + take(owner, 55, TOPN)
+    seen, cands = set(), []
+    for c in picked:
+        if c['pid'] in seen: continue
+        seen.add(c['pid']); cands.append(c)
     cands.sort(key=lambda x: (-x['sc'], -x['mkt']))
     cands = cands[:TOPN]
+    for c in cands: c['sc'] = min(c['sc'], 100)
     markets = sorted(set(x['c'] for x in cands))
+
+    # Flags file for the portal chips (keyed by folio; market 'miamicw' -> MIAMICW_FLAGS).
+    flags = {}
+    for c in cands:
+        d = c.pop('_d', {})
+        if d:
+            f = {}
+            if d.get('code'): f['code'] = d['code']
+            if d.get('viol'): f['permit'] = {'status': 'Unsafe/building violation', 'type': d['viol'].get('type', '')}
+            if d.get('lien'): f['lien'] = d['lien']
+            if f: flags[c['pid']] = f
+    fl_js = ('// Miami-Dade county-wide distress flags (open code cases / building violations / liens)\n'
+             '// from Miami-Dade\'s own CCVIOL / Open_Building_Violations / data_judgement layers.\n'
+             '// Keyed by folio; drives the score AND the card chips. Generated %s.\n'
+             'window.MIAMICW_FLAGS=%s;\n'
+             'window.MIAMICW_FLAGS_META=%s;\n'
+             % (NOW, json.dumps(flags, separators=(',', ':')),
+                json.dumps({'county': 'Miami-Dade', 'snapshot': str(NOW), 'flagged': len(flags)}, separators=(',', ':'))))
+    open(os.path.join(REPO, 'miami-flags.js'), 'w', encoding='utf-8').write(fl_js)
+    n_code = sum(1 for c in cands if c.get('code'))
+    n_viol = sum(1 for c in cands if c.get('viol'))
+    n_lien = sum(1 for c in cands if c.get('lien'))
+    print('distress on board: %d code cases · %d building violations · %d liens' % (n_code, n_viol, n_lien), flush=True)
     meta = {'county': 'Miami-Dade', 'count': len(cands), 'snapshot': str(NOW),
             'roll': 'Miami-Dade PA (PaGISView)', 'markets': markets}
     js = ('// Miami-Dade COUNTY-WIDE motivated-seller leads — generated %s by scrape_miami_pa.py\n'

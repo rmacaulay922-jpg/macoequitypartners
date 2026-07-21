@@ -672,11 +672,12 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 <script defer src="broward-leads.js?v=1"></script>
 <script defer src="lee-leads.js?v=1"></script>
 <script defer src="collier-leads.js?v=1"></script>
-<script defer src="miami-leads.js?v=2"></script>
+<script defer src="miami-leads.js?v=3"></script>
 <script defer src="broward-flags.js?v=2"></script>
 <script defer src="lee-flags.js?v=2"></script>
 <script defer src="collier-flags.js?v=2"></script>
 <script defer src="lake-flags.js?v=2"></script>
+<script defer src="miami-flags.js?v=2"></script>
 <script defer src="mia-homestead.js?v=1"></script>
 <script defer src="mia-homestead-city.js?v=1"></script>
 <script defer src="crime-bands.js?v=1"></script>
@@ -706,7 +707,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
   // Reveal when every lead file has evaluated (or after 12s so a slow/missing
   // file can never brick the page). MIAMI_LEADS may legitimately be empty —
   // presence of the global is the signal, not its length.
-  var WANT=['POLK_LEADS','LAKE_LEADS','BROWARD_LEADS','LEE_LEADS','COLLIER_LEADS','ZIP_BANDS'];
+  var WANT=['MIAMI_LEADS','POLK_LEADS','LAKE_LEADS','BROWARD_LEADS','LEE_LEADS','COLLIER_LEADS','ZIP_BANDS'];
   var t0=Date.now();
   function ready(){return WANT.every(function(k){return typeof window[k]!=='undefined';});}
   function done(){var o=document.getElementById('bootOverlay');if(!o)return;
@@ -755,7 +756,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <div style="display:flex;align-items:center;gap:1.5rem">
       <a href="/" class="hdr-back">← macoequitypartners.com</a>
       <select id="marketSel" class="filter-sel" onchange="setMarket(this.value)" title="Switch the market this portal shows — the choice is remembered" style="font-weight:700;letter-spacing:.03em;">
-        <option value="miami">Market: Miami-Dade · Kendall/Pinecrest farm</option>
+        <option value="miamicw">Market: Miami-Dade · County-wide</option>
         <option value="broward">Market: Broward</option>
         <option value="lee">Market: Lee · Fort Myers</option>
         <option value="collier">Market: Collier · Naples</option>
@@ -1744,7 +1745,7 @@ function showTab(btn){
   // Cross-market jumps: if the opened tab isn't in the active market but is a Miami-only tab
   // (overview/deals/all/construction/violations), flip back to Miami. Pipeline is shared by every
   // market so it never triggers a switch; the Leads tab is only reachable inside a leads-market.
-  try{var _mk=window._market||'miami';var cur=(MARKETS[_mk]&&MARKETS[_mk].tabs)||[];if(cur.indexOf(id)<0&&MARKETS.miami.tabs.indexOf(id)>=0)setMarket('miami');}catch(e){}
+  try{var _mk=window._market||'miamicw';var cur=(MARKETS[_mk]&&MARKETS[_mk].tabs)||[];if(cur.indexOf(id)<0&&MARKETS.miami.tabs.indexOf(id)>=0)setMarket('miami');}catch(e){}
 }
 
 // ── MARKET SWITCHER — one portal, many Florida markets ─────────────────────
@@ -1773,11 +1774,15 @@ var MIAMI_REC={pa:'https://apps.miamidadepa.gov/PropertySearch/',tax:'https://mi
 // Active leads-market accessors — the whole Leads tab reads through these, so switching markets
 // just repoints the source. Defaults keep the Polk tab working if _market is unset.
 function _mkt(){return MARKETS[window._market]||MARKETS.polk;}
-function _LSRC(){var m=_mkt();return (m.src&&window[m.src])?window[m.src]:(window.POLK_LEADS||[]);}
-function _LMETA(){var m=_mkt();return (m.meta&&window[m.meta])?window[m.meta]:(window.POLK_META||{});}
+// A selected market ALWAYS shows its own source. If that source is a deferred file still
+// loading (miami-leads.js is 1.1MB), return empty so buildPolk's retry waits for it —
+// NEVER fall back to Polk, which used to silently render the wrong county's leads under
+// whichever market was selected. Only a market with no src at all defaults to Polk.
+function _LSRC(){var m=_mkt();return m.src?(window[m.src]||[]):(window.POLK_LEADS||[]);}
+function _LMETA(){var m=_mkt();return m.meta?(window[m.meta]||{}):(window.POLK_META||{});}
 function _LREC(k){var m=_mkt();var r=m.rec||POLK_REC;return (r&&r[k])||POLK_REC[k]||'#';}
 function setMarket(m,skipSave){
-  if(!MARKETS[m])m='miami';
+  if(!MARKETS[m])m='miamicw';
   window._market=m;
   if(!skipSave){try{localStorage.setItem('mep_market',m);}catch(e){}}
   var vis=MARKETS[m].tabs;
@@ -1893,8 +1898,19 @@ function polkFiltered(){
 function buildPolk(){
   var g=document.getElementById('polkGrid'); if(!g)return;
   var meta=_LMETA()||{}, L=_LSRC()||[], county=meta.county||'County';
-  if(!L.length){g.innerHTML='<div style="color:var(--muted);padding:20px;">'+county+' snapshot not loaded yet — bake its leads file, then hard-refresh.</div>';
+  if(!L.length){
+    // A deferred leads file (miami-leads.js is 1.1MB) may still be loading when the default
+    // market first renders. Poll briefly and re-render once it lands, instead of stranding
+    // the user on a "not loaded" message that never clears.
+    var m=_mkt();
+    if(m&&m.src&&!window[m.src]){
+      g.innerHTML='<div style="color:var(--muted);padding:20px;">Loading '+county+' snapshot…</div>';
+      if(!buildPolk._retry){buildPolk._retry=0;}
+      if(buildPolk._retry<40){buildPolk._retry++;setTimeout(buildPolk,150);return;}
+    }
+    g.innerHTML='<div style="color:var(--muted);padding:20px;">'+county+' snapshot not loaded yet — bake its leads file, then hard-refresh.</div>';
     var ps0=document.getElementById('polkStats');if(ps0)ps0.innerHTML='';return;}
+  buildPolk._retry=0;
   var ban=document.getElementById('polkBanner');
   if(ban&&!ban.dataset.done){ban.dataset.done='1';
     ban.innerHTML=(function(){try{return _aucPanel(county);}catch(e){return '';}})()
@@ -2165,7 +2181,8 @@ function _flagChips(l){
   var f=_flagsFor(l); if(!f)return '';
   var b=[];
   if(f.code)  b.push('<span title="Open code-enforcement case: '+(f.code.type||'').replace(/"/g,'')+'" style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.45);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Code case</span>');
-  if(f.permit)b.push('<span title="'+(f.permit.status||'Permit')+' permit: '+(f.permit.type||'').replace(/"/g,'')+'" style="background:rgba(232,133,74,.16);color:#e8854a;border:1px solid rgba(232,133,74,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+((f.permit.status||'').toLowerCase().indexOf('expir')>=0?'Expired permit':'Open permit')+'</span>');
+  if(f.permit){var _ps=(f.permit.status||'').toLowerCase(),_isViol=(_ps.indexOf('violation')>=0||_ps.indexOf('unsafe')>=0),_lbl=_isViol?'Unsafe / violation':(_ps.indexOf('expir')>=0?'Expired permit':'Open permit'),_col=_isViol?'201,122,106':'232,133,74';
+    b.push('<span title="'+(f.permit.status||'Permit')+': '+(f.permit.type||'').replace(/"/g,'')+'" style="background:rgba('+_col+',.16);color:'+(_isViol?'#c97a6a':'#e8854a')+';border:1px solid rgba('+_col+',.42);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_lbl+'</span>');}
   if(f.lien)  b.push('<span title="'+(f.lien.kind||'Lien')+(f.lien.amt?': $'+f.lien.amt.toLocaleString():'')+'" style="background:rgba(184,145,90,.18);color:var(--gold);border:1px solid rgba(184,145,90,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Lien'+(f.lien.amt?' $'+Math.round(f.lien.amt/1000)+'k':'')+'</span>');
   return b.join('');
 }
@@ -2312,7 +2329,7 @@ function setRole(r){
 function toggleRole(){setRole(_role()==='investor'?'operator':'investor');}
 function _landTabFor(role){
   if(role==='investor')return 'brief';                 // investors always land on the Brief (every market)
-  var mk=MARKETS[window._market||'miami']||MARKETS.miami;
+  var mk=MARKETS[window._market||'miamicw']||MARKETS.miami;
   return mk.kind==='leads'?'polk':'overview';          // operators: Leads tab for lead markets, Overview for Miami
 }
 function applyRole(){
@@ -2348,7 +2365,7 @@ function _briefControls(isLeads,areas){
 }
 function buildBrief(){
   var host=document.getElementById('briefGrid'); if(!host)return;
-  var isLeads=((MARKETS[window._market||'miami']||MARKETS.miami).kind==='leads');
+  var isLeads=((MARKETS[window._market||'miamicw']||MARKETS.miami).kind==='leads');
   try{ if(isLeads)briefLeads(host); else briefMiami(host); }catch(e){ console.error('brief',e); }
 }
 // ── MIAMI-DADE: comp-verified deals ──
@@ -2475,21 +2492,14 @@ function initApp(){
       });
     }
   }catch(e){console.error('hstd-city merge',e);}
-  // Restore the remembered market (Miami-Dade default) — hides the other market's tabs before first paint.
+  // County-wide is now the ONE Miami market. The old Kendall/Pinecrest "farm" (kind:'deep')
+  // was a narrow slice; county-wide covers all 43 neighborhoods with the same code cases,
+  // liens, comps and violations folded in, so the farm is retired from the selector.
+  // Anyone whose saved market is the retired farm is moved to county-wide.
   try{
     var _saved=localStorage.getItem('mep_market');
-    if(window.MIAMI_LEADS&&MIAMI_LEADS.length){
-      var _sel=document.getElementById('marketSel');
-      if(_sel&&!_sel.querySelector('option[value="miamicw"]')){
-        var _o=document.createElement('option');_o.value='miamicw';_o.textContent='Market: Miami-Dade · County-wide';
-        var _farm=_sel.querySelector('option[value="miami"]');
-        if(_farm&&_farm.nextSibling)_sel.insertBefore(_o,_farm.nextSibling);else _sel.appendChild(_o);
-      }
-      // Do NOT default fresh browsers into the raw county-wide list — the comp-verified farm
-      // cockpit is the first impression the homepage sells (Jul 2026 audit). miamicw stays a
-      // labeled option in the selector.
-    }
-    setMarket(_saved||'miami',true);
+    if(_saved==='miami')_saved='miamicw';
+    setMarket(_saved||'miamicw',true);
   }catch(e){console.error('market',e);}
   ['buildOverview','buildDeals','buildAllTable','buildSales','buildViolations','buildPipeline','buildBrief'].forEach(function(fn){
     try{window[fn]();}catch(e){console.error('init '+fn,e);}
@@ -3520,7 +3530,7 @@ var FARM_BBOX={xmin:-80.55,ymin:25.43,xmax:-80.19,ymax:25.92,spatialReference:{w
 var SALES_BAKED=null, LIVE_COMPS=null, _compsTried=false, _compsInFlight=false;
 var COMPS_KEY='mep_comps_v2', COMPS_TTL=6*24*3600*1000; // v2: comps now carry lat/lon for proximity matching
 var _vinCounty='', _vinComps='';
-function _updateVintage(){var dv=document.getElementById('dataVintage');if(!dv)return;if((MARKETS[window._market||'miami']||{}).kind==='leads')return;/* leads-markets own this line — Miami feed callbacks must not overwrite it */var p=[];if(_vinCounty)p.push(_vinCounty);if(_vinComps)p.push(_vinComps);dv.textContent=p.length?p.join(' · '):'County data: connecting…';}
+function _updateVintage(){var dv=document.getElementById('dataVintage');if(!dv)return;if((MARKETS[window._market||'miamicw']||{}).kind==='leads')return;/* leads-markets own this line — Miami feed callbacks must not overwrite it */var p=[];if(_vinCounty)p.push(_vinCounty);if(_vinComps)p.push(_vinComps);dv.textContent=p.length?p.join(' · '):'County data: connecting…';}
 function _med(a){if(!a||!a.length)return null;var s=a.slice().sort(function(x,y){return x-y;});var m=Math.floor(s.length/2);return s.length%2?s[m]:Math.round((s[m-1]+s[m])/2);}
 function _compZipList(){return Object.keys(ZIP_LABEL);}
 function _compCutoff(){var d=new Date();d.setFullYear(d.getFullYear()-1);return d.toISOString().slice(0,10);}
