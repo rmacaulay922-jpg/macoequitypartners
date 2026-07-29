@@ -19,7 +19,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="da.css?v=20260720f">
-<script src="site-config.js?v=20260720f"></script>
+<!-- coverage.js must load BEFORE site-config so renderMarkets can read MACO_COVERAGE -->
+<script src="coverage.js?v=1"></script>
+<script src="site-config.js?v=20260721a"></script>
+<style>.market-umb__cov{font:500 11.5px/1.5 'IBM Plex Mono',monospace;letter-spacing:.02em;color:#6B6F6A;margin:2px 0 8px}</style>
 </head>
 <body>
 <div class="da-page">

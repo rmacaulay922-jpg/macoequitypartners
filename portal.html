@@ -666,7 +666,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 </style>
 <!-- Not deferred: BEACON_URL is read at script-evaluation time, so MACO must already
      exist by then or every beacon silently falls back to the hardcoded address. -->
-<script src="site-config.js?v=20260720f"></script>
+<script src="site-config.js?v=20260721a"></script>
 <script defer src="polk-leads.js?v=5"></script>
 <script defer src="lake-leads.js?v=1"></script>
 <script defer src="broward-leads.js?v=1"></script>
@@ -1877,6 +1877,28 @@ function polkSkipUrl(l){var loc=l.oos&&l.m3?l.m3:(l.c+', FL'); return 'https://w
 function polkTagStyle(tag){var m={probate:['#e8854a','Estate / probate'],le:['#d49ac8','Life estate'],trust:['#E8501F','Trust-owned'],entity:['#3DBE82','LLC / entity'],other:['#9A9E97','Non-homestead']};return m[tag]||m.other;}
 // owner location: out-of-state (strongest), in-state absentee, or local
 function polkOwnLoc(l){ if(l.oos)return {k:'oos',t:'Out-of-state · '+(l.mst||'?'),c:'#7c76ff'}; if(l.abs)return {k:'abs',t:'Absentee (FL)',c:'#4fa3d1'}; return {k:'local',t:'Local owner',c:'#9A9E97'}; }
+// Jul 2026 audit: 713 of Miami-Dade's 3,000 leads bake out at exactly sc=100, so "Lead score"
+// order fell through to whatever the bake emitted — effectively county value, which made the
+// board read like a price sort. _leadTiebreak returns a deterministic fraction in [0,1) built
+// from the signals the baked score saturates on, so equal-score leads rank by real motivation.
+// The DISPLAYED score is untouched — this only orders ties.
+function _leadTiebreak(l){
+  var t=0;
+  try{
+    var f=_flagsFor(l);
+    if(f){
+      if(f.lien)t+=.25;
+      if(f.permit){var ps=(f.permit.status||'').toLowerCase();t+=(ps.indexOf('unsafe')>=0||ps.indexOf('violation')>=0)?.20:.11;}
+      if(f.code)t+=.15;
+    }
+  }catch(e){}
+  if(l.tag==='probate')t+=.10; else if(l.tag==='le')t+=.07;
+  if(l.oos)t+=.08; else if(l.abs)t+=.04;
+  if(l.held!=null)t+=Math.min(.08,l.held/375);        // ~30y hold ≈ +.08
+  try{if(_instOwner(l.o))t-=.35;}catch(e){}            // Wall Street SFR never answers blind mail — sink it
+  return Math.max(0,Math.min(.999,t));
+}
+function _leadRank(l){return (l.sc||0)+_leadTiebreak(l);}
 function polkFiltered(){
   var out=(_LSRC()||[]).filter(function(l){
     if(_polkFilter.market&&l.c!==_polkFilter.market)return false;
@@ -1892,7 +1914,7 @@ function polkFiltered(){
   else if(s==='band')out.sort(function(a,b){var x=_bandFor(a),y=_bandFor(b);return ((y&&y.mid)||0)-((x&&x.mid)||0);});
   else if(s==='held')out.sort(function(a,b){return (b.held||0)-(a.held||0);});
   else if(s==='sqft')out.sort(function(a,b){var x=_fdorFor(a),y=_fdorFor(b);return ((y&&y.sqft)||0)-((x&&x.sqft)||0);});
-  // default: file order (score desc, as baked)
+  else out.sort(function(a,b){return _leadRank(b)-_leadRank(a);}); // default: score, ties broken by signal strength
   return out;
 }
 function buildPolk(){
@@ -1922,7 +1944,14 @@ function buildPolk(){
         var depth=cov>=0.5
           ? 'Each lead carries FDOR tax-roll sqft &amp; year built plus a <strong>ZIP-level qualified-sale band</strong> (real recorded arm&rsquo;s-length sales, shown as a range). Use the band to shortlist, then walk it and comp it before offering.'
           : 'These leads carry the county roll&rsquo;s core fields; sqft, year built and sale bands are <strong>not yet joined for this county</strong> &mdash; anchor on county value and comp by hand before offering.';
-        return '<div style="font-size:12px;color:#e8854a;margin-top:8px;">'+county+' publishes no live comp or code-violation feed &mdash; there is <strong>no per-property ARV here</strong>. '+depth+'</div></div>';
+        // Jul 2026 audit: this line claimed the county publishes no code-violation feed, which is
+        // no longer true — county flags ARE joined per parcel where a *_FLAGS table is baked. The
+        // real (and only) gap is a per-property comp ARV. Say exactly that, per market.
+        var flg=0;try{var _g=window[(window._market||'').toUpperCase()+'_FLAGS'];flg=_g?Object.keys(_g).length:0;}catch(e){}
+        var sig=flg
+          ? 'Open code cases, permits and recorded liens <strong>are</strong> joined here &mdash; baked from '+county+'&rsquo;s own record portal (a dated snapshot, not a live pull) and shown as chips on each lead.'
+          : 'No code-case or lien feed is joined for this county yet &mdash; owner, hold and mailing signals are what carry these leads.';
+        return '<div style="font-size:12px;color:#e8854a;margin-top:8px;">There is <strong>no per-property comp ARV here</strong> &mdash; '+county+' publishes no live sold-comp feed. '+sig+' '+depth+'</div></div>';
       })();
   }
   var byTag={},oos=0,abss=0; L.forEach(function(l){byTag[l.tag]=(byTag[l.tag]||0)+1;if(l.oos)oos++;else if(l.abs)abss++;});
@@ -2328,9 +2357,12 @@ function setRole(r){
 }
 function toggleRole(){setRole(_role()==='investor'?'operator':'investor');}
 function _landTabFor(role){
-  if(role==='investor')return 'brief';                 // investors always land on the Brief (every market)
   var mk=MARKETS[window._market||'miamicw']||MARKETS.miami;
-  return mk.kind==='leads'?'polk':'overview';          // operators: Leads tab for lead markets, Overview for Miami
+  // Jul 2026 audit: the Brief is 6 curated picks with no signals, filters or sale bands; the Leads
+  // tab is the actual board. Landing investors on the Brief hid the product behind its weakest
+  // screen, so in a leads market EVERY role now lands on Leads. The Brief is still one tab away.
+  if(mk.kind==='leads')return 'polk';
+  return role==='investor'?'brief':'overview';         // deals-kind Miami: Brief for investors, Overview for operators
 }
 function applyRole(){
   var r=_role();
@@ -2434,7 +2466,7 @@ function _briefSortLeads(list){
     if(s==='valhi')return (b.mkt||0)-(a.mkt||0);
     if(s==='vallo')return (a.mkt||0)-(b.mkt||0);
     if(s==='hold')return (b.held||0)-(a.held||0);
-    return (b.sc||0)-(a.sc||0); // default: most motivated
+    return _leadRank(b)-_leadRank(a); // default: most motivated (ties broken by signal strength — see _leadTiebreak)
   });
 }
 function briefLeadCard(l,i){
@@ -2443,14 +2475,40 @@ function briefLeadCard(l,i){
   function line(lbl,v,s){return '<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);"><span style="color:var(--muted);font-size:12px;">'+lbl+'</span><span style="text-align:right;"><span style="font-weight:800;font-size:14.5px;">'+v+'</span>'+(s?'<br><span style="font-size:10.5px;color:var(--muted);">'+s+'</span>':'')+'</span></div>';}
   var ln=(l.lnd!=null?l.lnd:Math.max(0,(l.mkt||0)-(l.bld||0)));
   var zurl=(typeof polkZillowUrl==='function')?polkZillowUrl(l):'#';
+  // Jul 2026 audit: the Brief card was hiding everything that makes a lead worth a call — beds,
+  // size, vintage, and the code/lien/estate signals the whole product is sold on. All of it is
+  // already on the record or one helper away, so the card now shows it (same helpers the Leads
+  // tab uses, so the two views can never drift apart).
+  var _e=(typeof _fdorFor==='function')?_fdorFor(l):null;
+  var _bd=(typeof _bandFor==='function')?_bandFor(l):null;
+  var _meta=[_escHtml(l.c||'')+(l.z?' '+l.z:'')];
+  if(l.bed)_meta.push(l.bed+'bd / '+(l.bath||'?')+'ba');
+  if(_e&&_e.sqft)_meta.push(_e.sqft.toLocaleString()+' SF');
+  if(_e&&_e.yb)_meta.push('built '+_e.yb);
+  if(l.lot)_meta.push(l.lot+' ac lot');
+  var _chips=(function(){
+    var b=[],cty='';
+    try{cty=(_LMETA()||{}).county||'';}catch(e){}
+    try{var cc=(typeof _crimeChip==='function')?_crimeChip(cty,l.c):''; if(cc)b.push(cc);}catch(e){}
+    if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');
+    // A land-only parcel legitimately shows a $0K building split — without this chip that reads
+    // like a data bug rather than a teardown. Institutional owners never answer blind mail.
+    try{if(typeof _teardownLead==='function'&&_teardownLead(l))b.push('<span title="County values the building at &le;$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');}catch(e){}
+    try{if(typeof _instOwner==='function'&&_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');}catch(e){}
+    try{if(l.lsP&&l.lsY){var _ec=(typeof _equityChip==='function')?_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt):''; if(_ec)b.push(_ec);}}catch(e){}
+    try{var _fc=(typeof _flagChips==='function')?_flagChips(l):''; if(_fc)b.push(_fc);}catch(e){}
+    return b.length?'<div style="display:flex;gap:5px;flex-wrap:wrap;margin:0 0 10px;">'+b.join('')+'</div>':'';
+  })();
   return '<div class="deal-card" style="padding:0;overflow:hidden;">'
     +'<div style="padding:14px 16px;">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-weight:800;font-size:15px;">'+_escHtml(l.a)+'</div><span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;font-weight:800;font-size:11px;padding:3px 10px;border-radius:6px;flex:none;white-space:nowrap;">'+ts[1]+'</span></div>'
-    +'<div style="font-size:11.5px;color:var(--muted);margin:2px 0 10px;">'+_escHtml(l.c||'')+(l.z?' '+l.z:'')+(l.lot?' &middot; '+l.lot+' ac lot':'')+'</div>'
+    +'<div style="font-size:11.5px;color:var(--muted);margin:2px 0 8px;">'+_meta.join(' &middot; ')+'</div>'
+    +_chips
     +line('County value',fmtK(l.mkt),'market / just value on the county roll &mdash; NOT a resale estimate')
-    +line('Building / land',fmtK(l.bld)+' / '+fmtK(ln),'county-assessed split')
+    +((l.bld>0||ln>0)?line('Building / land',fmtK(l.bld)+' / '+fmtK(ln),'county-assessed split'):'')
+    +(_bd?line('Est. value &middot; ZIP sales',fmtK(_bd.mid),fmtK(_bd.lo)+'&ndash;'+fmtK(_bd.hi)+' &middot; '+_bd.n+' recorded sales'):'')
     +(why?'<div style="font-size:11px;color:var(--muted);margin:9px 0 3px;line-height:1.6;"><strong style="color:var(--ivory-soft);">Why it&rsquo;s a lead:</strong> '+why+'</div>':'')
-    +'<div style="font-size:11px;color:#e8a14a;margin:6px 0 3px;line-height:1.6;">No sold comps in this market yet &mdash; verify true value &amp; condition before offering.</div>'
+    +'<div style="font-size:11px;color:#e8a14a;margin:6px 0 3px;line-height:1.6;">'+(_bd?'ZIP-level sale band, not a per-property comp &mdash; walk it and comp it before offering.':'No sold comps in this market yet &mdash; verify true value &amp; condition before offering.')+'</div>'
     +'<div style="display:grid;gap:7px;margin-top:11px;">'
       +ctaBtn({address:l.a,neighborhood:l.c},'text-align:center;')
       +'<button class="btn btn-dark" onclick="polkUnderwrite(\''+l.pid+'\')">Estimate the numbers</button>'
@@ -2462,7 +2520,7 @@ function briefLeads(host){
   var src=[]; try{src=(_LSRC()||[]).slice();}catch(e){}
   var label=((MARKETS[window._market]||{}).label)||'This market';
   _briefControls(true,_uniqSorted(src.map(function(l){return l.c;})));
-  _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds). This market has <strong>no sold-comp feed</strong>, so cards show the <strong>county value</strong>, not a resale estimate &mdash; our team verifies true value &amp; condition before any offer. <span id="briefUpdated" style="color:var(--gold);"></span>');
+  _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds, and open code cases/liens where the county publishes them). There is <strong>no per-property comp ARV</strong> in this market: cards show the county value plus a <strong>ZIP-level sale band</strong> where one exists, never a resale estimate &mdash; walk it and comp it before offering. <span id="briefUpdated" style="color:var(--gold);"></span>');
   var list=_briefSortLeads(src.filter(function(l){return !_briefState.area||l.c===_briefState.area;}));
   var picks=list.slice(0,6); window._briefLeadList=picks;
   if(!picks.length){_briefEmpty(host,'No leads match this area filter. Choose &ldquo;All areas&rdquo; to see the full '+_escHtml(label)+' list.');_briefCount(src.length,0);return;}

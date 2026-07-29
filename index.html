@@ -557,10 +557,10 @@ a{color:inherit;text-decoration:none;}
         <div class="txt">
           <div class="num">STEP 02</div>
           <h3>Open tonight's ranked board.</h3>
-          <p>Every property is scored 0–100 on distress signals and sorted by estimated net profit. The three worth a call this week float to the top — sort by ARV, profit, or score.</p>
+          <p>Every property is scored 0–100 on distress signals, ranked so the strongest signals sit at the top. The three worth a call this week float up — sort by score, value, sale band, hold length or size.</p>
           <div class="mini">
-            <span><span class="ck">→</span>Comp-based ARV and an est. net profit on every row.</span>
-            <span><span class="ck">→</span>Filter by signal, beds, value or ZIP in one click.</span>
+            <span><span class="ck">→</span>A ZIP sale band from real recorded sales on every row — then underwrite your own numbers.</span>
+            <span><span class="ck">→</span>Filter by signal, owner type, value or submarket in one click.</span>
           </div>
         </div>
         <div class="mock">
@@ -687,7 +687,7 @@ a{color:inherit;text-decoration:none;}
       <p>Code cases, liens and estates — read from Florida's own county files, not a resold nationwide list. Six counties, deep, refreshed on a rolling schedule.</p>
       <div class="checks">
         <div><span class="ck">✓</span> Ranked so you call the right three, not thirty.</div>
-        <div><span class="ck">✓</span> Comp ARV from real recorded sales.</div>
+        <div><span class="ck">✓</span> Sale bands built from real recorded sales — never a black-box estimate.</div>
         <div><span class="ck">✓</span> An honest verdict — it'll tell you to pass.</div>
       </div>
     </div>
@@ -698,9 +698,9 @@ a{color:inherit;text-decoration:none;}
   <section class="sec">
     <div class="ctr"><span class="eb">Where it's live</span><h2>Six Florida counties. <span class="o">Deeper every week.</span></h2></div>
     <div class="mkts">
-      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-lee"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Lee County</b><div class="rf">Rolling refresh</div></div><span class="ar">→</span></div></div>
-      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-bw"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Broward</b><div class="rf">Rolling refresh</div></div><span class="ar">→</span></div></div>
-      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-md"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Miami-Dade</b><div class="rf">Rolling refresh</div></div><span class="ar">→</span></div></div>
+      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-lee"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Lee County</b><div class="rf" data-cov="lee">Rolling refresh</div></div><span class="ar">→</span></div></div>
+      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-bw"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Broward</b><div class="rf" data-cov="broward">Rolling refresh</div></div><span class="ar">→</span></div></div>
+      <div class="county"><div class="cmwrap"><div class="cmap" id="cm-md"></div><div class="cflag"><i></i>SCANNING</div></div><div class="cinfo"><div><b>Miami-Dade</b><div class="rf" data-cov="miamicw">Rolling refresh</div></div><span class="ar">→</span></div></div>
     </div>
     <p class="mcap">Plus Collier, Polk &amp; Lake — live now. <a href="markets.html">See all markets →</a></p>
   </section>
@@ -1046,5 +1046,20 @@ a{color:inherit;text-decoration:none;}
     live("LN_RECDATE IS NOT NULL AND LN_RECDATE<>''",'live-liens','liens');
   }catch(e){}
 })();
+</script>
+<script src="coverage.js?v=1"></script>
+<script>
+// Jul 2026 audit: every county card claimed "Rolling refresh" while Broward and Collier were
+// still on a 2025 annual roll. Freshness now renders from coverage.js (generated from the leads
+// files themselves by tools/build_coverage.js), so the claim can never drift from the data again.
+(function(){try{
+  var C=window.MACO_COVERAGE; if(!C)return;
+  document.querySelectorAll('[data-cov]').forEach(function(el){
+    var m=C[el.getAttribute('data-cov')]; if(!m)return;
+    el.textContent=(m.freshness==='dated')
+      ? ('Refreshed '+m.asOf+' · '+m.leads.toLocaleString('en-US')+' leads')
+      : (m.asOf.replace(/\broll\b/,'tax roll')+' · '+m.leads.toLocaleString('en-US')+' leads');
+  });
+}catch(e){}})();
 </script>
 </body></html>
