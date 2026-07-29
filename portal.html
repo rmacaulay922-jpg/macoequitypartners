@@ -1983,7 +1983,10 @@ function polkWhy(l){
   s.push(t+' owner');
   if(l.oos)s.push('<strong style="color:#9d97ff;">Out-of-state owner</strong> — mails to '+(l.m3||l.mst));
   else if(l.abs)s.push('<strong style="color:#7fbde0;">Absentee</strong> — owner mails to '+(l.m3||'a different FL address'));
-  s.push('Non-homestead (not owner-occupied)');
+  // Jul 2026 audit: for tag 'other' the label above is already "Non-homestead", so this line
+  // repeated it verbatim ("Non-homestead owner · Non-homestead (not owner-occupied)"). It only
+  // adds information when the tag says something else (estate, trust, LLC).
+  if(l.tag&&l.tag!=='other')s.push('Non-homestead (not owner-occupied)');
   if(l.held!=null&&l.held>=15)s.push('Long hold — owned '+l.held+' years (bought '+l.lsY+(l.lsP?' for '+fmt$(l.lsP):'')+')');
   else if(l.held!=null)s.push('Owned '+l.held+' years (since '+l.lsY+')');
   if(l.rt)s.push('<strong style="color:#e8854a;">Fresh non-sale transfer in '+l.rt+'</strong> — estate/trust likely being settled');
@@ -2289,10 +2292,13 @@ function renderPolk(){
       })()
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
         +'<button class="btn btn-gold" id="polkT-'+l.pid+'" style="font-size:10px;padding:4px 10px;" onclick="polkToggleDetail('+pj+')">Details &#9662;</button>'
+        // Jul 2026 audit: the underwriter is the strongest thing in the product and was labelled
+        // "UW" — an unreadable abbreviation sitting fifth among six same-weight buttons. Named
+        // properly and moved next to Details. (Tooltip was Polk-specific; it serves all markets.)
+        +'<button class="btn btn-gold" style="font-size:10px;padding:4px 10px;" title="Open the Underwriter — full flip/hold P&amp;L on your own numbers. No market here has per-property comps, so enter ARV and repairs by hand; the county value and ZIP sale band on this card are your anchors." onclick="polkUnderwrite('+pj+')">Underwrite</button>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkPaUrl(l)+'" target="_blank" rel="noopener">'+county+' PA</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkProbateUrl(l)+'" target="_blank" rel="noopener" title="Search the owner name for probate/estate cases">Probate</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkSkipUrl(l)+'" target="_blank" rel="noopener">Skip-trace</a>'
-        +'<button class="btn btn-outline" style="font-size:10px;padding:4px 8px;" title="Open the Underwriter — Polk has no auto-comps, so enter ARV/repair by hand (county value shown on the card is your anchor)" onclick="polkUnderwrite('+pj+')">UW</button>'
         +(inPipe?'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" disabled>&#10003; In Pipeline</button>':'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" onclick="polkToPipeline('+pj+',this)">+ Pipeline</button>')
       +'</div>'
       +'<div id="polkD-'+l.pid+'" style="display:none;">'+polkDossierHtml(l)+'</div>'
@@ -2368,7 +2374,19 @@ function applyRole(){
   var r=_role();
   document.body.classList.toggle('investor-mode',r==='investor');
   var b=document.getElementById('roleBtn');
-  if(b){b.textContent=(r==='investor')?'OPERATOR \u2192':'INVESTOR VIEW';b.title=(r==='investor')?(_subOp()?'Switch to the operator cockpit':'Switch to Ryan\u2019s operator cockpit (access code required once)'):'Preview the plain-English brief view';}
+  if(b){
+    // Jul 2026 audit: this button was shown to every visitor, including plain-code investors who
+    // can never unlock it \u2014 clicking it just produced a password prompt for a door that will not
+    // open for them. Only show it to someone who can actually pass through: an already-unlocked
+    // operator, or a subscriber/trialist whose kind was stamped at login.
+    // ?operator on the URL is the escape hatch: Ryan signs in with the same investor code, so
+    // without it a fresh browser would hide the door from him too. Unlocking once sets
+    // mep_op_unlocked permanently, and the button shows normally from then on.
+    var canOperate=_opUnlocked()||_subOp()||r==='operator'||/[?&]op(erator)?(=|&|$)/.test(location.search);
+    b.style.display=canOperate?'':'none';
+    b.textContent=(r==='investor')?'OPERATOR \u2192':'INVESTOR VIEW';
+    b.title=(r==='investor')?(_subOp()?'Switch to the operator cockpit':'Switch to Ryan\u2019s operator cockpit'):'Preview the plain-English brief view';
+  }
   try{renderRateCenter();}catch(e){}
 }
 // The Brief: 3-5 deals that clear a defensible bar — live-comped, decent confidence, healthy

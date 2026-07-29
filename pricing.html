@@ -20,6 +20,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="da.css?v=20260720f">
 <script src="site-config.js?v=20260721a"></script>
+<style>
+/* FAQ (added Jul 2026 audit). Native <details> so it works with JS disabled and is
+   keyboard-accessible for free — no accordion script to maintain. */
+.faq-list{border-top:1px solid rgba(19,21,18,.14)}
+.faq-item{border-bottom:1px solid rgba(19,21,18,.14)}
+.faq-item>summary{cursor:pointer;list-style:none;padding:17px 34px 17px 0;position:relative;
+  font:600 16px/1.45 'Schibsted Grotesk',sans-serif;color:#131512}
+.faq-item>summary::-webkit-details-marker{display:none}
+.faq-item>summary::after{content:'+';position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  font:400 21px/1 'IBM Plex Mono',monospace;color:#E8501F;transition:transform .18s ease}
+.faq-item[open]>summary::after{content:'\2212'}
+.faq-item>summary:hover{color:#E8501F}
+.faq-item>summary:focus-visible{outline:2px solid #E8501F;outline-offset:3px;border-radius:2px}
+.faq-item>p{margin:0 0 19px;padding-right:34px;
+  font:400 14.5px/1.68 'Schibsted Grotesk',sans-serif;color:#4A4E49}
+@media (max-width:600px){.faq-item>summary{font-size:15px;padding-right:30px}.faq-item>p{padding-right:0}}
+</style>
 </head>
 <body>
 <div class="da-page">
@@ -92,6 +109,56 @@
   <p class="da-fineprint" id="report-footnote" style="margin-top:14px"></p>
 </section>
 
+<!-- ============ FAQ ============ -->
+<!-- Jul 2026 audit: every footer across the site linked "FAQ" to pricing.html, which had no
+     FAQ (and faq.html 404s). Rather than drop the links, the FAQ now lives here at #faq.
+     Answers are deliberately concrete about what the product does NOT do — the audit found
+     the marketing copy promising per-property comp ARVs the flagship market cannot produce. -->
+<section class="da-section" id="faq">
+  <span class="da-label">Questions</span>
+  <h2 class="da-title" style="margin:14px 0 10px;max-width:760px">Answers before you <span class="hl">spend anything.</span></h2>
+  <p class="da-lead" style="max-width:640px">If something here isn't clear, <a href="about.html#contact" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">ask us</a> — you'll get a straight answer, including "no."</p>
+
+  <div class="faq-list" style="max-width:760px;margin-top:26px">
+    <details class="faq-item">
+      <summary>Do I need a credit card to start?</summary>
+      <p>No. The 7-day trial takes an email address and nothing else. There is no card on file, so there is nothing to auto-bill — a trial only becomes a subscription if you choose a plan yourself.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How fast do I get access?</summary>
+      <p>Your access code is issued by hand, normally within one business day. Every trial is set up individually rather than by a drip campaign, so a real person sees your request. If you need it faster for a specific deal, say so and we'll move.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Does Maco give me an ARV for each property?</summary>
+      <p>No, and we won't pretend otherwise. Florida counties do not publish a live sold-comp feed, so there is <strong>no per-property ARV</strong> in the product. What you get is a <strong>ZIP-level sale band</strong> built from real recorded arm's-length sales, plus the property's tax-roll size and vintage. Use the band to shortlist, then walk the property and comp it properly before you offer. The built-in underwriter runs the full flip P&amp;L on <em>your</em> numbers.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Which counties are live, and is the data equally deep?</summary>
+      <p>Six: Miami-Dade, Broward, Lee, Collier, Polk and Lake. Depth is <strong>not</strong> equal — Miami-Dade is deepest, with code cases, permits and recorded liens joined per parcel. Other counties carry owner, hold and mailing signals, with code/lien depth added county by county. The <a href="markets.html" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">markets page</a> shows each county's actual snapshot date and lead count, generated from the data itself.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How current is the data?</summary>
+      <p>It's a dated snapshot, not a live query, and the date is shown in the product and on the markets page. Counties are refreshed on a rotation. When a county is still on its annual tax roll rather than a dated refresh, the site says exactly that instead of implying it is fresh.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What's the difference between the plans?</summary>
+      <p><strong>Founding Member ($50)</strong> is launch pricing — the rate holds for as long as you stay continuously subscribed. <strong>Standard Access ($75)</strong> is full access in the primary supported market. <strong>Market Select ($85)</strong> lets you pick the one supported market you actually invest in, with additional markets at +$10/month each. Every plan starts with the same 7-day trial.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Can I cancel myself?</summary>
+      <p>Yes. <a href="https://billing.stripe.com/p/login/00wbJ25t05OIffTgqr7Zu00" data-track="billing_portal_click" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">Manage your subscription</a> in the Stripe customer portal — cancel, update a card or pull invoices without emailing anyone. Cancellation takes effect at the end of the period you've already paid for, and your first month is refundable within 7 days of the first charge.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How is this different from PropStream or DealMachine?</summary>
+      <p>They're nationwide and shallow; this is six Florida counties and deep — county code cases, recorded liens and estates read from the counties' own files rather than a resold national list. Full side-by-side on the <a href="compare.html" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">comparison page</a>.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Is this investment advice?</summary>
+      <p>No. Everything in the product is an estimate derived from public records, provided for your own analysis. Verify independently — including title, liens and condition — before acting on any of it. See <a href="disclosures.html" style="color:var(--accent);border-bottom:1px solid var(--accent-line)">disclosures</a>.</p>
+    </details>
+  </div>
+</section>
+
 <!-- ============ CLOSING ============ -->
 <section class="da-section da-section--dark">
   <span class="da-label">Start where every subscriber starts</span>
@@ -109,9 +176,9 @@
       <img src="logo-full-light.png?v=logo2" alt="Maco Equity Partners">
       <p>Local deal intelligence for South Florida investors — built by people who actually evaluate deals.</p>
     </div>
-    <div><h5>Product</h5><a href="index.html#how">How It Works</a><a href="markets.html">Markets</a><a href="pricing.html">Pricing</a><a href="reports.html">Reports</a><a href="portal.html" data-track="login_click">Deal Analyzer Login</a></div>
-    <div><h5>Resources</h5><a href="research.html">Research</a><a href="methodology.html">Methodology</a></div>
-    <div><h5>Company</h5><a href="about.html">The Firm</a><a href="about.html">Partnerships</a><a href="about.html#contact">Contact</a></div>
+    <div><h5>Product</h5><a href="index.html#how">How It Works</a><a href="markets.html">Markets</a><a href="pricing.html">Pricing</a><a href="reports.html">Reports</a><a href="portal.html" data-track="login_click">Deal Analyzer Login</a><a href="https://billing.stripe.com/p/login/00wbJ25t05OIffTgqr7Zu00" data-track="billing_portal_click">Manage Subscription</a></div>
+    <div><h5>Resources</h5><a href="research.html">Research</a><a href="methodology.html">Methodology</a><a href="compare.html">Compare</a><a href="updates.html">What&#39;s New</a><a href="pricing.html#faq">FAQ</a></div>
+    <div><h5>Company</h5><a href="about.html">The Firm</a><a href="about.html">Partnerships</a><a href="about.html#contact">Submit a Deal</a><a href="about.html#contact">Contact</a></div>
   </div>
   <div class="da-footer__legal">
     <span>© 2026 Maco Equity Partners LLC · Not investment advice · Estimates from public records — independently verify before acting.</span>

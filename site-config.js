@@ -467,10 +467,15 @@ window.MACO = (function () {
             try {
               var c = (window.MACO_COVERAGE || {})[m.cov];
               if (c) {
+                // Refresh date and roll year are DIFFERENT facts: we may have re-pulled today
+                // (snapshot) while the state's underlying tax roll is still last year's (roll).
+                // Showing only the first would imply the records themselves are current.
                 var fresh = (c.freshness === 'dated')
                   ? 'Refreshed ' + c.asOf
                   : String(c.asOf).replace(/\broll\b/, 'tax roll') + ' — no dated refresh yet';
-                cov = '<div class="market-umb__cov">' + esc(fresh) +
+                var roll = (c.roll && c.freshness === 'dated')
+                  ? ' · ' + String(c.roll).replace(/\broll\b/, 'tax roll') : '';
+                cov = '<div class="market-umb__cov">' + esc(fresh) + esc(roll) +
                       ' · ' + c.leads.toLocaleString('en-US') + ' leads' +
                       (c.submarkets ? ' · ' + c.submarkets + (c.submarkets === 1 ? ' submarket' : ' submarkets') : '') + '</div>';
               }

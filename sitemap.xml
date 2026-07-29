@@ -23,4 +23,12 @@
   <url><loc>https://macoequitypartners.com/off-market-deals-polk.html</loc><lastmod>2026-07-19</lastmod></url>
   <url><loc>https://macoequitypartners.com/off-market-deals-lake.html</loc><lastmod>2026-07-19</lastmod></url>
   <url><loc>https://macoequitypartners.com/updates.html</loc><lastmod>2026-07-19</lastmod></url>
+  <!-- Blog posts: real, titled, and linked from blog.html, but absent from the sitemap until
+       the Jul 2026 audit — so none of them were being offered to crawlers. -->
+  <url><loc>https://macoequitypartners.com/post-underwriting-is-the-edge.html</loc><lastmod>2026-07-11</lastmod></url>
+  <url><loc>https://macoequitypartners.com/post-value-add-underwrite.html</loc><lastmod>2026-07-11</lastmod></url>
+  <url><loc>https://macoequitypartners.com/post-2026-outlook.html</loc><lastmod>2026-07-11</lastmod></url>
+  <url><loc>https://macoequitypartners.com/post-palm-beach-industrial.html</loc><lastmod>2026-07-11</lastmod></url>
+  <url><loc>https://macoequitypartners.com/post-hiring-operators.html</loc><lastmod>2026-07-11</lastmod></url>
+  <url><loc>https://macoequitypartners.com/post-first-100-days.html</loc><lastmod>2026-07-11</lastmod></url>
 </urlset>
