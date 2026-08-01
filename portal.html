@@ -1872,7 +1872,7 @@ function applyHomestead(){
 // ── POLK COUNTY — snapshot lead list (non-homestead estate/trust/heirs SFH) ──
 // Data baked in polk-leads.js (window.POLK_LEADS / POLK_META) from the Polk PA map service.
 // Polk has NO open comp or code-violation feed, so these are targeting leads only (no ARV).
-var _polkFilter={market:'',tag:'',own:'',q:'',sort:'',inst:'',band:''};
+var _polkFilter={market:'',tag:'',own:'',q:'',sort:'',inst:'',band:'',mail:''};
 function _polkAddr(l){return l.a+', '+l.c+' FL '+(l.z||'');}
 function _polkMail(l){return [l.m1,l.m3].filter(Boolean).join(', ');}                         // owner mailing address
 function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_polkAddr(l));}
@@ -1960,6 +1960,11 @@ function polkFiltered(){
     if(_polkFilter.tag&&l.tag!==_polkFilter.tag)return false;
     if(_polkFilter.own&&polkOwnLoc(l).k!==_polkFilter.own)return false;
     if(_polkFilter.inst&&_instOwner(l.o))return false;                    // hide Wall Street portfolios
+    // Grouped with the other don't-waste-postage guard. 'only' builds the skip-trace worklist;
+    // 'no' strips letters that are certain to come back. Flows into the grid, Export CSV and the
+    // letter picker automatically, because all three already read polkFiltered().
+    if(_polkFilter.mail==='only'&&!_mailRiskLead(l))return false;
+    if(_polkFilter.mail==='no'&&_mailRiskLead(l))return false;
     if(_polkFilter.band&&!_bandFor(l))return false;                       // only leads with a real sale band
     if(_polkFilter.q){var q=_polkFilter.q.toLowerCase();if((l.a+' '+l.o+' '+l.c+' '+(l.m3||'')).toLowerCase().indexOf(q)<0)return false;}
     return true;
@@ -2035,6 +2040,8 @@ function buildPolk(){
       +'<select class="filter-sel" onchange="_polkFilter.tag=this.value;renderPolk();"><option value="">All</option><option value="probate">Estate / probate</option><option value="le">Life estate</option><option value="trust">Trust-owned</option><option value="entity">LLC / entity</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Owner</span>'
       +'<select class="filter-sel" onchange="_polkFilter.own=this.value;renderPolk();"><option value="">Anywhere</option><option value="oos">Out-of-state</option><option value="abs">Absentee (FL)</option><option value="local">Local</option></select>'
+      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Mail risk</span>'
+      +'<select class="filter-sel" title="Estates whose owner mailing address IS the property — the heirs are not there, so a letter is wasted postage by construction. Skip-trace them instead." onchange="_polkFilter.mail=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude (mailable only)</option><option value="only">Only (skip-trace list)</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Sort</span>'
       +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Hide Wall Street SFR portfolios (they never answer blind mail)"><input type="checkbox" onchange="_polkFilter.inst=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Hide institutional</label>'
@@ -2237,9 +2244,23 @@ function _instOwner(o){return /SRP SUB|FKH SFR|INVITATION HOMES|FYR SFR|FYR\b|CS
 // Building value ≤ $100 on the tax roll = the county is valuing LAND ONLY — house pricing is invalid.
 function _teardownLead(l){return !!(l&&l.bld!=null&&l.bld<=100&&(l.lnd||0)>0);}
 // Estate whose mail goes to the property itself — high return-to-sender risk.
+// Street-type synonyms. The county roll and the owner mailing line are keyed by different clerks
+// and disagree on abbreviation constantly — "1061 Ne 213 Ter" vs "1061 Ne 213 Terr" is the SAME
+// address. Aug 2026 audit: exact string equality caught 517 mail-risk estates across the six
+// boards while normalising suffixes catches 623 — 106 letters (102 Miami-Dade, 4 Broward) that
+// were certain to return to sender and were being mailed anyway. All 106 extras were inspected:
+// every one is a pure suffix variant (Ter/Terr, Ave/Avenue, Pl/Place, Ct/Court, Ln/Lane).
+var _ST_SUFFIX={TERRACE:'TER',TERR:'TER',TER:'TER',STREET:'ST',ST:'ST',AVENUE:'AVE',AVE:'AVE',AV:'AVE',
+ ROAD:'RD',RD:'RD',DRIVE:'DR',DR:'DR',COURT:'CT',CT:'CT',PLACE:'PL',PL:'PL',LANE:'LN',LN:'LN',
+ BOULEVARD:'BLVD',BLVD:'BLVD',CIRCLE:'CIR',CIR:'CIR',HIGHWAY:'HWY',HWY:'HWY',PARKWAY:'PKWY',PKWY:'PKWY',
+ TRAIL:'TRL',TRL:'TRL',WAY:'WAY',LOOP:'LOOP',PATH:'PATH',PLAZA:'PLZ',PLZ:'PLZ'};
+function _normStreet(s){
+  return (''+(s||'')).toUpperCase().replace(/[.,#]/g,' ').replace(/\s+/g,' ').trim()
+    .split(' ').map(function(w){return _ST_SUFFIX[w]||w;}).join(' ');
+}
 function _mailRiskLead(l){
   if(!l||l.tag!=='probate'||!l.m1)return false;
-  var a=(''+(l.a||'')).toUpperCase().replace(/\s+/g,' ').trim(), m=(''+(l.m1||'')).toUpperCase().replace(/\s+/g,' ').trim();
+  var a=_normStreet(l.a), m=_normStreet(l.m1);
   return !!(a&&m&&a===m);
 }
 // ── MODELED EQUITY — the #1 pro-investor list filter (suppress underwater owners, chase free-and-clear).
