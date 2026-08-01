@@ -54,7 +54,7 @@ def band_for_zip(z):
             a = x['attributes']
             sp, sf = num(a.get('SALE_PRC1')), num(a.get('TOT_LVG_AR'))
             if sp > 0 and sf > 0:
-                rows.append(sp / sf)
+                rows.append((sp / sf, sf))     # keep sqft — $/sf varies strongly WITH house size
                 addr = (a.get('PHY_ADDR1') or '').strip()
                 yr = int(num(a.get('SALE_YR1')))
                 if addr and 60 <= sp / sf <= 1200:
@@ -63,8 +63,8 @@ def band_for_zip(z):
         last = max(int(num(x['attributes'].get('OBJECTID'))) for x in f)
         if len(f) < 2000: break
         time.sleep(3)
-    rows = [p for p in rows if 60 <= p <= 1200]
-    rows.sort()
+    rows = [r for r in rows if 60 <= r[0] <= 1200]
+    rows.sort(key=lambda r: r[0])
     k = int(len(rows) * 0.05)
     rows = rows[k:len(rows) - k] if len(rows) > 2 * k else rows
     if len(rows) < 8: return {'thin': len(rows)}
@@ -72,11 +72,37 @@ def band_for_zip(z):
     # sales, the same rows the band statistics were computed from.
     sales.sort(key=lambda r: -r['y'])
     comps = sales[:6]
-    def pct(q):
-        i = q * (len(rows) - 1); lo = int(i)
-        return rows[lo] + (rows[min(lo + 1, len(rows) - 1)] - rows[lo]) * (i - lo)
-    return {'med': round(pct(0.5)), 'p25': round(pct(0.25)), 'p75': round(pct(0.75)),
-            'n': len(rows), 'as_of': '%d-%02d' % (NOW.year, NOW.month), 'comps': comps}
+
+    def pct_of(vals, q):
+        i = q * (len(vals) - 1); lo = int(i)
+        return vals[lo] + (vals[min(lo + 1, len(vals) - 1)] - vals[lo]) * (i - lo)
+
+    ppsf_all = [r[0] for r in rows]
+
+    def band(vals):
+        vals = sorted(vals)
+        return {'med': round(pct_of(vals, 0.5)),
+                'p25': round(pct_of(vals, 0.25)),
+                'p75': round(pct_of(vals, 0.75)), 'n': len(vals)}
+
+    # SIZE-STRATIFIED BANDS (added 2026-08-01). A ZIP-wide p25–p75 mixes every house size in the
+    # ZIP, and $/sf falls sharply as size rises — in 33033's own comps, 1,365 sf sold at $286/sf
+    # while 2,568 sf sold at $173/sf. Quoting one ZIP-wide spread therefore hands a homeowner a
+    # range far wider than the data actually supports for a house of THEIR size. Bucketing by
+    # living area lets the portal quote the band for comparable homes instead.
+    # Buckets need >=12 sales to be published; the portal falls back to the ZIP-wide band when a
+    # bucket is missing, so a thin ZIP degrades to exactly today's behaviour rather than breaking.
+    SIZE_BUCKETS = [(0, 1100), (1100, 1500), (1500, 2000), (2000, 2800), (2800, 99999)]
+    sz = {}
+    for lo_sf, hi_sf in SIZE_BUCKETS:
+        vals = [r[0] for r in rows if lo_sf <= r[1] < hi_sf]
+        if len(vals) >= 12:
+            sz['%d-%d' % (lo_sf, hi_sf)] = band(vals)
+
+    out = band(ppsf_all)
+    out.update({'n': len(rows), 'as_of': '%d-%02d' % (NOW.year, NOW.month), 'comps': comps})
+    if sz: out['sz'] = sz
+    return out
 
 def main():
     arg = (sys.argv[1] if len(sys.argv) > 1 else 'miami').strip()

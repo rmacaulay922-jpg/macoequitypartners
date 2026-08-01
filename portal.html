@@ -1757,14 +1757,21 @@ function showTab(btn){
 // Per-county record-search portals (PA / tax / probate / code / deeds) live in the `rec` config.
 var POLK_REC={pa:'https://map.polkflpa.gov/',tax:'https://esearch.polk-tax.com/',probate:'https://pro.polkcountyclerk.net/PRO',code:'https://aca-prod.accela.com/POLKCO/Cap/CapHome.aspx?module=Enforcement&TabName=Home',records:'https://www.polkclerkfl.gov/187/Public-Records-Searches'};
 // Broward/Lee/Collier record portals — landing pages verified; deep-link formats can be refined later.
-var BROWARD_REC={pa:'https://web.bcpa.net/bcpaclient/#/Record-Search',tax:'https://broward.county-taxes.com/public/search/property_tax',probate:'https://www.browardclerk.org/Web2/CaseSearchECA/',code:'https://webapps6.broward.org/CodeComplianceSearch/',records:'https://officialrecords.broward.org/AcclaimWeb/'};
+// paParcel = a VERIFIED deep link that opens the parcel's own record instead of an empty search
+// form. {ID} is replaced with the lead's digits-only parcel id. Only add one here after loading it
+// against a real lead and confirming the owner/address match — a wrong deep link that silently
+// lands on the wrong parcel is far worse than making the user type the address.
+var BROWARD_REC={pa:'https://web.bcpa.net/bcpaclient/#/Record-Search',paParcel:'https://web.bcpa.net/BcpaClient/#/Record-Search?folioNumber={ID}',tax:'https://broward.county-taxes.com/public/search/property_tax',probate:'https://www.browardclerk.org/Web2/CaseSearchECA/',code:'https://webapps6.broward.org/CodeComplianceSearch/',records:'https://officialrecords.broward.org/AcclaimWeb/'};
 var LEE_REC={pa:'https://www.leepa.org/Search/PropertySearch.aspx',tax:'https://www.leetc.com/taxes/property-taxes',probate:'https://www.leeclerk.org/records/probate',code:'https://www.leegov.com/dcd/codeenforcement',records:'https://or.leeclerk.org/LandmarkWeb'};
 var LAKE_REC={pa:'https://www.lakecopropappr.com/',tax:'https://www.laketax.com/',probate:'https://lakecountyclerk.org/',code:'https://www.lakecountyfl.gov/offices/code_enforcement/',records:'https://lakecountyclerk.org/official_records/'};
 var COLLIER_REC={pa:'https://www.collierappraiser.com/',tax:'https://www.colliertax.com/search/',probate:'https://cceapps.collierclerk.com/eaccess/',code:'https://cvportal.colliercountyfl.gov/CityViewPortal/',records:'https://cceapps.collierclerk.com/publicaccess/'};
-var MIAMI_REC={pa:'https://apps.miamidadepa.gov/PropertySearch/',tax:'https://miamidade.county-taxes.com/public/search/property_tax',probate:'https://www2.miamidadeclerk.gov/ocs/Search.aspx',code:'https://www.miamidade.gov/permits/code-compliance.page',records:'https://onlineservices.miamidadeclerk.gov/officialrecords/'};
+var MIAMI_REC={pa:'https://apps.miamidadepa.gov/PropertySearch/',paParcel:'https://www.miamidade.gov/Apps/PA/propertysearch/#/?folio={ID}',tax:'https://miamidade.county-taxes.com/public/search/property_tax',probate:'https://www2.miamidadeclerk.gov/ocs/Search.aspx',code:'https://www.miamidade.gov/permits/code-compliance.page',records:'https://onlineservices.miamidadeclerk.gov/officialrecords/'};
   var MARKETS={
   miami:  {label:'Miami-Dade',              kind:'deep',  tabs:['brief','overview','deals','all','construction','violations','pipeline']},
-  miamicw:{label:'Miami-Dade · County-wide',  kind:'leads', src:'MIAMI_LEADS', meta:'MIAMI_META', rec:MIAMI_REC, tabs:['brief','polk','pipeline']},
+  // valModelled: this market's `mkt` is a MODELLED estimate, not a county-roll figure. Miami-Dade
+  // is the only one — PaGISView returns ASSESSED_VAL_CUR = null, so the scraper substitutes
+  // band_mid(zip, sqft). Everything else carries the real FDOR just value.
+  miamicw:{label:'Miami-Dade · County-wide',  kind:'leads', src:'MIAMI_LEADS', meta:'MIAMI_META', rec:MIAMI_REC, valModelled:true, tabs:['brief','polk','pipeline']},
   broward:{label:'Broward',                 kind:'leads', src:'BROWARD_LEADS', meta:'BROWARD_META', rec:BROWARD_REC, tabs:['brief','polk','pipeline']},
   lee:    {label:'Lee · Fort Myers',        kind:'leads', src:'LEE_LEADS',     meta:'LEE_META',     rec:LEE_REC,     tabs:['brief','polk','pipeline']},
   collier:{label:'Collier · Naples',        kind:'leads', src:'COLLIER_LEADS', meta:'COLLIER_META', rec:COLLIER_REC, tabs:['brief','polk','pipeline']},
@@ -1867,7 +1874,25 @@ function _polkMail(l){return [l.m1,l.m3].filter(Boolean).join(', ');}           
 function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_polkAddr(l));}
 // County-portal deep links now come from the active market's `rec` config (_LREC) so the same
 // buttons open the right county's Property Appraiser / Tax / Probate / Code / Records search.
-function polkPaUrl(l){return _LREC('pa');}          // county Property Appraiser — search the parcel/address for the full record
+// County Property Appraiser. Prefer the parcel's OWN record page (paParcel) so the lookup is
+// prefilled; fall back to the county's search landing page where no deep link is verified yet.
+function polkPaUrl(l){
+  try{
+    var rec=(MARKETS[window._market||'miamicw']||{}).rec||{};
+    var id=(''+((l&&(l.pid||l.st))||'')).replace(/[^0-9A-Za-z]/g,'');
+    if(rec.paParcel&&id)return rec.paParcel.replace('{ID}',encodeURIComponent(id));
+  }catch(e){}
+  return _LREC('pa');
+}
+// True when the active market's `mkt` is a modelled estimate rather than a county-roll value.
+function _valIsModelled(){try{return !!(MARKETS[window._market||'miamicw']||{}).valModelled;}catch(e){return false;}}
+// True when this market opens the parcel directly, so the button can say so.
+function _paIsDeep(l){
+  try{
+    var rec=(MARKETS[window._market||'miamicw']||{}).rec||{};
+    return !!(rec.paParcel&&(l&&(l.pid||l.st)));
+  }catch(e){return false;}
+}
 function polkTaxUrl(l){return _LREC('tax');}        // county Tax Collector — values, bills & delinquency
 function polkProbateUrl(l){return _LREC('probate');}// clerk probate/estate & court case search (by owner name)
 function polkCodeUrl(l){return _LREC('code');}      // code-enforcement case search (by address)
@@ -2223,7 +2248,19 @@ function _bandFor(l){
     if(_teardownLead(l))return null; // land-value-only parcel — a house-price band would be flatly wrong
     var e=_fdorFor(l); if(!e||!e.sqft||e.sqft<400)return null;
     var b=(window.ZIP_BANDS||{})[''+(l.z||'')]; if(!b||!b.med||b.n<8)return null;
-    return {lo:Math.round(b.p25*e.sqft),mid:Math.round(b.med*e.sqft),hi:Math.round(b.p75*e.sqft),n:b.n,ppsf:b.med,sqft:e.sqft,asOf:b.as_of||'',comps:b.comps||[]};
+    // Prefer the band for homes of THIS SIZE. A ZIP-wide p25-p75 mixes every house size in the
+    // ZIP and $/sf falls sharply as size rises, so the ZIP-wide spread is far wider than the data
+    // supports for any one home — and off-centre for small and large ones. Falls back to the
+    // ZIP-wide band when the bake has no bucket for this size (thin ZIP), i.e. old behaviour.
+    var src=b, matched=false;
+    try{
+      var sz=b.sz;
+      if(sz){for(var k in sz){var p=k.split('-');
+        if(e.sqft>=+p[0]&&e.sqft<+p[1]&&sz[k]&&sz[k].med){src=sz[k];matched=true;break;}}}
+    }catch(_){}
+    return {lo:Math.round(src.p25*e.sqft),mid:Math.round(src.med*e.sqft),hi:Math.round(src.p75*e.sqft),
+            n:src.n||b.n,ppsf:src.med,sqft:e.sqft,asOf:b.as_of||'',comps:b.comps||[],
+            matched:matched,zipN:b.n};
   }catch(e){return null;}
 }
 function _marketOverview(county,meta){
@@ -2296,7 +2333,7 @@ function renderPolk(){
         // "UW" — an unreadable abbreviation sitting fifth among six same-weight buttons. Named
         // properly and moved next to Details. (Tooltip was Polk-specific; it serves all markets.)
         +'<button class="btn btn-gold" style="font-size:10px;padding:4px 10px;" title="Open the Underwriter — full flip/hold P&amp;L on your own numbers. No market here has per-property comps, so enter ARV and repairs by hand; the county value and ZIP sale band on this card are your anchors." onclick="polkUnderwrite('+pj+')">Underwrite</button>'
-        +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkPaUrl(l)+'" target="_blank" rel="noopener">'+county+' PA</a>'
+        +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkPaUrl(l)+'" target="_blank" rel="noopener" title="'+(_paIsDeep(l)?'Opens this parcel&#39;s record on the '+county+' Property Appraiser — no typing':'Opens the '+county+' Property Appraiser search (no verified deep link for this county yet — search the address)')+'">'+county+' PA'+(_paIsDeep(l)?' ↗':'')+'</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkProbateUrl(l)+'" target="_blank" rel="noopener" title="Search the owner name for probate/estate cases">Probate</a>'
         +'<a class="btn btn-outline" style="font-size:10px;padding:4px 8px;" href="'+polkSkipUrl(l)+'" target="_blank" rel="noopener">Skip-trace</a>'
         +(inPipe?'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" disabled>&#10003; In Pipeline</button>':'<button class="btn btn-dark" style="font-size:10px;padding:4px 8px;" onclick="polkToPipeline('+pj+',this)">+ Pipeline</button>')
@@ -2522,9 +2559,19 @@ function briefLeadCard(l,i){
     +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-weight:800;font-size:15px;">'+_escHtml(l.a)+'</div><span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;font-weight:800;font-size:11px;padding:3px 10px;border-radius:6px;flex:none;white-space:nowrap;">'+ts[1]+'</span></div>'
     +'<div style="font-size:11.5px;color:var(--muted);margin:2px 0 8px;">'+_meta.join(' &middot; ')+'</div>'
     +_chips
-    +line('County value',fmtK(l.mkt),'market / just value on the county roll &mdash; NOT a resale estimate')
+    // Miami-Dade's value is NOT a county-roll figure. PaGISView publishes ASSESSED_VAL_CUR as
+    // null, so tools/scrape_miami_pa.py falls back to band_mid(zip, sqft) — a modelled ZIP
+    // estimate. Calling that "county roll value" overstated it badly (7310 NW 4 St showed $699K
+    // against the PA's actual $526,597 market value), so each market now labels its own source.
+    // When the value is modelled it IS band_mid(zip, sqft) — the very same number the sale-band
+    // row below shows, with a range and a sale count attached. Printing both just says it twice,
+    // so the standalone row only appears when there is no band row to carry it.
+    +(_valIsModelled()
+       ? (_bd?'':line('Est. value','~'+fmtK(l.mkt),'modelled from ZIP $/sf &times; size &mdash; the county publishes no value here'))
+       : line('County value',fmtK(l.mkt),'market / just value on the county roll &mdash; NOT a resale estimate'))
     +((l.bld>0||ln>0)?line('Building / land',fmtK(l.bld)+' / '+fmtK(ln),'county-assessed split'):'')
-    +(_bd?line('Est. value &middot; ZIP sales',fmtK(_bd.mid),fmtK(_bd.lo)+'&ndash;'+fmtK(_bd.hi)+' &middot; '+_bd.n+' recorded sales'):'')
+    +(_bd?line(_bd.matched?'Est. value &middot; homes this size':'Est. value &middot; ZIP sales',fmtK(_bd.mid),
+        fmtK(_bd.lo)+'&ndash;'+fmtK(_bd.hi)+' &middot; '+_bd.n+' recorded sales'+(_bd.matched?' of similar size':'')):'')
     +(why?'<div style="font-size:11px;color:var(--muted);margin:9px 0 3px;line-height:1.6;"><strong style="color:var(--ivory-soft);">Why it&rsquo;s a lead:</strong> '+why+'</div>':'')
     +'<div style="font-size:11px;color:#e8a14a;margin:6px 0 3px;line-height:1.6;">'+(_bd?'ZIP-level sale band, not a per-property comp &mdash; walk it and comp it before offering.':'No sold comps in this market yet &mdash; verify true value &amp; condition before offering.')+'</div>'
     +'<div style="display:grid;gap:7px;margin-top:11px;">'
@@ -4336,7 +4383,14 @@ function _valueLineFor(p){
       var l=(_LSRC()||[]).filter(function(x){return x.pid===p.polk;})[0];
       if(!l||_teardownLead(l))return '';
       var bd=_bandFor(l);
-      if(bd)return 'For homes of this size in your area, recorded sales over the last two years have generally run between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+'. I would need to see the property before making a firm offer, but I wanted to be straightforward about where I start.';
+      // Quote the SIZE-MATCHED band where the bake has one (bd.matched): homes of roughly this
+      // square footage, in this ZIP, over the last two years. That is a materially tighter and
+      // better-centred range than the ZIP-wide spread, and it is what the sentence claims to be.
+      // Without a bucket we fall back to the ZIP-wide band and say "in your area" instead.
+      if(bd)return (bd.matched
+        ? 'Homes of about this size in your ZIP have sold between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+' over the last two years, based on '+bd.n+' recorded sales.'
+        : 'Recorded sales in your area over the last two years have generally run between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+'.')
+        +' That is a starting range from public records, not an appraisal or an offer — I would need to see the property before naming a firm number, but I wanted to be straightforward about where I start.';
       return '';
     }
     if(p.folio){
