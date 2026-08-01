@@ -41,9 +41,26 @@ def query(where, last_oid, out_fields):
             if t < len(DELAYS): time.sleep(DELAYS[t])
     return None
 
+# FDOR county numbers (alphabetical + 10) for the counties whose ZIPs we bake.
+# Used to BOUND each zip query to one county — see band_for_zip.
+ZIP_CO = {}          # populated in main() from the leads files; zip -> CO_NO
+CO_BY_FILE = {'broward': 16, 'collier': 21, 'lake': 45, 'lee': 46, 'miami': 23, 'polk': 63}
+
+
 def band_for_zip(z):
+    # HYPOTHESIS, NOT YET PROVEN (2026-08-01): this query carried no CO_NO bound, making it a
+    # STATEWIDE scan filtered by zip — the same unbounded-deep-scan shape that FDOR load-sheds
+    # elsewhere (see scrape_fl_county.py's sweep comment). Every other query in this codebase that
+    # works is county-bounded. The bake has produced ZERO zips on every logged run for weeks
+    # ("DONE: 0 baked ... 4 failed", 07-26 through 07-29), so a bounded query cannot be worse.
+    # Measured the same day: the unbounded form hung past 100s without responding; the bounded
+    # form returned an error in 55s — but FDOR was already throttled by then, so that comparison
+    # does NOT establish the bound as the cure. Re-test on a cold service before believing it.
+    co = ZIP_CO.get(str(z))
     where = ("DOR_UC='001' AND QUAL_CD1 IN ('01','02') AND SALE_YR1>=2024 "
              "AND TOT_LVG_AR>500 AND SALE_PRC1>50000 AND PHY_ZIPCD=%s" % z)
+    if co:
+        where += " AND CO_NO=%d" % co
     rows, sales, last = [], [], 0
     while True:
         d = query(where, last, 'OBJECTID,SALE_PRC1,TOT_LVG_AR,PHY_ADDR1,SALE_YR1')
@@ -111,9 +128,21 @@ def main():
         # so one nightly run gives every market bands AND comps, not just Miami.
         import glob as _g
         found = set(MIAMI_ZIPS)
+        for z in MIAMI_ZIPS:
+            ZIP_CO.setdefault(str(z), CO_BY_FILE['miami'])
         for lf in _g.glob(os.path.join(REPO, '*-leads.js')):
-            found |= set(re.findall(r'"z":"(\d{5})"', open(lf, encoding='utf-8').read()))
+            key = os.path.basename(lf).replace('-leads.js', '')
+            zs = set(re.findall(r'"z":"(\d{5})"', open(lf, encoding='utf-8').read()))
+            found |= zs
+            # Bound each zip to the county whose board it came from. A zip that straddles a county
+            # line resolves to whichever board claimed it first — the bound is a query optimisation,
+            # not a filter on which sales count, so a tie costs coverage only at the very edge.
+            co = CO_BY_FILE.get(key)
+            if co:
+                for z in zs:
+                    ZIP_CO.setdefault(z, co)
         zips = sorted(found)
+        print('county-bounded %d/%d zips' % (sum(1 for z in zips if z in ZIP_CO), len(zips)), flush=True)
     elif arg == 'miami':
         zips = MIAMI_ZIPS
     else:
