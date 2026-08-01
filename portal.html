@@ -4474,6 +4474,19 @@ function _valueLineFor(p){
       var l=(_LSRC()||[]).filter(function(x){return x.pid===p.polk;})[0];
       if(!l||_teardownLead(l))return '';
       var bd=_bandFor(l);
+      // SANITY CLAMP (Aug 2026, added before the first real letter run). The band is the ZIP's
+      // median $/sf times THIS home's square footage. It knows nothing about condition, age or
+      // quality, so on exactly the distressed stock we target it runs high. Measured against the
+      // newly corrected county values: band/county was median 1.22x, and 79 of 600 leads were
+      // >=1.5x — worst 425 Ne 162 St, county $254,628 against a quoted $543,004-$761,288 (2.56x).
+      // Telling an owner their home is worth 2.5x what the county says sets an expectation no
+      // offer can meet. Where the band cannot be reconciled with the county's own figure we say
+      // NOTHING about value rather than something indefensible; the rest of the letter stands.
+      // Only applied where the county value is REAL (not the modelled fallback, which IS the band).
+      if(bd&&l.mkt>0&&!l.vm){
+        var _ratio=bd.mid/l.mkt;
+        if(_ratio>1.40||_ratio<0.70)bd=null;
+      }
       // Quote the SIZE-MATCHED band where the bake has one (bd.matched): homes of roughly this
       // square footage, in this ZIP, over the last two years. That is a materially tighter and
       // better-centred range than the ZIP-wide spread, and it is what the sentence claims to be.
@@ -4543,7 +4556,14 @@ function openLetterPicker(source){
     polkFiltered().slice(0,200).forEach(function(l){
       if(!l.m1)return;
       var skip='';
-      if(_instOwner(l.o))skip='institutional portfolio';
+      // Checked FIRST because it is the only one with legal exposure, not just wasted postage:
+      // an owner with an active MLS listing has an exclusive agreement with an agent, and a
+      // blind "I'd like to buy your house" letter to them risks tortious interference. Uses the
+      // RentCast cache (⚙ Listing check) — synchronous, cache-only. With no key it returns null
+      // and nothing is skipped, exactly as before; the per-card Zillow link stays the manual check.
+      var _ls=(typeof listedStatus==='function')?listedStatus(l.a,l.z):null;
+      if(_ls&&_ls.s==='listed')skip='currently listed — owner has an agent';
+      else if(_instOwner(l.o))skip='institutional portfolio';
       else if(_badZipLead(l))skip='no ZIP on county roll';
       else if(_mailRiskLead(l))skip='mail-return risk (estate, mails to property)';
       cands.push({addr:l.a+', '+l.c+' FL '+(l.z||''),nb:l.c+', '+_lc,folio:'',polk:l.pid,own:l.o,skip:skip,zip:(l.z&&l.z!=='0')?(''+l.z):''});
