@@ -640,6 +640,21 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
 <style id="mep-mobile">
 /* Mobile pass — additive only, scoped to narrow viewports so desktop is untouched. */
 @media (max-width: 760px){
+  /* Aug 2026 audit — standing outside a house you want the address and the numbers in ten
+     seconds. Before this there was roughly a screen and a half of chrome (a paragraph about the
+     tax roll, then four county aggregates) before the first lead, and the card's three-column
+     number row stayed 3-across at ~100px each. */
+  #polkBanner{max-height:96px;overflow-y:auto;-webkit-overflow-scrolling:touch;font-size:12px}
+  #polkStats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+  #polkStats .stat-card:nth-child(n+5){display:none}        /* first four aggregates only */
+  .mkt-overview{display:none}                               /* board-wide prose: desktop only */
+  #polkControls{gap:7px;margin-bottom:10px;max-height:104px;overflow-y:auto}
+  #polkControls .filter-sel,#polkControls input{font-size:12px;padding:5px 7px}
+  #polkControls > span:not([id]){display:none}              /* filter captions: the selects say it */
+  .metrics-row{grid-template-columns:1fr !important}         /* stack: readable beats compact */
+  .metrics-row .metric-cell{border-right:none !important;border-bottom:1px solid var(--border)}
+  .metrics-row .metric-cell:last-child{border-bottom:none}
+  #polkMap{height:300px}
   header{flex-wrap:wrap;row-gap:8px}
   header > div{flex-wrap:wrap;row-gap:6px}
   .hdr-back{display:none}                                   /* save the row for the market selector */
@@ -842,6 +857,12 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <div id="polkBanner"></div>
     <div id="polkStats" class="stats-grid" style="margin-bottom:16px;"></div>
     <div id="polkControls" style="display:flex;align-items:center;gap:10px;margin:4px 0 16px;flex-wrap:wrap;"></div>
+    <!-- Flippers farm geographically — "what else is near this one" was unanswerable before this.
+         Collapsed by default so the map costs nothing (no tiles, no Leaflet init) until opened. -->
+    <details id="polkMapWrap" style="margin:0 0 16px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);">
+      <summary style="cursor:pointer;padding:10px 14px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--bronze);font-weight:600;">Map view <span id="polkMapNote" style="text-transform:none;letter-spacing:0;color:var(--muted);font-weight:400;"></span></summary>
+      <div id="polkMap" style="height:420px;border-top:1px solid var(--border);border-radius:0 0 8px 8px;"></div>
+    </details>
     <div id="polkGrid" class="deal-grid"></div>
   </div>
 
@@ -2063,7 +2084,16 @@ function buildPolk(){
       +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
       +'<button class="btn btn-gold" style="font-size:11px;" title="Mail-merge letters to the owners in the current filter — uses the baked county mailing addresses" onclick="openLetterPicker(\'polk\')">&#9993; Letters to this list</button>'
       +'<button class="btn btn-dark" style="font-size:11px;" onclick="exportPolkCsv()">&#8681; Export CSV</button>'
-      +'<button class="btn btn-outline" style="font-size:11px;" onclick="openRcSettings()" title="Bring your own free RentCast key — Maco flags LISTED properties before you mail them">&#9881; Listing check</button>';
+      +'<button class="btn btn-outline" style="font-size:11px;" onclick="openRcSettings()" title="Bring your own free RentCast key — Maco flags LISTED properties before you mail them">&#9881; Listing check</button>'
+      // Aug 2026 audit: filtering to 23 leads left every stat on screen still reading 600, and the
+      // one number the member actually needs — how many am I working — appeared nowhere.
+      +'<span id="polkCount" style="font:700 12px/1 \'JetBrains Mono\',monospace;color:var(--gold);white-space:nowrap;padding:5px 10px;border:1px solid var(--rule-strong);border-radius:6px;"></span>'
+      // Cards are the wrong shape for comparing 400 properties — you can hold about two in your
+      // head. Table view puts the decision columns side by side over the SAME polkFiltered() rows.
+      +'<span class="uw-seg-wrap" style="display:inline-flex;border:1px solid var(--rule-strong);border-radius:6px;overflow:hidden;">'
+        +'<button id="polkViewCards" class="uw-seg-on" style="font-size:11px;padding:5px 11px;border:none;cursor:pointer;" onclick="setPolkView(\'cards\')">Cards</button>'
+        +'<button id="polkViewTable" style="font-size:11px;padding:5px 11px;border:none;cursor:pointer;background:none;color:var(--muted);" onclick="setPolkView(\'table\')">Table</button>'
+      +'</span>';
   }
   renderPolk();
 }
@@ -2365,7 +2395,9 @@ function _marketOverview(county,meta){
   var nh=Object.keys(hoods).length;
   var snap=(meta&&meta.snapshot)||'';
   function stat(v,l){return '<div style="text-align:center;padding:0 14px;"><div style="font-size:20px;font-weight:800;color:var(--ivory);">'+v+'</div><div style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:2px;">'+l+'</div></div>';}
-  return '<div style="grid-column:1/-1;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 8px;margin-bottom:4px;">'
+  // .mkt-overview so mobile CSS can collapse it — these are board-wide aggregates, useful context
+  // on a desktop but ~290px of prose standing between a phone user and the first lead.
+  return '<div class="mkt-overview" style="grid-column:1/-1;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 8px;margin-bottom:4px;">'
     +'<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;">'
       +stat(all.length.toLocaleString(),'Leads on board')
       +stat(nh,'Neighborhoods')
@@ -2380,10 +2412,127 @@ function _marketOverview(county,meta){
       +' &middot; every figure is a public-record estimate — verify before offering.</div>'
   +'</div>';
 }
+// ── LEADS MAP ──
+// Only Broward, Lee and Collier carry coordinates today (1,800 of 5,787 leads); Miami-Dade, Polk
+// and Lake bake none. Rather than show an empty map and let the member think there are no leads,
+// the panel says plainly which counties are mappable and why this one is not.
+var _lmap=null,_lmapLayer=null,_lmapWired=false;
+// Draw on FIRST open, not just on filter change — otherwise expanding the panel shows an empty box
+// until something else happens to re-render.
+function _wireLeadsMap(){
+  if(_lmapWired)return;
+  var w=document.getElementById('polkMapWrap'); if(!w)return;
+  _lmapWired=true;
+  w.addEventListener('toggle',function(){ if(w.open){ try{renderLeadsMap(polkFiltered());}catch(e){} } });
+}
+function renderLeadsMap(L){
+  var wrap=document.getElementById('polkMapWrap'), note=document.getElementById('polkMapNote');
+  if(!wrap)return;
+  var pts=(L||[]).filter(function(l){return l.lat!=null&&l.lng!=null;});
+  if(note)note.textContent=pts.length
+    ? ' — '+pts.length.toLocaleString()+' of '+L.length.toLocaleString()+' plotted'
+    : ' — no coordinates baked for this county yet (Broward, Lee and Collier have them)';
+  if(!pts.length){wrap.style.opacity='.6'; return;}
+  wrap.style.opacity='';
+  if(!wrap.open)return;                       // collapsed: do not pay for tiles or a Leaflet init
+  // NOTE: the parameter `L` shadows Leaflet's global inside this function, so reach it via window.
+  var LF=window.L;
+  if(!LF||!LF.map){
+    // Leaflet is not on the page — lazy-load it on first open, mirroring the overview map's
+    // pattern (line ~3787) rather than adding a second loader or a blocking <script> in <head>.
+    var el0=document.getElementById('polkMap');
+    if(!document.getElementById('leaflet-css')){var c=document.createElement('link');c.id='leaflet-css';c.rel='stylesheet';c.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(c);}
+    if(!window._leafletLoading){
+      window._leafletLoading=true;
+      var s=document.createElement('script');
+      s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      s.onload=function(){try{renderLeadsMap(polkFiltered());}catch(e){}};
+      s.onerror=function(){if(el0)el0.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;">Map unavailable (offline)</div>';};
+      document.head.appendChild(s);
+    }else{
+      // Already loading for the overview map — retry shortly rather than racing it.
+      setTimeout(function(){try{renderLeadsMap(polkFiltered());}catch(e){}},400);
+    }
+    return;
+  }
+  var el=document.getElementById('polkMap'); if(!el)return;
+  if(!_lmap){
+    _lmap=LF.map(el,{scrollWheelZoom:false});
+    LF.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      {attribution:'&copy; OpenStreetMap &copy; CARTO',maxZoom:19}).addTo(_lmap);
+  }
+  if(_lmapLayer)_lmap.removeLayer(_lmapLayer);
+  _lmapLayer=LF.layerGroup().addTo(_lmap);
+  var bounds=[];
+  pts.slice(0,600).forEach(function(l){
+    var bd=_bandFor(l), ts=polkTagStyle(l.tag);
+    var m=LF.circleMarker([l.lat,l.lng],{radius:5,color:ts[0],weight:1.5,fillColor:ts[0],fillOpacity:.55});
+    m.bindPopup('<div style="font:600 13px sans-serif;">'+_escHtml(l.a)+'</div>'
+      +'<div style="font:400 12px sans-serif;color:#555;">'+_escHtml(l.c||'')+' '+(l.z||'')+'</div>'
+      +'<div style="font:400 12px sans-serif;margin-top:4px;">'+(bd?'Est. '+fmtK(bd.mid)+' · '+fmtK(bd.lo)+'–'+fmtK(bd.hi):'County '+fmtK(l.mkt))+'</div>'
+      +'<div style="font:400 11px sans-serif;color:#777;">'+ts[1]+(l.held!=null?' · held '+l.held+'y':'')+'</div>');
+    m.addTo(_lmapLayer); bounds.push([l.lat,l.lng]);
+  });
+  if(bounds.length)_lmap.fitBounds(bounds,{padding:[24,24],maxZoom:14});
+  setTimeout(function(){try{_lmap.invalidateSize();}catch(e){}},60);
+}
+// Cards vs table. Both read the SAME polkFiltered() result, so the two views can never disagree
+// about which leads are in play — only about how they are drawn.
+var POLK_VIEW='cards';
+function setPolkView(v){
+  POLK_VIEW=(v==='table')?'table':'cards';
+  var a=document.getElementById('polkViewCards'), b=document.getElementById('polkViewTable');
+  if(a&&b){
+    var on='uw-seg-on', off='background:none;color:var(--muted);';
+    a.className=(POLK_VIEW==='cards')?on:''; b.className=(POLK_VIEW==='table')?on:'';
+    a.style.cssText='font-size:11px;padding:5px 11px;border:none;cursor:pointer;'+(POLK_VIEW==='cards'?'':off);
+    b.style.cssText='font-size:11px;padding:5px 11px;border:none;cursor:pointer;'+(POLK_VIEW==='table'?'':off);
+  }
+  renderPolk();
+}
+// Table view — the comparison surface. Columns are the four things a buyer weighs against each
+// other (value, size, hold, owner) plus the signals, which cards can only show one at a time.
+function _polkTableHtml(L,county){
+  var pip=(typeof getPipeline==='function')?getPipeline():{};
+  var head=['Address','City','ZIP','Est. value','Range','SF','Bd/Ba','Built','Held','Owner type','Signals','']
+    .map(function(h){return '<th style="text-align:left;padding:7px 9px;position:sticky;top:0;background:var(--bg-card);border-bottom:2px solid var(--rule-strong);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--bronze);white-space:nowrap;">'+h+'</th>';}).join('');
+  var body=L.slice(0,400).map(function(l){
+    var bd=_bandFor(l), e=_fdorFor(l), ts=polkTagStyle(l.tag), pj="'"+l.pid+"'";
+    var addr=l.a+', '+l.c+' '+(l.z||'');
+    var sig=[];
+    try{var f=_flagsFor(l); if(f){ if(f.code)sig.push('code'); if(f.permit)sig.push('permit'); if(f.lien)sig.push('lien'); }}catch(_){}
+    if(l.tag==='probate')sig.push('estate');
+    if(l.oos)sig.push('out-of-state');
+    var td=function(v,extra){return '<td style="padding:6px 9px;border-bottom:1px solid var(--border);white-space:nowrap;'+(extra||'')+'">'+v+'</td>';};
+    return '<tr style="font-size:12.5px;">'
+      +td('<strong>'+_escHtml(l.a)+'</strong>')
+      +td(_escHtml(l.c||''),'color:var(--muted);')
+      +td(l.z||'','color:var(--muted);')
+      +td(bd?'<span style="color:var(--gold);font-weight:700;">'+fmtK(bd.mid)+'</span>':fmtK(l.mkt))
+      +td(bd?(fmtK(bd.lo)+'–'+fmtK(bd.hi)):'&mdash;','color:var(--muted);font-size:11px;')
+      +td((e&&e.sqft)?e.sqft.toLocaleString():'&mdash;')
+      +td((l.bed||l.bath)?((l.bed||'?')+'/'+(l.bath||'?')):'&mdash;')
+      +td((e&&e.yb)||l.yb||'&mdash;')
+      +td(l.held!=null?(l.held+'y'):'&mdash;')
+      +td('<span style="color:'+ts[0]+';">'+ts[1]+'</span>')
+      +td(sig.length?_escHtml(sig.join(', ')):'&mdash;','color:var(--muted);font-size:11px;')
+      +td('<button class="btn btn-gold" style="font-size:10px;padding:3px 8px;" onclick="polkUnderwrite('+pj+')">UW</button> '
+         +(pip[addr]?'<span style="font-size:10px;color:var(--muted);">in pipeline</span>':'<button class="btn btn-dark" style="font-size:10px;padding:3px 8px;" onclick="polkToPipeline('+pj+',this)">+</button>'))
+    +'</tr>';
+  }).join('');
+  return '<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;">'
+    +'<table style="width:100%;border-collapse:collapse;min-width:900px;"><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div>'
+    +(L.length>400?'<div style="font-size:11px;color:var(--muted);padding:8px 2px;">Showing the first 400 of '+L.length.toLocaleString()+' — narrow the filters to see the rest.</div>':'');
+}
 function renderPolk(){
   var L=polkFiltered(), g=document.getElementById('polkGrid'); if(!g)return;
   var county=(_LMETA().county||'County');
+  // Live count of what the CURRENT filters actually produce — the number the member works from.
+  var cnt=document.getElementById('polkCount');
+  if(cnt)cnt.textContent=L.length.toLocaleString()+' lead'+(L.length===1?'':'s')+(L.length!==(_LSRC()||[]).length?' of '+((_LSRC()||[]).length).toLocaleString():'');
   if(!L.length){g.innerHTML='<div style="color:var(--muted);padding:20px;">No '+county+' leads match these filters.</div>';return;}
+  try{_wireLeadsMap();renderLeadsMap(L);}catch(e){}
+  if(POLK_VIEW==='table'){g.innerHTML=_marketOverview(county,_LMETA())+_polkTableHtml(L,county);return;}
   var pip=(typeof getPipeline==='function')?getPipeline():{};
   var _ov=_marketOverview(county,_LMETA());
   g.innerHTML=_ov+L.slice(0,400).map(function(l){
@@ -2400,17 +2549,25 @@ function renderPolk(){
         var bd=_bandFor(l);
         var _e=_fdorFor(l);
         var _noCV=(!l.bld||l.bld<=0);   // Miami county-wide (PaGISView) carries no county value/building
-        var cell1=_noCV
-          ?'<div class="metric-cell"><div class="metric-lbl">Beds / Baths</div><div class="metric-val" style="font-size:16px;">'+((l.bed||'?')+' / '+(l.bath||'?'))+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>'
-          :'<div class="metric-cell"><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">market / just</div></div>';
-        var cell2=_noCV
-          ?'<div class="metric-cell"><div class="metric-lbl">Size</div><div class="metric-val" style="font-size:16px;">'+((_e&&_e.sqft)?_e.sqft.toLocaleString()+' SF':'&mdash;')+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+((l.yb)?'built '+l.yb:'')+'</div></div>'
-          :'<div class="metric-cell"><div class="metric-lbl">Building</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.bld)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(l.lot||0)+' ac lot</div></div>';
-        var cells=cell1+cell2;
-        cells+=bd
-          ?'<div class="metric-cell" style="border-right:none;" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Est. Value · ZIP sales</div><div class="metric-val" style="font-size:16px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' · '+bd.n+' sales</div></div>'
-          :'<div class="metric-cell" style="border-right:none;"><div class="metric-lbl">Taxable</div><div class="metric-val" style="font-size:16px;">'+fmtK(l.tax)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">non-homestead</div></div>';
-        return '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+cells+'</div>';
+        // Aug 2026 audit — card reordered around how a buyer actually decides: VALUE first, then
+        // SIZE (which decides the resale buyer pool and whether the floor plan is fixable), then
+        // MOTIVATION. Previously the biggest type on the card was the county's Building value — a
+        // figure nobody uses in an offer — while beds/baths, present on 100% of Miami leads, only
+        // rendered in a branch true for 3 of 3,000 rows. Assessment trivia is demoted to sub-text.
+        var _bb=(l.bed||l.bath)?((l.bed||'?')+'bd / '+(l.bath||'?')+'ba'):'';
+        var _sf=(_e&&_e.sqft)?_e.sqft.toLocaleString()+' SF':'&mdash;';
+        var _yb=(_e&&_e.yb)?_e.yb:(l.yb||0);
+        // 1 — VALUE. The band where we have one (with its range); the county figure otherwise.
+        var cell1=bd
+          ?'<div class="metric-cell" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF'+(bd.matched?' for homes of this size':'')+'. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Est. Value'+(bd.matched?' &middot; this size':' &middot; ZIP sales')+'</div><div class="metric-val" style="font-size:17px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' &middot; '+bd.n+' sales</div></div>'
+          :'<div class="metric-cell"><div class="metric-lbl">'+(_valIsModelled(l)?'Est. Value':'County Value')+'</div><div class="metric-val" style="font-size:17px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(_valIsModelled(l)?'modelled':'market / just')+'</div></div>';
+        // 2 — SIZE. sqft is the headline; beds/baths and vintage ride underneath.
+        var cell2='<div class="metric-cell"><div class="metric-lbl">Size</div><div class="metric-val" style="font-size:17px;">'+_sf+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+[_bb,(_yb?'built '+_yb:''),(l.lot?l.lot+' ac':'')].filter(Boolean).join(' &middot; ')+'</div></div>';
+        // 3 — MOTIVATION. Hold length is the strongest single motivation cue we have on the card.
+        var _hold=(l.held!=null)?(l.held+'y'):'&mdash;';
+        var _ts3=polkTagStyle(l.tag);
+        var cell3='<div class="metric-cell" style="border-right:none;" title="How long this owner has held, and what kind of owner they are — the two motivation signals that survive across every county."><div class="metric-lbl">Held / Owner</div><div class="metric-val" style="font-size:17px;">'+_hold+'</div><div class="metric-sub" style="font-size:9px;color:'+_ts3[0]+';">'+_ts3[1]+(l.mkt&&bd?' &middot; county '+fmtK(l.mkt):'')+'</div></div>';
+        return '<div class="metrics-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+cell1+cell2+cell3+'</div>';
       })()
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
         +'<button class="btn btn-gold" id="polkT-'+l.pid+'" style="font-size:10px;padding:4px 10px;" onclick="polkToggleDetail('+pj+')">Details &#9662;</button>'
