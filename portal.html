@@ -2548,18 +2548,40 @@ function renderLeadsMap(L){
 // mid, which on distressed stock runs high — 20% of Miami leads band above 1.4x the county's own
 // value. Grading a lead "A" on a number we would refuse to print in a letter would be worse than
 // not grading it, so where the two disagree this returns null and the card shows nothing.
+// ── REPAIR: WALK-IT BASE + INSURABILITY RESERVE ──
+// The leads boards used a flat $45/sf regardless of vintage. In South Florida that silently omits
+// the two items that decide whether the RETAIL buyer can insure and therefore close: a roof at or
+// past the age carriers will write, and non-impact glass. 90% of the Miami board is pre-1993 —
+// before the post-Andrew code — so for nine leads in ten those costs are near-certain and were
+// budgeted at zero.
+//
+// These are ALLOWANCES, not quotes, and are labelled as such wherever they appear. The point is
+// that they are visible and roughly right rather than invisible and definitely wrong; a real GC
+// bid replaces them. Roof allowance assumes roof area ~1.25x living area at typical Miami re-roof
+// rates; glass assumes a partial impact package, not a whole-house replacement.
+function _leadRepair(l){
+  var e=_fdorFor(l); var sf=(e&&e.sqft)||0;
+  if(!sf)return null;
+  var yb=(e&&e.yb)||l.yb||0;
+  var base=sf*45, roof=0, glass=0, why=[];
+  if(yb&&yb<=2001){ roof=sf*12; why.push('roof'); }              // aged out for insurance purposes
+  if(yb&&yb<=1992){ glass=sf*18; why.push('impact glass'); }     // pre-Andrew code
+  var total=Math.round((base+roof+glass)/1000)*1000;
+  return {sqft:sf, yb:yb, base:Math.round(base), roof:Math.round(roof), glass:Math.round(glass),
+          total:total, reserve:Math.round(roof+glass), why:why};
+}
 function _leadEcon(l){
   try{
     if(!l||_teardownLead(l))return null;
     var bd=_bandFor(l); if(!bd||!bd.mid)return null;
     if(l.mkt>0&&!l.vm){var r=bd.mid/l.mkt; if(r>1.40||r<0.70)return null;}
-    var e=_fdorFor(l);
-    var repair=(e&&e.sqft)?Math.round(e.sqft*45/1000)*1000:0;   // $45/sf walk-it, same as the underwriter
-    if(!repair)return null;                                      // no size, no defensible repair number
+    var rp=_leadRepair(l);
+    if(!rp||!rp.total)return null;                               // no size, no defensible repair number
+    var repair=rp.total;
     var d={arv:bd.mid,repair:repair};
     var offer=maxOfferFor(bd.mid,repair);
     var profit=getProfit(bd.mid,repair);
-    return {arv:bd.mid,repair:repair,offer:offer,profit:profit,grade:buyGrade(d),band:bd};
+    return {arv:bd.mid,repair:repair,rp:rp,offer:offer,profit:profit,grade:buyGrade(d),band:bd};
   }catch(e){return null;}
 }
 // Cards vs table. Both read the SAME polkFiltered() result, so the two views can never disagree
@@ -2670,7 +2692,10 @@ function renderPolk(){
           +'<span style="background:'+(g.bg||'rgba(138,132,120,.14)')+';color:'+(g.c||'var(--muted)')+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+(g.g||'?')+' &middot; '+(g.t||'')+'</span>'
           +'<span style="font-size:12.5px;color:var(--ivory-soft);">Buy at or under <strong style="color:var(--gold);font-size:14px;">'+(ec.offer?fmtK(ec.offer):'&mdash;')+'</strong></span>'
           +(ec.profit!=null?'<span style="font-size:11.5px;color:var(--muted);">&rarr; ~'+fmtK(ec.profit)+' profit'+(pct!=null?' ('+pct+'% of value)':'')+'</span>':'')
-          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;" title="ARV = ZIP sale band midpoint; repairs = $45/sf walk-it default; target profit from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.">est. &middot; walk it first</span>'
+          +((ec.rp&&ec.rp.reserve>0)
+             ? '<span style="font-size:10.5px;color:#e8854a;" title="'+ec.rp.yb+' build. Base walk-it repair '+fmtK(ec.rp.base)+' at $45/sf, plus an allowance for the items that decide whether your RETAIL buyer can insure and therefore close: '+ec.rp.why.join(' + ')+'. An allowance, not a quote — replace it with a GC bid.">incl. '+fmtK(ec.rp.reserve)+' '+ec.rp.why.join(' + ')+'</span>'
+             : '')
+          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;" title="ARV = ZIP sale band midpoint; repairs = $45/sf walk-it base plus a vintage insurability allowance; target profit from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.">est. &middot; walk it first</span>'
         +'</div>';
       })()
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
@@ -2703,11 +2728,11 @@ function polkUnderwrite(pid){
   if(bd&&l.mkt>0&&!l.vm){var _rr=bd.mid/l.mkt; if(_rr>1.40||_rr<0.70)_bandSane=false;}
   if(bd&&_bandSane){
     // Seed with the ZIP qualified-sale band midpoint + sqft-based repair walk-it default — clearly a starting range, not a comp ARV.
-    var rep=(e&&e.sqft)?Math.round(e.sqft*45/1000)*1000:0; // $45/sf walk-it default, same convention as Miami county leads
+    var _rp=_leadRepair(l); var rep=_rp?_rp.total:0; // walk-it base + vintage insurability reserve
     runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:bd.mid, repair:rep, sqft:e&&e.sqft, _arvSrc:'zip-band'});
     try{toast('Pre-filled from the ZIP sale band ('+fmtK(bd.lo)+'–'+fmtK(bd.hi)+', '+bd.n+' qual. sales) + $45/sf walk-it repair — verify both before offering');}catch(e2){}
   }else if(bd){
-    var rep2=(e&&e.sqft)?Math.round(e.sqft*45/1000)*1000:0;
+    var _rp2=_leadRepair(l); var rep2=_rp2?_rp2.total:0;
     runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:rep2, sqft:e&&e.sqft});
     try{toast('ARV left blank on purpose — the ZIP band ('+fmtK(bd.mid)+') and the county value ('+fmtK(l.mkt)+') disagree by too much to seed one. Pull real comps for this block before you put a number in.');}catch(e2){}
   }else{
