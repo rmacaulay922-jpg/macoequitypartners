@@ -449,7 +449,7 @@ body.investor-mode #tabBar button[data-tab="all"],body.investor-mode #tabBar but
 /* The Leads tab stays visible to investors — it's the "review all the county's data" view (Brief = the curated top picks). Operator tools inside it (skip-trace/letters/CSV/pipeline) are still hidden by the rules above. */
 body.investor-mode .status-pill-wrap{display:none!important}
 body.investor-mode [onclick*="addToPipeline"],body.investor-mode [onclick*="violToPipeline"],body.investor-mode [onclick*="polkToPipeline"]{display:none!important}
-body.investor-mode [onclick*="openLetterPicker"],body.investor-mode [onclick*="exportTableCsv"],body.investor-mode [onclick*="buildMailList"],body.investor-mode [onclick*="openDriveList"],body.investor-mode [onclick*="openLetterEditor"],body.investor-mode [onclick*="exportPipelineCsv"],body.investor-mode [onclick*="exportPolkCsv"]{display:none!important}
+body.investor-mode [onclick*="openNoMailList"],body.investor-mode [onclick*="openLetterPicker"],body.investor-mode [onclick*="exportTableCsv"],body.investor-mode [onclick*="buildMailList"],body.investor-mode [onclick*="openDriveList"],body.investor-mode [onclick*="openLetterEditor"],body.investor-mode [onclick*="exportPipelineCsv"],body.investor-mode [onclick*="exportPolkCsv"]{display:none!important}
 body.investor-mode a[href*="truepeoplesearch"],body.investor-mode a[href*="fastpeoplesearch"],body.investor-mode a[href*="sunbiz"],body.investor-mode a[href*="miamidadeclerk.gov/ocs"]{display:none!important}
 body.investor-mode .mep-outreach{display:none!important}
 body.investor-mode .rc-hint{display:none!important}
@@ -1151,6 +1151,7 @@ nav.tabs button:hover::after,nav.tabs button.active::after{transform:scaleX(1)}
     <button class="btn btn-outline" type="button" onclick="openRcSettings()" style="font-size:12px;" title="Bring your own free RentCast key and Maco flags LISTED properties before you mail them">&#9881; Listing check</button>
     <button class="btn btn-dark" type="button" onclick="exportPipelineCsv()" style="font-size:12px;">&#8681; Export Pipeline CSV</button>
     <button class="btn btn-dark" type="button" onclick="exportCrmJson()" style="font-size:12px;" title="Download a JSON backup of all statuses, pipeline cards, notes, follow-ups and comp exclusions">&#128190; Backup CRM</button>
+    <button class="btn btn-outline" type="button" onclick="openNoMailList()" style="font-size:12px;" title="Addresses removed from every mail run — returned mail and opt-outs">&#9940; Do-not-mail</button>
     <label class="btn btn-dark" style="font-size:12px;cursor:pointer;" title="Restore a previously downloaded backup">&#8635; Restore CRM<input type="file" accept=".json,application/json" onchange="importCrmJson(this)" style="display:none;"></label>
   </div>
 
@@ -4267,14 +4268,18 @@ function buildMailList(){
   if(st)st.textContent='Pulling owner records ('+folios.length+' parcels)…';
   enrichOwners(folios,function(cache,failed){
     var statuses=loadStatuses();
-    var out=[],seen={};
+    var out=[],seen={},supp=0;
     rows.forEach(function(r){
+      // This CSV goes straight to a mail house, so it is a real mail path and needs the same
+      // do-not-mail guard as the letter printer — otherwise suppression is only enforced on the
+      // one route that happens to print in-browser.
+      if(isSuppressed(r[1])){supp++;return;}
       var f=_folioOf({pa_url:r[16]});var oc=f&&cache[f];if(!oc||!oc.o||!oc.ma)return;
       var key=oc.o+'|'+oc.ma;if(seen[key])return;seen[key]=1;
       out.push([oc.o,r[1],oc.ma,oc.mc,oc.ms,oc.mz,computeScore(rowToDeal(r)).score,statuses[r[1]]||'unreviewed']);
     });
     if(out.length)downloadFile('maco-mail-list-'+_today()+'.csv',toCsv(['Owner','Property Address','Mailing Street','Mailing City','Mailing State','Mailing Zip','Score','Status'],out));
-    if(st)st.textContent=out.length+' mailable owners'+(filteredRows.length>600?' (first 600 of filter)':'')+(failed?' — county lookup partly unavailable':'')+(out.length?' — CSV downloaded.':' found.');
+    if(st)st.textContent=out.length+' mailable owners'+(filteredRows.length>600?' (first 600 of filter)':'')+(supp?' — '+supp+' on the do-not-mail list':'')+(failed?' — county lookup partly unavailable':'')+(out.length?' — CSV downloaded.':' found.');
     try{_applyOwnersToCounty(cache);}catch(e){}
   },function(p,t){if(st)st.textContent='Pulling owner records… batch '+p+'/'+t;});
 }
@@ -4317,7 +4322,13 @@ function openDriveList(){
 }
 // CRM state backup/restore — statuses, pipeline, notes, follow-ups, comp exclusions live ONLY in this
 // browser's localStorage; a cache clear or new laptop loses everything without these.
-var CRM_KEYS=['mep_status','mep_pipeline_v2','mep_rates','mep_comp_excl','mep_seen_cases','mep_owner_v1','mep_target_profit','mep_touches','mep_letter_tpl_v2'];
+// Aug 2026: two pre-existing gaps fixed here, both confirmed by grep against the live keys.
+//  - 'mep_letter_tpl_v2' does not exist. LETTER_KEY is 'mep_letter_tpl_v3', so an edited letter
+//    template was silently NOT backed up and NOT restored — you would rewrite it on a new browser.
+//  - 'mep_sender' (SENDER_KEY) was absent, so a restored browser re-hit the sender gate.
+// 'mep_nomail' is new: the do-not-mail list rides along on the backup that already exists rather
+// than becoming a second thing to remember to save.
+var CRM_KEYS=['mep_status','mep_pipeline_v2','mep_rates','mep_comp_excl','mep_seen_cases','mep_owner_v1','mep_target_profit','mep_touches','mep_letter_tpl_v3','mep_sender','mep_nomail'];
 function exportCrmJson(){
   var out={_exported:new Date().toISOString(),_app:'maco-portal'};
   CRM_KEYS.forEach(function(k){var v=localStorage.getItem(k);if(v!=null)out[k]=v;});
@@ -4521,6 +4532,74 @@ function recordTouches(addrs){
   try{localStorage.setItem(TOUCH_KEY,JSON.stringify(t));}catch(e){}
 }
 function touchInfo(addr){var l=_touches()[_normAddr(addr)];return (l&&l.length)?{n:l.length,last:l[l.length-1]}:null;}
+// ── DO-NOT-MAIL LIST (Aug 2026) ──
+// There was no suppression concept anywhere in this file. Once letters actually go out that is
+// not a missing feature, it is a liability: returned mail keeps getting re-sent, and an owner who
+// says "stop contacting me" gets contacted again on the next run. Keyed by PROPERTY address using
+// the same _normAddr the touch history uses, so the two agree.
+// Kept deliberately small: a flat map {key: {r:reason, d:date, a:address}} that rides along on the
+// existing CRM backup rather than inventing a parallel store.
+var NOMAIL_KEY='mep_nomail';
+function _noMail(){try{return JSON.parse(localStorage.getItem(NOMAIL_KEY)||'{}')}catch(e){return{}}}
+function _noMailSave(m){try{localStorage.setItem(NOMAIL_KEY,JSON.stringify(m));}catch(e){alert('Could not save the do-not-mail list — browser storage is full.');}}
+function isSuppressed(addr){var m=_noMail();return m[_normAddr(addr)]||null;}
+function suppressAddr(addr,reason,note){
+  if(!addr)return;
+  var m=_noMail(), k=_normAddr(addr);
+  // Never let a later entry overwrite an earlier suppression date — the first time someone asked
+  // to stop is the date that matters if it is ever questioned.
+  if(!m[k])m[k]={r:reason||'optout',d:_today(),a:(''+addr)};
+  else { m[k].r=reason||m[k].r; if(note)m[k].n=note; }
+  if(note)m[k].n=note;
+  _noMailSave(m);
+}
+function unsuppressAddr(addr){var m=_noMail();delete m[_normAddr(addr)];_noMailSave(m);}
+function _noMailReason(r){return r==='returned'?'returned mail':(r==='optout'?'asked us to stop':(r||'do not mail'));}
+// One-click capture from inside the letter picker.
+function lpSuppress(i){
+  var c=(window._lpCands||[])[i]; if(!c)return;
+  suppressAddr(c.addr,'optout');
+  toast('Added to do-not-mail: '+c.addr);
+  try{openLetterPicker(window._lpSource||'filter');}catch(e){}
+}
+// The list itself. Bulk paste exists because returned mail arrives as a physical stack of
+// envelopes, not one at a time — typing them individually is how a list stops being maintained.
+function openNoMailList(){
+  var m=_noMail(), keys=Object.keys(m).sort(function(a,b){return (m[b].d||'').localeCompare(m[a].d||'');});
+  var rows=keys.map(function(k){
+    var r=m[k];
+    return '<tr><td style="padding:5px 8px 5px 0;">'+_escHtml(r.a||k)+'</td>'
+      +'<td style="padding:5px 8px;color:#666;white-space:nowrap;">'+_escHtml(_noMailReason(r.r))+'</td>'
+      +'<td style="padding:5px 8px;color:#888;white-space:nowrap;">'+_escHtml(r.d||'')+'</td>'
+      +'<td style="padding:5px 0;text-align:right;"><a href="javascript:void(0)" onclick="unsuppressAddr('+JSON.stringify(r.a||k).replace(/"/g,'&quot;')+');openNoMailList();" style="color:#006AFF;font-size:11px;font-weight:700;">Remove</a></td></tr>';
+  }).join('');
+  document.getElementById('printBody').innerHTML=
+    '<div class="print-section"><h3>Do-not-mail list</h3>'
+    +'<div style="font-size:12.5px;color:#555;line-height:1.6;margin:8px 0 12px;">Anyone here is removed from <b>every</b> mail run &mdash; printed letters and the mail-house CSV alike. Saved in this browser and included in <b>Backup CRM</b>.</div>'
+    +(keys.length?'<table style="width:100%;border-collapse:collapse;font-size:13px;"><tr style="border-bottom:1px solid #ddd;text-align:left;"><th style="padding:4px 0;">Property</th><th style="padding:4px 8px;">Reason</th><th style="padding:4px 8px;">Added</th><th></th></tr>'+rows+'</table>'
+       :'<div style="font-size:13px;color:#888;padding:10px 0;">Nobody on the list yet.</div>')
+    +'<div style="margin-top:18px;border-top:1px solid #ddd;padding-top:14px;">'
+    +'<div style="font-weight:700;font-size:13px;margin-bottom:6px;">Add addresses &mdash; one per line</div>'
+    +'<textarea id="nmBulk" placeholder="1234 Nw 5 St&#10;678 Se 9 Ave" style="width:100%;height:88px;font:13px monospace;padding:8px;border:1px solid #ccc;border-radius:4px;"></textarea>'
+    +'<div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;">'
+    +'<label style="font-size:12.5px;"><input type="radio" name="nmR" value="returned" checked> Returned mail</label>'
+    +'<label style="font-size:12.5px;"><input type="radio" name="nmR" value="optout"> Asked us to stop</label>'
+    +'<button class="btn btn-gold" style="font-size:12px;" onclick="nmBulkAdd()">Add to list</button>'
+    +'</div></div></div>';
+  document.getElementById('printModal').classList.add('open');
+}
+function nmBulkAdd(){
+  var ta=document.getElementById('nmBulk'); if(!ta)return;
+  var el=document.querySelector('input[name="nmR"]:checked');
+  var reason=el?el.value:'returned';
+  var n=0;
+  (ta.value||'').split('\n').forEach(function(line){
+    var a=line.trim(); if(!a)return;
+    suppressAddr(a,reason); n++;
+  });
+  toast(n?(n+' added to the do-not-mail list'):'Nothing to add');
+  openNoMailList();
+}
 // Resolve a folio for any address the portal knows (scored rows, top deals, county leads).
 function _folioForAddr(addr){
   var k=_normAddr(addr);
@@ -4573,6 +4652,13 @@ function openLetterPicker(source){
     filteredRows.slice(0,200).forEach(function(r){cands.push({addr:r[1],nb:r[2]||'',folio:_folioOf({pa_url:r[16]})});});
     if(!cands.length){toast('No properties in the current filter.');return;}
   }
+  // THE choke point — all four recipient sources (pipeline / viols / polk / filter) converge here,
+  // so one filter covers every letter run. Suppressed addresses are REMOVED, not merely unchecked:
+  // "unchecked" is a suggestion, and Select-all would quietly undo it.
+  var _supN=cands.filter(function(c){return isSuppressed(c.addr);}).length;
+  if(_supN)cands=cands.filter(function(c){return !isSuppressed(c.addr);});
+  if(!cands.length){toast('Every property in this list is on the do-not-mail list.');return;}
+  window._lpCands=cands; window._lpSource=source;   // lpSuppress() reads these by row index
   var oc=window._ownerSnap||{};
   var rows=cands.map(function(c,i){
     var own=c.own||(c.folio&&oc[c.folio]?oc[c.folio].o:'');
@@ -4581,12 +4667,18 @@ function openLetterPicker(source){
       +'<input type="checkbox" class="lp-check"'+(c.skip?'':' checked')+' data-addr="'+_escHtml(c.addr)+'" data-folio="'+c.folio+'"'+(c.polk?' data-polk="'+c.polk+'"':'')+' data-zip="'+(c.zip||'')+'" data-nb="'+_escHtml(c.nb)+'" onchange="_lpCount()" style="width:16px;height:16px;cursor:pointer;">'
       +'<span style="flex:1;"><strong>'+_escHtml(c.addr)+'</strong> <span style="color:#888;">&middot; '+_escHtml(c.nb)+(own?' &middot; '+_escHtml(own):'')+'</span>'+(c.skip?' <span style="color:#c97a6a;font-size:11px;font-weight:700;">&middot; '+_escHtml(c.skip)+'</span>':'')+'</span>'
       +'<a href="'+zillowUrl({address:c.addr})+'" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Check whether this property is currently listed before you mail it" style="font-size:11px;color:#006AFF;white-space:nowrap;font-weight:700;text-decoration:none;">Listed?</a>'
+      // Cheapest possible capture point: you are already looking at the names here, so an opt-out
+      // or a returned envelope can be recorded in one click instead of being remembered.
+      +'<a href="javascript:void(0)" onclick="event.preventDefault();event.stopPropagation();lpSuppress('+i+')" title="Add to the do-not-mail list — removes this owner from this and every future mail run" style="font-size:11px;color:#c0392b;white-space:nowrap;font-weight:700;text-decoration:none;">Never mail</a>'
       +(ti?'<span style="font-size:11px;color:#9a7b2d;white-space:nowrap;font-weight:700;">mailed '+ti.n+'&times; &middot; last '+ti.last+'</span>':'<span style="font-size:11px;color:#aaa;white-space:nowrap;">never mailed</span>')
       +'</label>';
   }).join('');
   document.getElementById('printBody').innerHTML=
     '<div class="print-section"><h3>Who gets a letter?</h3>'
     +'<div style="font-size:11.5px;color:#9a7b2d;margin:2px 0 6px;">Mailing a listed property wastes postage &mdash; '+(_rcKey()?'<b style="color:#3DBE82;">auto-checking MLS status&hellip;</b> (RentCast)':'spot-check your top rows with the <b style="color:#006AFF;">Listed?</b> link, or <a href="javascript:void(0)" onclick="openRcSettings()" style="color:#006AFF;font-weight:700;">set up auto-check (free key)</a>')+'.</div>'
+    // Never remove people from a mail run silently — a count that drops for invisible reasons is
+    // its own bug. Say how many were withheld and give a way to look at them.
+    +(_supN?'<div style="font-size:11.5px;color:#c0392b;margin:2px 0 6px;font-weight:700;">'+_supN+' hidden &mdash; on the do-not-mail list. <a href="javascript:void(0)" onclick="openNoMailList()" style="color:#c0392b;text-decoration:underline;">Manage list</a></div>':'')
     +'<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 10px;">'
       +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=true});_lpCount()">Select all</button>'
       +'<button class="btn btn-dark" type="button" onclick="document.querySelectorAll(\'.lp-check\').forEach(function(c){c.checked=false});_lpCount()">Select none</button>'
@@ -4662,8 +4754,12 @@ function printSelectedLetters(){
     window._ownerSnap=cache;
     var tpl=_escHtml(letterTpl());
     var today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-    var seen={},out=[],skipped=0,skippedZip=0,mailedAddrs=[];
+    var seen={},out=[],skipped=0,skippedZip=0,suppressedN=0,mailedAddrs=[];
     picks.forEach(function(p){
+      // Defense in depth. picks is rebuilt from live DOM checkboxes, so Select-all — or anything
+      // that re-checks a box — could otherwise print a letter to someone who asked us to stop.
+      // The picker already removed these; this is the guard that actually touches the printer.
+      if(isSuppressed(p.addr)){suppressedN++;return;}
       var oc=p.polk?_polkMailRec(p.polk):(window._lpOC&&_lpOC[p.addr])||(p.folio&&cache[p.folio]);
       if(!oc||!oc.o||!oc.ma){skipped++;return;}
       if(oc._fdor&&!oc.mz){skippedZip++;return;} // state-roll record carries no ZIP — a retry won't fix this; live pull will next run
@@ -4707,7 +4803,7 @@ function printSelectedLetters(){
     document.getElementById('printModal').classList.add('letters-mode'); // strips portal chrome/disclaimer at print time
     if(!document.getElementById('lettersPageZero')){var _st=document.createElement('style');_st.id='lettersPageZero';_st.textContent='@page{margin:0}';document.head.appendChild(_st);}
     document.getElementById('printBody').innerHTML=
-      '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?(failed?' ('+skipped+' missing — owner pull partly failed, Generate again to retry)':' ('+skipped+' skipped — no county mailing address on record)'):'')+(skippedZip?' ('+skippedZip+' skipped — state-roll record has no ZIP; retrying won’t change this, the next live county pull fills it)':'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
+      '<div class="no-print" style="font-size:12px;color:#666;margin-bottom:10px;">'+out.length+' letter'+(out.length!==1?'s':'')+' ready'+(skipped?(failed?' ('+skipped+' missing — owner pull partly failed, Generate again to retry)':' ('+skipped+' skipped — no county mailing address on record)'):'')+(skippedZip?' ('+skippedZip+' skipped — state-roll record has no ZIP; retrying won’t change this, the next live county pull fills it)':'')+(suppressedN?' ('+suppressedN+' on the do-not-mail list)':'')+' &middot; one per page &middot; hit Print / Save PDF below. This note and the portal header will NOT print.</div>'
       +out.join('');
   };
   if(miaFolios.length)enrichOwners(miaFolios,_finish,function(pg,t){if(st)st.textContent='Pulling owners… batch '+pg+'/'+t;});
