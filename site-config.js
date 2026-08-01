@@ -299,7 +299,7 @@ window.MACO = (function () {
         label: 'Active',
         blurb: 'Full signal set — code cases, recorded liens, unsafe/expired permits, comparable sales and underwriting.',
         markets: [
-          { name: 'Miami-Dade County', page: 'off-market-deals-miami-dade.html',
+          { name: 'Miami-Dade County', page: 'off-market-deals-miami-dade.html', cov: 'miamicw',
             note: 'Deepest coverage. County-wide expansion rolling out.',
             cities: ['Kendall', 'Palmetto Bay', 'Pinecrest', 'South Miami', 'Homestead'] }
         ]
@@ -309,15 +309,15 @@ window.MACO = (function () {
         label: 'Live · expanding coverage',
         blurb: 'Live now on county tax-roll records, recorded sales and owner mailing data, with ZIP-level sale bands. Code and lien depth is still being added county by county.',
         markets: [
-          { name: 'Broward County', page: 'off-market-deals-broward.html',
+          { name: 'Broward County', page: 'off-market-deals-broward.html', cov: 'broward',
             cities: ['Fort Lauderdale', 'Pompano Beach', 'Deerfield Beach', 'Coral Springs', 'Coconut Creek', 'Margate', 'Tamarac', 'Sunrise', 'Oakland Park', 'Lauderhill', 'Lauderdale Lakes', 'North Lauderdale', 'Wilton Manors', 'Lighthouse Point', 'Lauderdale By The Sea', 'Unincorporated Broward'] },
-          { name: 'Lee County', page: 'off-market-deals-lee.html', note: 'Fort Myers metro',
+          { name: 'Lee County', page: 'off-market-deals-lee.html', note: 'Fort Myers metro', cov: 'lee',
             cities: ['Fort Myers', 'Cape Coral', 'Lehigh Acres', 'North Fort Myers', 'Bonita Springs', 'Estero', 'Fort Myers Beach', 'Sanibel', 'Alva', 'Bokeelia', 'Matlacha', 'Saint James City'] },
-          { name: 'Collier County', page: 'off-market-deals-collier.html', note: 'Naples metro',
+          { name: 'Collier County', page: 'off-market-deals-collier.html', note: 'Naples metro', cov: 'collier',
             cities: ['Naples', 'Golden Gate City', 'Marco Island', 'Immokalee', 'Everglades City', 'Goodland', 'Chokoloskee'] },
-          { name: 'Polk County', page: 'off-market-deals-polk.html', note: 'Orlando–Tampa corridor',
+          { name: 'Polk County', page: 'off-market-deals-polk.html', note: 'Orlando–Tampa corridor', cov: 'polk',
             cities: ['Lakeland', 'Winter Haven', 'Davenport', 'Haines City', 'Auburndale', 'Lake Wales', 'Poinciana', 'Mulberry'] },
-          { name: 'Lake County', page: 'off-market-deals-lake.html', note: 'Smallest market — Clermont area only',
+          { name: 'Lake County', page: 'off-market-deals-lake.html', note: 'Smallest market — Clermont area only', cov: 'lake',
             cities: ['Clermont'] }
         ]
       },
@@ -460,10 +460,30 @@ window.MACO = (function () {
                   return '<span class="market-city">' + esc(c) + '</span>';
                 }).join('') + '</div>'
               : '';
+            // Jul 2026 audit: every tier claimed rolling freshness while Broward and Collier sat
+            // on a 2025 annual roll. Freshness + lead count now come from coverage.js (generated
+            // from the leads files by tools/build_coverage.js), so the page cannot overstate them.
+            var cov = '';
+            try {
+              var c = (window.MACO_COVERAGE || {})[m.cov];
+              if (c) {
+                // Refresh date and roll year are DIFFERENT facts: we may have re-pulled today
+                // (snapshot) while the state's underlying tax roll is still last year's (roll).
+                // Showing only the first would imply the records themselves are current.
+                var fresh = (c.freshness === 'dated')
+                  ? 'Refreshed ' + c.asOf
+                  : String(c.asOf).replace(/\broll\b/, 'tax roll') + ' — no dated refresh yet';
+                var roll = (c.roll && c.freshness === 'dated')
+                  ? ' · ' + String(c.roll).replace(/\broll\b/, 'tax roll') : '';
+                cov = '<div class="market-umb__cov">' + esc(fresh) + esc(roll) +
+                      ' · ' + c.leads.toLocaleString('en-US') + ' leads' +
+                      (c.submarkets ? ' · ' + c.submarkets + (c.submarkets === 1 ? ' submarket' : ' submarkets') : '') + '</div>';
+              }
+            } catch (e) {}
             return '<div class="market-umb">' +
               '<div class="market-umb__head">' + head +
                 (m.note ? '<span class="market-umb__note">' + esc(m.note) + '</span>' : '') +
-              '</div>' + cities +
+              '</div>' + cov + cities +
             '</div>';
           }).join('') + '</div>'
         : '<p class="market-tier__empty">None scheduled yet.</p>';
