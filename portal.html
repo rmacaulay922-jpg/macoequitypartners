@@ -2288,6 +2288,31 @@ function _aucPanel(county){
 // sqft/year-built from the state tax roll, and ZIP-level qualified-sale $/sf bands.
 // The band is a RANGE from real recorded arm's-length sales — shown as such, never as an ARV.
 function _fdorFor(l){try{var e=(window.FDOR_ENRICH||{})[l.pid];if(e)return e;if(l&&l.sqft>200)return {sqft:l.sqft,yb:l.yb||null};return null;}catch(e){return null;}}
+// ── FRESH DEED TRANSFER (Aug 2026) ──
+// fdor-enrich.js carries sy (sale year), sp (sale price) and q (FDOR qualification code) on 462 of
+// its 2,666 records, and portal.html consumed NONE of it — only .sqft and .yb. A nominal deed
+// (<=$1,000, code 11 = unqualified) recorded in the last couple of years means an estate or trust
+// JUST moved the property and is deciding what to do with it. That is the highest-conversion
+// moment in this whole funnel and it was sitting unread on disk: 205 such transfers across
+// Broward, Lee, Collier and Polk, 120 of which carry no `rt` flag on the lead row.
+// It also corrects a visible lie: on 109 Polk leads the baked lsY is older than the FDOR sale, so
+// the card printed "Held 49y" on a parcel that changed hands last year.
+function _xferFor(l){
+  try{
+    var e=(window.FDOR_ENRICH||{})[l&&l.pid]; if(!e||!e.sy)return null;
+    var baked=+(l.lsY||0);
+    if(e.sy<=baked)return null;                       // the lead already knows about this sale
+    var yrs=(new Date()).getFullYear()-e.sy;
+    return {yr:e.sy, price:(e.sp!=null?e.sp:null), q:e.q||'',
+            nominal:(e.sp!=null&&e.sp<=1000), yrsAgo:yrs, recent:(yrs<=2)};
+  }catch(_){return null;}
+}
+// Hold length the card should actually print — FDOR's sale wins when it is newer than the bake.
+function _heldFor(l){
+  var x=_xferFor(l);
+  if(x)return x.yrsAgo;
+  return (l&&l.held!=null)?l.held:null;
+}
 // ── DATA-HONESTY GUARDS (Jul 2026 audit) ──
 // Institutional SFR portfolios never answer blind mail — tag them and leave them out of letter runs by default.
 function _instOwner(o){return /SRP SUB|FKH SFR|INVITATION HOMES|FYR SFR|FYR\b|CSMA\b|SWAY\b|AMH 20|AMERICAN HOMES 4 RENT|PROGRESS RESIDENTIAL|TRICON\b|MAIN STREET RENEWAL|HOME PARTNERS/i.test(o||'');}
@@ -2355,10 +2380,26 @@ function _flagsFor(l){
     return g[k]||null;
   }catch(e){return null;}
 }
+// Miami-Dade publishes 37 distinct code-case types and every one rendered as the same chip
+// reading "Code case". "Minimum Housing - OVA" means the county considers the structure unfit to
+// live in — genuine distress and a repair scope you must price. "Boat Storage" means somebody
+// parked a boat wrong. Three buckets, ordered by what it actually costs at closing.
+function _codeBucket(t){
+  var s=(''+(t||'')).toUpperCase();
+  if(/MINIMUM HOUSING|UNSAFE|STRUCTURE MAINTEN|DEMOLITION|ROOF|ELECTRIC|PLUMB/.test(s))
+    return {k:'unsafe',label:'Unsafe / housing',c:'#c97a6a',bg:'rgba(201,122,106,.20)',bd:'rgba(201,122,106,.55)',
+            why:'The county considers the structure deficient - real distress, and a repair scope to price before offering.'};
+  if(/WITHOUT REQUIRED PERMIT|WITHOUT PERMIT|SETBACK|FENCE|UNAUTHORIZED USE|ILLEGAL/.test(s))
+    return {k:'permit',label:'Unpermitted work',c:'#e8854a',bg:'rgba(232,133,74,.18)',bd:'rgba(232,133,74,.5)',
+            why:'Unpermitted work must be legalised or torn out, and an open case can hold up clean title at closing.'};
+  return {k:'nuisance',label:'Nuisance case',c:'#9a9ea8',bg:'rgba(140,140,150,.16)',bd:'rgba(140,140,150,.42)',
+          why:'Housekeeping-grade violation (trash, overgrowth, vehicle, storage). Weak distress signal on its own.'};
+}
 function _flagChips(l){
   var f=_flagsFor(l); if(!f)return '';
   var b=[];
-  if(f.code)  b.push('<span title="Open code-enforcement case: '+(f.code.type||'').replace(/"/g,'')+'" style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.45);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Code case</span>');
+  if(f.code){var _cb=_codeBucket(f.code.type);
+    b.push('<span title="'+_cb.why+' | County case type: '+(f.code.type||'').replace(/"/g,'')+'" style="background:'+_cb.bg+';color:'+_cb.c+';border:1px solid '+_cb.bd+';border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_cb.label+'</span>');}
   if(f.permit){var _ps=(f.permit.status||'').toLowerCase(),_isViol=(_ps.indexOf('violation')>=0||_ps.indexOf('unsafe')>=0),_lbl=_isViol?'Unsafe / violation':(_ps.indexOf('expir')>=0?'Expired permit':'Open permit'),_col=_isViol?'201,122,106':'232,133,74';
     b.push('<span title="'+(f.permit.status||'Permit')+': '+(f.permit.type||'').replace(/"/g,'')+'" style="background:rgba('+_col+',.16);color:'+(_isViol?'#c97a6a':'#e8854a')+';border:1px solid rgba('+_col+',.42);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_lbl+'</span>');}
   if(f.lien)  b.push('<span title="'+(f.lien.kind||'Lien')+(f.lien.amt?': $'+f.lien.amt.toLocaleString():'')+'" style="background:rgba(184,145,90,.18);color:var(--gold);border:1px solid rgba(184,145,90,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Lien'+(f.lien.amt?' $'+Math.round(f.lien.amt/1000)+'k':'')+'</span>');
@@ -2545,7 +2586,7 @@ function _polkTableHtml(L,county){
       +td((e&&e.sqft)?e.sqft.toLocaleString():'&mdash;')
       +td((l.bed||l.bath)?((l.bed||'?')+'/'+(l.bath||'?')):'&mdash;')
       +td((e&&e.yb)||l.yb||'&mdash;')
-      +td(l.held!=null?(l.held+'y'):'&mdash;')
+      +td((function(){var h=_heldFor(l);return h!=null?(h+'y'):'&mdash;';})())
       +td('<span style="color:'+ts[0]+';">'+ts[1]+'</span>')
       +td(sig.length?_escHtml(sig.join(', ')):'&mdash;','color:var(--muted);font-size:11px;')
       +td('<button class="btn btn-gold" style="font-size:10px;padding:3px 8px;" onclick="polkUnderwrite('+pj+')">UW</button> '
@@ -2576,7 +2617,7 @@ function renderPolk(){
         +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+' &middot; #'+(l.st||l.pid)+(function(){var e=_fdorFor(l);return e?((e.sqft?' &middot; '+e.sqft.toLocaleString()+' SF':'')+(e.yb?' &middot; built '+e.yb:'')):'';})()+'</div></div>'
         +'<span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;white-space:nowrap;">'+ts[1]+'</span></div>'
       +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 4px;">'+l.o+'</div>'
-      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}var _fc=_flagChips(l);if(_fc)b.push(_fc);return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
+      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);var _hl=_heldFor(l);if(_hl!=null&&_hl>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+_hl+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');var _xf=_xferFor(l);if(_xf&&_xf.nominal&&_xf.recent)b.push('<span title="FDOR records a '+(_xf.price===0?'$0':'$'+_xf.price)+' deed in '+_xf.yr+' (code '+_xf.q+', unqualified) — not a market sale. An estate or trust just moved this property and is deciding what to do with it." style="background:rgba(232,133,74,.22);color:#e8854a;border:1px solid rgba(232,133,74,.5);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Deed moved '+_xf.yr+'</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}var _fc=_flagChips(l);if(_fc)b.push(_fc);return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
       +(function(){
         var bd=_bandFor(l);
         var _e=_fdorFor(l);
@@ -2596,7 +2637,7 @@ function renderPolk(){
         // 2 — SIZE. sqft is the headline; beds/baths and vintage ride underneath.
         var cell2='<div class="metric-cell"><div class="metric-lbl">Size</div><div class="metric-val" style="font-size:17px;">'+_sf+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+[_bb,(_yb?'built '+_yb:''),(l.lot?l.lot+' ac':'')].filter(Boolean).join(' &middot; ')+'</div></div>';
         // 3 — MOTIVATION. Hold length is the strongest single motivation cue we have on the card.
-        var _hold=(l.held!=null)?(l.held+'y'):'&mdash;';
+        var _hv=_heldFor(l); var _hold=(_hv!=null)?(_hv+'y'):'&mdash;';
         var _ts3=polkTagStyle(l.tag);
         var cell3='<div class="metric-cell" style="border-right:none;" title="How long this owner has held, and what kind of owner they are — the two motivation signals that survive across every county."><div class="metric-lbl">Held / Owner</div><div class="metric-val" style="font-size:17px;">'+_hold+'</div><div class="metric-sub" style="font-size:9px;color:'+_ts3[0]+';">'+_ts3[1]+(l.mkt&&bd?' &middot; county '+fmtK(l.mkt):'')+'</div></div>';
         return '<div class="metrics-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+cell1+cell2+cell3+'</div>';
@@ -2854,7 +2895,7 @@ function briefLeadCard(l,i){
     var b=[],cty='';
     try{cty=(_LMETA()||{}).county||'';}catch(e){}
     try{var cc=(typeof _crimeChip==='function')?_crimeChip(cty,l.c):''; if(cc)b.push(cc);}catch(e){}
-    if(l.held!=null&&l.held>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+l.held+'y</span>');
+    var _hl=_heldFor(l);if(_hl!=null&&_hl>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+_hl+'y</span>');
     // A land-only parcel legitimately shows a $0K building split — without this chip that reads
     // like a data bug rather than a teardown. Institutional owners never answer blind mail.
     try{if(typeof _teardownLead==='function'&&_teardownLead(l))b.push('<span title="County values the building at &le;$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');}catch(e){}
