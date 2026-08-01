@@ -5524,6 +5524,11 @@ function renderPipelineCard(entry, stage){
       '<input type="number" value="'+(val||0)+'" onchange="pcUpdate(\''+a+'\',\''+field+'\',this.value)" '+
       'style="width:100%;font-size:13.5px;padding:4px 7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;"></div>';
   }
+  function dateInput(field,val,label){
+    return '<div><label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">'+label+'</label>'+
+      '<input type="date" value="'+(val||'')+'" onchange="pcUpdate(\''+a+'\',\''+field+'\',this.value)" '+
+      'style="width:100%;font-size:12.5px;padding:4px 7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;"></div>';
+  }
   var logHtml=(entry.log&&entry.log.length)? '<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:6px;">'+entry.log.slice(0,4).map(function(l){
     var d=l.t? (''+l.t).slice(0,10):''; return '<div style="font-size:11.5px;color:var(--muted);line-height:1.5;"><span style="color:var(--gold);">'+d+'</span> '+pcEsc(l.note)+'</div>';
   }).join('')+'</div>' : '';
@@ -5557,6 +5562,20 @@ function renderPipelineCard(entry, stage){
       '<div><label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);">Est. Profit</label>'+
         '<div style="font-size:17px;font-weight:800;color:'+(profit>0?'var(--green)':'var(--red)')+';">'+fmtK(profit)+'</div></div>'+
     '</div>'+
+    // NEGOTIATION. There was an "Offer Sent" stage and nowhere to record an offer — a flip is won
+    // or lost in the gap between "I offered 180" and "they countered at 215", and neither number
+    // could live anywhere. Appears from Contacted onward so a fresh lead card stays uncluttered.
+    ((entry.stage&&entry.stage!=='lead')?
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">'+
+        moneyInput('offer',entry.offer,'My Offer')+
+        moneyInput('counter',entry.counter,'Their Counter')+
+        dateInput('offer_date',entry.offer_date,'Offer Date')+
+        dateInput('close_date',entry.close_date,'Target Close')+
+        ((entry.counter>0&&entry.offer>0)
+          ? '<div style="grid-column:1/-1;font-size:11.5px;color:'+((entry.counter-entry.offer)>0?'var(--red)':'var(--green)')+';">Gap to bridge: '+fmtK(Math.abs(entry.counter-entry.offer))+'</div>'
+          : '')+
+      '</div>'
+    :'')+
     '<label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-top:8px;">Follow-up Date</label>'+
     '<input type="date" value="'+(entry.followup||'')+'" onchange="pcUpdate(\''+a+'\',\'followup\',this.value)" style="width:100%;font-size:13px;padding:4px 7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--ivory);box-sizing:border-box;">'+
     '<div style="margin-top:8px;display:flex;gap:5px;">'+
@@ -5576,6 +5595,14 @@ function renderPipelineCard(entry, stage){
 function pcUpdate(addr,field,val){
   var data=getPipeline();
   if(!data[addr])return;
+  // Negotiation figures are plain stored values — unlike purchase/arv/repair they are never
+  // recomputed by live sync, so they need no hand-edit flag.
+  if(field==='offer'||field==='counter'){
+    var _n=parseFloat((''+val).replace(/[^0-9.]/g,''))||0;
+    data[addr][field]=_n;
+    if(field==='offer'&&_n>0&&!data[addr].offer_date)data[addr].offer_date=_today();
+    savePipeline(data); buildPipeline(); return;
+  }
   if(field==='purchase'||field==='arv'||field==='repair'){
     var _raw=(''+val).replace(/[^0-9.]/g,'');
     val=parseFloat(_raw)||0;
