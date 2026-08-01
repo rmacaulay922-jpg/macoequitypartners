@@ -1245,7 +1245,7 @@ function searchOpen(i){
     } else {
       if(typeof setMarket==='function')setMarket(x.m);
       if(typeof showTabByName==='function')showTabByName('polk');
-      try{ _polkFilter={market:'',tag:'',own:'',q:x.a}; renderPolk(); }catch(e){}
+      try{ _polkFilterReset(x.a); renderPolk(); }catch(e){}
       setTimeout(function(){ try{ var pid=x.lead&&x.lead.pid; if(pid){ var el=document.getElementById('polkD-'+pid); if(el&&el.style.display!=='block')polkToggleDetail(pid); var t=document.getElementById('polkT-'+pid); if(t)t.scrollIntoView({block:'center'}); } }catch(e){} }, 350);
     }
   }catch(e){}
@@ -1804,7 +1804,7 @@ function setMarket(m,skipSave){
   var active=document.querySelector('#tabBar button.active');
   if(!active||vis.indexOf(active.dataset.tab)<0)showTabByName(_landTabFor(_role()));
   // Re-render the Leads tab for the newly active county (banner/stats/controls rebuild).
-  if(MARKETS[m].kind==='leads'){try{_polkFilter={market:'',tag:'',own:'',q:''};['polkBanner','polkControls'].forEach(function(id){var e=document.getElementById(id);if(e)e.dataset.done='';});buildPolk();}catch(e){console.error('leads rebuild',e);}}
+  if(MARKETS[m].kind==='leads'){try{_polkFilterReset();['polkBanner','polkControls'].forEach(function(id){var e=document.getElementById(id);if(e)e.dataset.done='';});buildPolk();}catch(e){console.error('leads rebuild',e);}}
   // Header vintage line describes the active market's data.
   var dv=document.getElementById('dataVintage');
   if(dv&&MARKETS[m].kind==='leads'){var mt=_LMETA();var _isDate=/^\d{4}-\d{2}-\d{2}$/.test(mt.snapshot||'');dv.textContent=MARKETS[m].label+' leads: '+(_isDate?('refreshed '+mt.snapshot+(mt.roll?' ('+mt.roll+')':'')):('annual '+(mt.snapshot||'—')))+' · owner mailing + sale history baked';}
@@ -1873,6 +1873,16 @@ function applyHomestead(){
 // Data baked in polk-leads.js (window.POLK_LEADS / POLK_META) from the Polk PA map service.
 // Polk has NO open comp or code-violation feed, so these are targeting leads only (no ARV).
 var _polkFilter={market:'',tag:'',own:'',q:'',sort:'',inst:'',band:'',mail:''};
+// Reset by blanking the EXISTING keys, never by substituting a partial literal. Two call sites
+// used to assign {market,tag,own,q} wholesale, which silently dropped sort/inst/band (and any
+// filter added later) from the object entirely. Undefined happens to be falsy so nothing broke,
+// but it meant every new filter key had to be remembered in three places or vanish on the next
+// market switch. Now there is one shape and one place to add to.
+function _polkFilterReset(q){
+  Object.keys(_polkFilter).forEach(function(k){_polkFilter[k]='';});
+  if(q)_polkFilter.q=q;
+  return _polkFilter;
+}
 function _polkAddr(l){return l.a+', '+l.c+' FL '+(l.z||'');}
 function _polkMail(l){return [l.m1,l.m3].filter(Boolean).join(', ');}                         // owner mailing address
 function polkMapsUrl(l){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(_polkAddr(l));}
