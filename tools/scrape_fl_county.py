@@ -31,7 +31,14 @@ NOW=datetime.date.today()
 COUNTIES={
  'broward':{'co':16,'label':'Broward','var':'BROWARD','out':'broward-leads.js','zpre':('330','331','333')},
  'lee':    {'co':46,'label':'Lee','var':'LEE','out':'lee-leads.js','zpre':('339','341','340')},
- 'collier':{'co':21,'label':'Collier','var':'COLLIER','out':'collier-leads.js','zpre':('341','342','339')},
+ # Collier gets the SAME segmented sweep as Miami-Dade, and for the same reason. Measured
+ # 2026-07-29 and 2026-08-01: a linear crawl reaches ~20,000 parcels (10 full pages), then the
+ # deep OBJECTID cursor gets load-shed and every one of the 6 retries fails — 3 identical runs,
+ # ~30 min each, all discarded by the launcher's partial-crawl guard. Broward never hits this
+ # only because it trips its 25k cap at ~26,000 BEFORE the cursor gets deep enough to be shed.
+ # Segmenting keeps every query shallow, and spreads the sample across the whole county instead
+ # of taking the first-N block, so the 600 baked leads are geographically representative too.
+ 'collier':{'co':21,'label':'Collier','var':'COLLIER','out':'collier-leads.js','zpre':('341','342','339'),'pagesize':1000,'cap':16000,'pace':2.0,'sweep':8},
  # Miami-Dade = FDOR county 23 (alphabetical: Broward 16, Collier 21, Dade 23 — verified against zip mix).
  # Whole-county coverage: Homestead (330xx) up to the Broward line (331/332xx). Larger cap than the
  # single-county farms because the user wants the full county surfaced, not a 600-row slice.
@@ -132,7 +139,7 @@ def run(key):
     print('=== %s County (CO_NO=%d) === single-family from FDOR statewide roll'%(c['label'],c['co']))
     feats=[]; first=True; asmt=''
     PAGE=c.get('pagesize',2000); CAP=c.get('cap',25000); PACE=c.get('pace',0.6)
-    def crawl(bounded_where, cap, seed_first):
+    def crawl(bounded_where, cap, seed_first, segmented=False):
         # One OBJECTID-cursor crawl over a WHERE clause; returns (features, ok, still_first)
         nonlocal asmt
         out=[]; last=0; fst=seed_first
@@ -140,7 +147,19 @@ def run(key):
             d=query(bounded_where+(' AND OBJECTID>%d'%last if last else ''), 0, pagesize=PAGE)
             if d is None:
                 if fst: return out, False, fst
-                print('   page failed after retries — keeping the %d parcels from this segment.'%len(out)); return out, True, fst
+                # A LINEAR crawl that dies mid-cursor is genuinely truncated — the rest of the
+                # county is simply missing — so keep the exact phrase refresh_markets.ps1 greps
+                # for ('page failed after retries') and let it discard the bake.
+                #
+                # A SEGMENTED sweep is different: the other segments still cover the rest of the
+                # county, and the deadseg guard below is what decides whether coverage holds up.
+                # Emitting the launcher's trigger phrase here would throw away a perfectly good
+                # bake over one flaky segment, so this path is worded deliberately differently.
+                if segmented:
+                    print('   segment degraded after retries — keeping the %d parcels from this segment.'%len(out))
+                else:
+                    print('   page failed after retries — keeping the %d parcels from this segment.'%len(out))
+                return out, True, fst
             f=d.get('features',[])
             if fst and f:
                 a0=f[0]['attributes']; asmt=str(int(num(a0.get('ASMNT_YR')) or 0) or '')
@@ -171,7 +190,7 @@ def run(key):
         step=max(1,(hi-lo)//SWEEP+1); deadseg=0
         for s in range(SWEEP):
             a1,b1=lo+s*step, lo+(s+1)*step
-            seg,ok,first=crawl(where+(' AND OBJECTID>=%d AND OBJECTID<%d'%(a1,b1)), CAP//SWEEP, first)
+            seg,ok,first=crawl(where+(' AND OBJECTID>=%d AND OBJECTID<%d'%(a1,b1)), CAP//SWEEP, first, segmented=True)
             feats+=seg
             # A segment is DEAD (coverage hole) only if it produced NO rows via failure — a
             # partial segment still covers its block. The old ok-flag counted retry-exhausted
