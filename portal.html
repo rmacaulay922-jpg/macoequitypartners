@@ -1220,7 +1220,11 @@ function renderAddrResults(){
       var loc2=[]; if(x.oos)loc2.push('<span style="color:#9d97ff;">Out-of-state'+(x.mst?' &middot; '+x.mst:'')+'</span>'); else if(x.abs)loc2.push('<span style="color:#7fbde0;">Absentee</span>');
       if(x.held!=null)loc2.push('Held '+x.held+'y');
       loc=(x.sub||'')+(loc2.length?' &middot; '+loc2.join(' &middot; '):'');
-      line2='County value '+(x.val?fmtK(x.val):'&mdash;')+' &middot; '+(x.tag?(x.tag==='probate'?'Estate/probate':x.tag==='entity'?'Entity-owned':x.tag==='trust'?'Trust-owned':x.tag):'')+' &middot; Lead score '+(x.sc!=null?x.sc:'&mdash;');
+      // Aug 2026 audit: this cross-market search labelled EVERY leads-market value "County value",
+      // including Miami-Dade's modelled estimate. Label per-result from the market the row came
+      // from (x.m), not from the market that happens to be active.
+      var _vm=false; try{_vm=!!(MARKETS[x.m]||{}).valModelled;}catch(_){}
+      line2=(_vm?'Est. value ~':'County value ')+(x.val?fmtK(x.val):'&mdash;')+' &middot; '+(x.tag?(x.tag==='probate'?'Estate/probate':x.tag==='entity'?'Entity-owned':x.tag==='trust'?'Trust-owned':x.tag):'')+' &middot; Lead score '+(x.sc!=null?x.sc:'&mdash;');
     }
     return '<div style="border:1px solid var(--border);border-radius:9px;padding:11px 13px;margin-bottom:8px;background:var(--bg-soft,rgba(0,0,0,.03));">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><div style="font-weight:800;font-size:14px;">'+_escHtml(x.a)+'</div>'+badge+'</div>'
@@ -1972,10 +1976,23 @@ function buildPolk(){
         // Jul 2026 audit: this line claimed the county publishes no code-violation feed, which is
         // no longer true — county flags ARE joined per parcel where a *_FLAGS table is baked. The
         // real (and only) gap is a per-property comp ARV. Say exactly that, per market.
-        var flg=0;try{var _g=window[(window._market||'').toUpperCase()+'_FLAGS'];flg=_g?Object.keys(_g).length:0;}catch(e){}
-        var sig=flg
-          ? 'Open code cases, permits and recorded liens <strong>are</strong> joined here &mdash; baked from '+county+'&rsquo;s own record portal (a dated snapshot, not a live pull) and shown as chips on each lead.'
-          : 'No code-case or lien feed is joined for this county yet &mdash; owner, hold and mailing signals are what carry these leads.';
+        // Aug 2026 audit: this used to fire on the mere EXISTENCE of a flags table, so Broward —
+        // whose table holds 2 parcels against 600 leads, with zero liens — was told that code
+        // cases, permits and liens "are joined here". Gate on real coverage and state the number,
+        // so thin coverage reads as thin instead of as a feature. Miami-Dade bakes its flags onto
+        // the lead rows themselves rather than into a *_FLAGS table, so count both shapes.
+        var flg=0,tot=(L||[]).length;
+        try{
+          var _g=window[(window._market||'').toUpperCase()+'_FLAGS'];
+          flg=(_g&&Object.keys(_g).length)?Object.keys(_g).length
+             :(L||[]).filter(function(x){return x.code||x.viol||x.lien;}).length;
+        }catch(e){}
+        var pct=tot?Math.round(100*flg/tot):0;
+        var sig = (flg>=25&&flg>=tot*0.05)
+          ? 'Open code cases, permits and recorded liens are joined here on <strong>'+flg.toLocaleString()+' of '+tot.toLocaleString()+'</strong> leads ('+pct+'%) &mdash; a dated snapshot from '+county+'&rsquo;s record portal, not a live pull, shown as chips on each lead.'
+          : (flg
+              ? 'Code and lien joining has barely started in this county &mdash; only <strong>'+flg+' of '+tot.toLocaleString()+'</strong> leads carry a flag, so read a missing chip as &ldquo;not checked&rdquo;, never as &ldquo;clean&rdquo;.'
+              : 'No code-case or lien feed is joined for this county yet &mdash; owner, hold and mailing signals are what carry these leads.');
         return '<div style="font-size:12px;color:#e8854a;margin-top:8px;">There is <strong>no per-property comp ARV here</strong> &mdash; '+county+' publishes no live sold-comp feed. '+sig+' '+depth+'</div></div>';
       })();
   }
@@ -2044,12 +2061,19 @@ function _zipCompsHtml(l){
 function polkDossierHtml(l){
   var row=function(k,v){return '<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid var(--border);"><span style="color:var(--muted);">'+k+'</span><span style="color:var(--ivory);font-weight:600;">'+v+'</span></div>';};
   var data='<div style="background:var(--bg-soft,var(--bg-card));border:1px solid var(--border);border-radius:8px;padding:12px 14px;">'
-    +'<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">County record</div>'
-    +row('Market / just value',fmt$(l.mkt))
+    // Jul/Aug 2026 audit: this dossier was the OTHER half of the Miami-Dade value bug. The Brief
+    // card was taught that Miami's l.mkt is a modelled ZIP estimate, but this panel still printed
+    // it as "Market / just value" under a header reading "County record" — attributing a model to
+    // the county — and rendered "$0" for building and land because fmt$(0) is '$0', not a dash.
+    +'<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">'+(_valIsModelled()?'Property record':'County record')+'</div>'
+    +(_valIsModelled()
+        ? row('Est. value <span style="color:var(--muted);font-weight:400;">(modelled)</span>','~'+fmt$(l.mkt))
+        : row('Market / just value',fmt$(l.mkt)))
     +row('Assessed value',l.asr?fmt$(l.asr):'&mdash;')
     +row('Taxable value',l.tax?fmt$(l.tax):'&mdash;')
-    +row('Building value',fmt$(l.bld))
-    +row('Land value',fmt$(l.lnd!=null?l.lnd:Math.max(0,l.mkt-l.bld)))
+    +row('Building value',l.bld?fmt$(l.bld):'&mdash;')
+    +(function(){var _ln=(l.lnd!=null?l.lnd:Math.max(0,(l.mkt||0)-(l.bld||0)));
+      return row('Land value',(l.bld||_ln)?fmt$(_ln):'&mdash;');})()
     +row('Lot size',(l.lot||0)+' ac')
     +row('Use','Single-family (residential)')
     +row('Homestead','No — non-homestead')
@@ -2585,7 +2609,14 @@ function briefLeads(host){
   var src=[]; try{src=(_LSRC()||[]).slice();}catch(e){}
   var label=((MARKETS[window._market]||{}).label)||'This market';
   _briefControls(true,_uniqSorted(src.map(function(l){return l.c;})));
-  _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds, and open code cases/liens where the county publishes them). There is <strong>no per-property comp ARV</strong> in this market: cards show the county value plus a <strong>ZIP-level sale band</strong> where one exists, never a resale estimate &mdash; walk it and comp it before offering. <span id="briefUpdated" style="color:var(--gold);"></span>');
+  // Aug 2026 audit: this promised "cards show the county value" for every leads market, but in a
+  // modelled market (Miami-Dade) the card deliberately shows no county value at all — the intro
+  // contradicted the cards beneath it. Describe what THIS market's cards actually render.
+  _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds, and open code cases/liens where the county publishes them). There is <strong>no per-property comp ARV</strong> in this market: cards show '
+    +(_valIsModelled()
+        ? 'an <strong>estimated value</strong> modelled from ZIP $/sf &times; size (the county publishes no value here)'
+        : 'the <strong>county roll value</strong>')
+    +' plus a <strong>ZIP-level sale band</strong> where one exists, never a resale estimate &mdash; walk it and comp it before offering. <span id="briefUpdated" style="color:var(--gold);"></span>');
   var list=_briefSortLeads(src.filter(function(l){return !_briefState.area||l.c===_briefState.area;}));
   var picks=list.slice(0,6); window._briefLeadList=picks;
   if(!picks.length){_briefEmpty(host,'No leads match this area filter. Choose &ldquo;All areas&rdquo; to see the full '+_escHtml(label)+' list.');_briefCount(src.length,0);return;}
@@ -4387,10 +4418,18 @@ function _valueLineFor(p){
       // square footage, in this ZIP, over the last two years. That is a materially tighter and
       // better-centred range than the ZIP-wide spread, and it is what the sentence claims to be.
       // Without a bucket we fall back to the ZIP-wide band and say "in your area" instead.
+      // Aug 2026 audit — TWO defects in the mailed sentence, both corrected here:
+      // (1) lo/hi are the 25th and 75th percentiles, i.e. the MIDDLE HALF of sales. Saying homes
+      //     "have sold between" lo and hi states an interquartile band as the full span, when by
+      //     construction about half the cited sales fall outside it. Now says "the middle half".
+      // (2) the fallback branch dropped the size qualifier, but the arithmetic never did — lo/hi
+      //     are always a ZIP $/sf percentile multiplied by THIS house's square footage. Calling
+      //     that "recorded sales in your area" misdescribes a size-scaled figure as a raw one.
+      // Wording is deliberately plain: this is read by a homeowner, not an analyst.
       if(bd)return (bd.matched
-        ? 'Homes of about this size in your ZIP have sold between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+' over the last two years, based on '+bd.n+' recorded sales.'
-        : 'Recorded sales in your area over the last two years have generally run between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+'.')
-        +' That is a starting range from public records, not an appraisal or an offer — I would need to see the property before naming a firm number, but I wanted to be straightforward about where I start.';
+        ? 'Looking at homes of about this size in your ZIP, the middle half of what sold over the last two years went for between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+' ('+bd.n+' recorded sales in that size range).'
+        : 'Scaled to a home of this size, the middle half of recorded sales in your ZIP over the last two years works out to between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+'.')
+        +' Some sold for less and some for more. That is a starting range from public records, not an appraisal or an offer — I would need to see the property before naming a firm number, but I wanted to be straightforward about where I start.';
       return '';
     }
     if(p.folio){

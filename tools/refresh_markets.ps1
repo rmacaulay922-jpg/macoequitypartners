@@ -216,6 +216,25 @@ if ($beforeSize -gt 0 -and $afterSize -lt [int]($beforeSize * 0.75)) {
 $changed = (& git status --porcelain -- $file) | Where-Object { $_ }
 if ($changed) {
   & git add $file
+  # coverage.js carries the freshness the PUBLIC pages render (snapshot date + lead count per
+  # market), generated from the leads files by tools/build_coverage.js. Aug 2026 audit: nothing
+  # regenerated it, so a refreshed county kept advertising its OLD date - the hardcoded strings
+  # it replaced had simply been swapped for a stale generated file. Regenerate and commit it in
+  # the SAME commit as the leads file so the two can never disagree. Non-fatal: a coverage
+  # failure must not discard a good leads refresh.
+  $covScript = Join-Path $repo 'tools\build_coverage.js'
+  if (Test-Path $covScript) {
+    try {
+      $covOut = & node $covScript 2>&1 | Out-String
+      if ($covOut) { Add-Content -Path $log -Value $covOut.TrimEnd() }
+      if ($LASTEXITCODE -eq 0) {
+        $covFile = Join-Path $repo 'coverage.js'
+        if ((& git status --porcelain -- $covFile) | Where-Object { $_ }) {
+          & git add $covFile; Say 'coverage.js regenerated and staged.'
+        } else { Say 'coverage.js unchanged.' }
+      } else { Say "WARN: build_coverage.js exited $LASTEXITCODE - coverage.js NOT updated." }
+    } catch { Say "WARN: build_coverage.js failed ($($_.Exception.Message)) - coverage.js NOT updated." }
+  } else { Say 'WARN: tools/build_coverage.js missing - coverage.js NOT updated.' }
   $when = Get-Date -Format 'yyyy-MM-dd'
   $msg = "Market refresh ($when) - $Market ($afterCount leads)"
   & git commit -m $msg | Out-Null

@@ -140,7 +140,9 @@ def run(key):
     feats=[]; first=True; asmt=''
     PAGE=c.get('pagesize',2000); CAP=c.get('cap',25000); PACE=c.get('pace',0.6)
     def crawl(bounded_where, cap, seed_first, segmented=False):
-        # One OBJECTID-cursor crawl over a WHERE clause; returns (features, ok, still_first)
+        # One OBJECTID-cursor crawl over a WHERE clause.
+        # Returns (features, ok, still_first) where ok == "this crawl finished CLEANLY"
+        # (natural exhaustion, short page, or cap) — NOT merely "the first page worked".
         nonlocal asmt
         out=[]; last=0; fst=seed_first
         while True:
@@ -159,7 +161,13 @@ def run(key):
                     print('   segment degraded after retries — keeping the %d parcels from this segment.'%len(out))
                 else:
                     print('   page failed after retries — keeping the %d parcels from this segment.'%len(out))
-                return out, True, fst
+                # ok=False means "this crawl did NOT finish cleanly". It previously returned True
+                # here, which made the flag meaningless: ok could only ever be False on the very
+                # first page of the very first segment (fst flips at the SELF-CHECK below and
+                # never flips back), so the sweep's coverage guard could not fire at all. With the
+                # launcher's discard phrase deliberately suppressed on the segmented path, that
+                # left a swept county with NO partial-crawl protection whatsoever.
+                return out, False, fst
             f=d.get('features',[])
             if fst and f:
                 a0=f[0]['attributes']; asmt=str(int(num(a0.get('ASMNT_YR')) or 0) or '')
@@ -187,19 +195,28 @@ def run(key):
         except Exception: hi_d=None
         hi=int(num(((hi_d or {}).get('features') or [{}])[0].get('attributes',{}).get('OBJECTID'))) if hi_d and hi_d.get('features') else lo+5000000
         print('   sweep: OBJECTID span %d..%d in %d segments (cap %d/segment)'%(lo,hi,SWEEP,CAP//SWEEP))
-        step=max(1,(hi-lo)//SWEEP+1); deadseg=0
+        step=max(1,(hi-lo)//SWEEP+1); deadseg=0; truncseg=0
         for s in range(SWEEP):
             a1,b1=lo+s*step, lo+(s+1)*step
             seg,ok,first=crawl(where+(' AND OBJECTID>=%d AND OBJECTID<%d'%(a1,b1)), CAP//SWEEP, first, segmented=True)
             feats+=seg
-            # A segment is DEAD (coverage hole) only if it produced NO rows via failure — a
-            # partial segment still covers its block. The old ok-flag counted retry-exhausted
-            # partials as success, so the skew guard could never trip.
-            if not ok and not seg: deadseg+=1
+            # DEAD  = the segment's whole OBJECTID block is missing (failed with no rows).
+            # TRUNC = the segment was cut off mid-block, so the tail of that block is missing.
+            # Both are coverage holes; a truncated segment is simply a smaller one. Counting only
+            # dead segments (the previous behaviour) understated the damage, and because ok was
+            # hardcoded True on the retry-exhausted path it never counted anything at all.
+            if not ok:
+                if seg: truncseg+=1
+                else:   deadseg+=1
             time.sleep(PACE)
-        print('   sweep done: %d/%d segments dead · %d parcels'%(deadseg,SWEEP,len(feats)))
+        holes=deadseg+truncseg
+        print('   sweep done: %d/%d segments dead, %d truncated · %d parcels'%(deadseg,SWEEP,truncseg,len(feats)))
         if first: raise SystemExit('every sweep segment failed — service unreachable, wait a few min and re-run.')
+        # Exit non-zero on unacceptable coverage. refresh_markets.ps1 discards on ANY non-zero exit
+        # ($rc -ne 0), so this is the real protection for the segmented path — it does not depend on
+        # the stdout phrase that path deliberately suppresses.
         if deadseg>SWEEP*0.5: raise SystemExit('over half the sweep segments returned nothing (%d/%d dead) — coverage would be skewed; NOT baking. Re-run later.'%(deadseg,SWEEP))
+        if holes>SWEEP*0.5: raise SystemExit('%d of %d segments are incomplete (%d dead + %d truncated) — coverage would be skewed; NOT baking. Re-run later.'%(holes,SWEEP,deadseg,truncseg))
     else:
         seg,ok,first=crawl(where, CAP, first)
         feats=seg
