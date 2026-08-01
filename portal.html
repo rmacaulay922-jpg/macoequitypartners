@@ -2009,6 +2009,12 @@ function polkFiltered(){
   else if(s==='band')out.sort(function(a,b){var x=_bandFor(a),y=_bandFor(b);return ((y&&y.mid)||0)-((x&&x.mid)||0);});
   else if(s==='held')out.sort(function(a,b){return (b.held||0)-(a.held||0);});
   else if(s==='sqft')out.sort(function(a,b){var x=_fdorFor(a),y=_fdorFor(b);return ((y&&y.sqft)||0)-((x&&x.sqft)||0);});
+  // Money sorts. Leads with no defensible economics (band disagrees with the county value, or no
+  // size) sort LAST rather than as zero, so an ungradeable lead never outranks a real one.
+  else if(s==='profit')out.sort(function(a,b){var x=_leadEcon(a),y=_leadEcon(b);
+    return ((y&&y.profit!=null)?y.profit:-1e12)-((x&&x.profit!=null)?x.profit:-1e12);});
+  else if(s==='offer')out.sort(function(a,b){var x=_leadEcon(a),y=_leadEcon(b);
+    return ((y&&y.offer)||-1e12)-((x&&x.offer)||-1e12);});
   else out.sort(function(a,b){return _leadRank(b)-_leadRank(a);}); // default: score, ties broken by signal strength
   return out;
 }
@@ -2078,7 +2084,7 @@ function buildPolk(){
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Mail risk</span>'
       +'<select class="filter-sel" title="Estates whose owner mailing address IS the property — the heirs are not there, so a letter is wasted postage by construction. Skip-trace them instead." onchange="_polkFilter.mail=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude (mailable only)</option><option value="only">Only (skip-trace list)</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Sort</span>'
-      +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
+      +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="profit">Best margin (est.)</option><option value="offer">Highest max offer</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Hide Wall Street SFR portfolios (they never answer blind mail)"><input type="checkbox" onchange="_polkFilter.inst=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Hide institutional</label>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Only leads with a ZIP qualified-sale band (priceable range)"><input type="checkbox" onchange="_polkFilter.band=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Has sale band</label>'
       +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
@@ -2476,6 +2482,29 @@ function renderLeadsMap(L){
   if(bounds.length)_lmap.fitBounds(bounds,{padding:[24,24],maxZoom:14});
   setTimeout(function(){try{_lmap.invalidateSize();}catch(e){}},60);
 }
+// ── LEAD ECONOMICS ──
+// buyGrade() and maxOfferFor() have existed for a year and were never called on a leads card, so
+// a subscriber shopping 3,000 properties could rank by MOTIVATION but never by MONEY. This is the
+// bridge: it turns a lead into the same {arv, repair} shape the Miami deal board feeds them.
+//
+// GATED ON THE SAME RECONCILIATION AS THE LETTER AND THE UNDERWRITER. The ARV here is the ZIP band
+// mid, which on distressed stock runs high — 20% of Miami leads band above 1.4x the county's own
+// value. Grading a lead "A" on a number we would refuse to print in a letter would be worse than
+// not grading it, so where the two disagree this returns null and the card shows nothing.
+function _leadEcon(l){
+  try{
+    if(!l||_teardownLead(l))return null;
+    var bd=_bandFor(l); if(!bd||!bd.mid)return null;
+    if(l.mkt>0&&!l.vm){var r=bd.mid/l.mkt; if(r>1.40||r<0.70)return null;}
+    var e=_fdorFor(l);
+    var repair=(e&&e.sqft)?Math.round(e.sqft*45/1000)*1000:0;   // $45/sf walk-it, same as the underwriter
+    if(!repair)return null;                                      // no size, no defensible repair number
+    var d={arv:bd.mid,repair:repair};
+    var offer=maxOfferFor(bd.mid,repair);
+    var profit=getProfit(bd.mid,repair);
+    return {arv:bd.mid,repair:repair,offer:offer,profit:profit,grade:buyGrade(d),band:bd};
+  }catch(e){return null;}
+}
 // Cards vs table. Both read the SAME polkFiltered() result, so the two views can never disagree
 // about which leads are in play — only about how they are drawn.
 var POLK_VIEW='cards';
@@ -2494,7 +2523,7 @@ function setPolkView(v){
 // other (value, size, hold, owner) plus the signals, which cards can only show one at a time.
 function _polkTableHtml(L,county){
   var pip=(typeof getPipeline==='function')?getPipeline():{};
-  var head=['Address','City','ZIP','Est. value','Range','SF','Bd/Ba','Built','Held','Owner type','Signals','']
+  var head=['Address','City','ZIP','Est. value','Max offer','Est. profit','Grade','SF','Bd/Ba','Built','Held','Owner type','Signals','']
     .map(function(h){return '<th style="text-align:left;padding:7px 9px;position:sticky;top:0;background:var(--bg-card);border-bottom:2px solid var(--rule-strong);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--bronze);white-space:nowrap;">'+h+'</th>';}).join('');
   var body=L.slice(0,400).map(function(l){
     var bd=_bandFor(l), e=_fdorFor(l), ts=polkTagStyle(l.tag), pj="'"+l.pid+"'";
@@ -2509,7 +2538,10 @@ function _polkTableHtml(L,county){
       +td(_escHtml(l.c||''),'color:var(--muted);')
       +td(l.z||'','color:var(--muted);')
       +td(bd?'<span style="color:var(--gold);font-weight:700;">'+fmtK(bd.mid)+'</span>':fmtK(l.mkt))
-      +td(bd?(fmtK(bd.lo)+'–'+fmtK(bd.hi)):'&mdash;','color:var(--muted);font-size:11px;')
+      +(function(){var ec=_leadEcon(l);
+         return td(ec&&ec.offer?'<strong style="color:var(--gold);">'+fmtK(ec.offer)+'</strong>':'&mdash;')
+              + td(ec&&ec.profit!=null?fmtK(ec.profit):'&mdash;','color:var(--muted);')
+              + td(ec&&ec.grade?'<span style="color:'+ec.grade.c+';font-weight:700;">'+ec.grade.g+'</span>':'&mdash;');})()
       +td((e&&e.sqft)?e.sqft.toLocaleString():'&mdash;')
       +td((l.bed||l.bath)?((l.bed||'?')+'/'+(l.bath||'?')):'&mdash;')
       +td((e&&e.yb)||l.yb||'&mdash;')
@@ -2569,6 +2601,21 @@ function renderPolk(){
         var cell3='<div class="metric-cell" style="border-right:none;" title="How long this owner has held, and what kind of owner they are — the two motivation signals that survive across every county."><div class="metric-lbl">Held / Owner</div><div class="metric-val" style="font-size:17px;">'+_hold+'</div><div class="metric-sub" style="font-size:9px;color:'+_ts3[0]+';">'+_ts3[1]+(l.mkt&&bd?' &middot; county '+fmtK(l.mkt):'')+'</div></div>';
         return '<div class="metrics-row" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0;border:1px solid var(--border);border-radius:8px;overflow:hidden;">'+cell1+cell2+cell3+'</div>';
       })()
+      // THE MONEY VERDICT. Until now the board could tell you who was motivated and never whether
+      // the deal pencils, so a subscriber ranked 3,000 properties by seller distress alone.
+      // Shown only where _leadEcon can stand behind it (band reconciles with the county value and
+      // we know the size) — 2,276 of 3,000 Miami leads. The rest deliberately show nothing.
+      +(function(){
+        var ec=_leadEcon(l); if(!ec)return '';
+        var g=ec.grade||{};
+        var pct=(ec.profit!=null&&ec.arv)?Math.round(100*ec.profit/ec.arv):null;
+        return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;padding:8px 10px;background:rgba(184,145,90,.07);border:1px solid rgba(184,145,90,.28);border-radius:8px;">'
+          +'<span style="background:'+(g.bg||'rgba(138,132,120,.14)')+';color:'+(g.c||'var(--muted)')+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+(g.g||'?')+' &middot; '+(g.t||'')+'</span>'
+          +'<span style="font-size:12.5px;color:var(--ivory-soft);">Buy at or under <strong style="color:var(--gold);font-size:14px;">'+(ec.offer?fmtK(ec.offer):'&mdash;')+'</strong></span>'
+          +(ec.profit!=null?'<span style="font-size:11.5px;color:var(--muted);">&rarr; ~'+fmtK(ec.profit)+' profit'+(pct!=null?' ('+pct+'% of value)':'')+'</span>':'')
+          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;" title="ARV = ZIP sale band midpoint; repairs = $45/sf walk-it default; target profit from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.">est. &middot; walk it first</span>'
+        +'</div>';
+      })()
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
         +'<button class="btn btn-gold" id="polkT-'+l.pid+'" style="font-size:10px;padding:4px 10px;" onclick="polkToggleDetail('+pj+')">Details &#9662;</button>'
         // Jul 2026 audit: the underwriter is the strongest thing in the product and was labelled
@@ -2616,7 +2663,14 @@ function polkToPipeline(pid,btn){
   var l=(_LSRC()||[]).filter(function(x){return x.pid===pid;})[0]; if(!l)return;
   // Carry the FULL owner-contact record — the pipeline card is the call screen, and losing the
   // mailing street/pid here dead-ended letters + skip-trace for every non-Miami lead (Jul 2026 audit).
-  addToPipeline({address:l.a+', '+l.c+' '+(l.z||''), neighborhood:l.c+', '+(_LMETA().county||''), arv:0, repair:0, _score:l.sc,
+  // Seed the card's economics instead of zeroing them. Committing to a lead used to WIPE its
+  // numbers — Purchase $0 / ARV $0 / Repair $0 on the screen the code itself calls "the call
+  // screen" — so the pipeline could never show projected profit and the member retyped figures
+  // the portal already held. Uses the same gated _leadEcon as the card, so a lead we refuse to
+  // grade still enters at 0 rather than carrying an indefensible number into the P&L.
+  var _ec=_leadEcon(l);
+  addToPipeline({address:l.a+', '+l.c+' '+(l.z||''), neighborhood:l.c+', '+(_LMETA().county||''),
+    arv:(_ec?_ec.arv:0), repair:(_ec?_ec.repair:0), purchase:(_ec&&_ec.offer?_ec.offer:0), _score:l.sc,
     owner:l.o, mail_city:(l.m3||'').replace(/\s+[A-Za-z]{2}\s+\d.*$/,'').trim()||l.c, owner_state:l.mst||'FL',
     _pid:l.pid, _mkt:window._market||'', _m1:l.m1||'', _m3:l.m3||'', _city:l.c||'', _zip:l.z||''});
   if(btn){btn.textContent='✓ In Pipeline';btn.disabled=true;}
@@ -5536,12 +5590,37 @@ function pcAddLog(addr){
   buildPipeline();
 }
 
+// Persist the Underwriter's answer. Upserts: if the property is already on the board this updates
+// its numbers in place rather than refusing (addToPipeline early-returns on a duplicate address),
+// which is the common case — you add a lead, then underwrite it, then want the card to agree.
+function uwSaveToPipeline(maxOffer){
+  try{
+    var addrEl=document.getElementById('uw-address');
+    var addr=(addrEl&&addrEl.value||'').trim();
+    if(!addr){toast('Add a property address in the Underwriter first.');return;}
+    var arv=uwNum('uw-arv'), repair=uwNum('uw-reno'), purchase=uwNum('uw-purchase');
+    if(!purchase&&maxOffer>0)purchase=maxOffer;      // no price typed yet: keep the computed ceiling
+    var data=getPipeline();
+    if(data[addr]){
+      data[addr].arv=arv; data[addr].repair=repair; data[addr].purchase=Math.round(purchase||0);
+      (data[addr].log=data[addr].log||[]).push({d:_today(),t:'Underwritten — ARV '+fmtK(arv)+', repair '+fmtK(repair)+', max offer '+fmtK(maxOffer||purchase)});
+      savePipeline(data);
+      toast('Pipeline card updated — '+addr);
+    }else{
+      addToPipeline({address:addr,neighborhood:'',arv:arv,repair:repair,purchase:purchase});
+      toast('Added to Pipeline at '+fmtK(purchase||0)+' — '+addr);
+    }
+    try{renderPipeline();}catch(e){}
+  }catch(e){try{toast('Could not save to Pipeline.');}catch(_){}}
+}
 function addToPipeline(deal){
   var data=getPipeline();
   if(data[deal.address]){try{toast(deal.address+' is already in your Pipeline');}catch(e){}return;}
   data[deal.address]={
     address:deal.address, neighborhood:deal.neighborhood, arv:deal.arv,
-    repair:deal.repair||deal.repair_low||0, purchase:Math.round((deal.arv||0)*0.65),
+    // Honour an explicit purchase price when the caller computed one (the Underwriter's max-offer,
+    // or a lead's gated _leadEcon). Falling back to a flat 65%-of-ARV rule of thumb otherwise.
+    repair:deal.repair||deal.repair_low||0, purchase:(deal.purchase>0?Math.round(deal.purchase):Math.round((deal.arv||0)*0.65)),
     score:(deal._score!=null?deal._score:(deal.score||0)), stage:'lead', followup:'', log:[], notes:'', added:new Date().toISOString(),
     owner:deal.owner||'', mail_city:deal.mail_city||'', owner_state:deal.owner_state||'' // carry owner/mailing so pipeline skip-trace & letters have it
   };
@@ -6098,6 +6177,11 @@ function uwRenderFlip(){
     } else {
       var delta = minP - c.purchase;
       html += '<div class="uw-tv">'+fmt$(minP)+'</div>';
+      // The Underwriter had no way to keep its own answer. "I will pay up to $X" — the sentence
+      // this whole screen exists to produce — lived only until closeUnderwriter() stripped the
+      // modal, so the member read it off the screen and retyped it into a pipeline card from
+      // memory. One button ends that.
+      html += '<div style="margin-top:10px;"><button class="btn btn-gold" style="font-size:11px;padding:5px 12px;" onclick="uwSaveToPipeline('+minP+')">&#128190; Save these numbers to Pipeline</button></div>';
       if(c.purchase>0){
         if(delta>=0){
           html += '<div class="uw-tsub" style="color:var(--green)">You can pay up to '+fmt$(delta)+' more than your current price and still hit this target.</div>';
@@ -6221,6 +6305,11 @@ function runUnderwriter(d){
   var hm = document.querySelector('input[name="uw-fin"][value="hm"]');
   if(hm){ hm.checked = true; }
   try{var _t=_hmTerms(); setV('uw-rate',(_t.rate*100).toFixed(1)); setV('uw-points',(_t.pts*100).toFixed(1)); setV('uw-reno-months',_flipMonths());}catch(e){}
+  // Prefill the target profit. "Max Purchase to Make $X" — the number this screen exists to
+  // produce, and the only place the Save-to-Pipeline button lives — renders only when a target is
+  // set, and the field defaulted to EMPTY. So the headline answer was hidden behind a step the
+  // member had to know to take. targetProfit() already holds their configured figure.
+  try{var _tp=document.getElementById('uw-target'); if(_tp&&!(+_tp.value>0))_tp.value=targetProfit();}catch(e){}
   // payoffs are per-deal — always reset, and flag liened/violated properties
   setV('uw-lienpayoff',0); setV('uw-permitfix',0);
   try{var _vi=(typeof violInfo==='function')?violInfo(d.address):null;var _lnEl=document.getElementById('uw-lien-note');if(_lnEl)_lnEl.style.display=(_vi&&(_vi.lien||_vi.n))?'block':'none';}catch(e){}
