@@ -2431,11 +2431,24 @@ function polkUnderwrite(pid){
   var l=(_LSRC()||[]).filter(function(x){return x.pid===pid;})[0]; if(!l)return;
   var county=_LMETA().county||'This county';
   var bd=_bandFor(l), e=_fdorFor(l);
-  if(bd){
+  // SANITY CLAMP on the ARV seed (Aug 2026). The band is the ZIP's median $/sf times this home's
+  // square footage — it knows nothing about condition, age or quality, so on distressed stock it
+  // runs high. Measured against the real FDOR county values: 590 of 2,997 Miami-Dade leads (20%)
+  // would have seeded an ARV above 1.4x the county's own figure, and 19 above 2x. Worst case
+  // 821 Sharar Ave: county $177,878, seeded ARV $517,567 and a suggested purchase of $336,419 —
+  // an offer near 2x the county value. A pre-filled number anchors the decision even when a toast
+  // says "verify", so where the two sources cannot be reconciled we seed NOTHING and say why.
+  var _bandSane=true;
+  if(bd&&l.mkt>0&&!l.vm){var _rr=bd.mid/l.mkt; if(_rr>1.40||_rr<0.70)_bandSane=false;}
+  if(bd&&_bandSane){
     // Seed with the ZIP qualified-sale band midpoint + sqft-based repair walk-it default — clearly a starting range, not a comp ARV.
     var rep=(e&&e.sqft)?Math.round(e.sqft*45/1000)*1000:0; // $45/sf walk-it default, same convention as Miami county leads
     runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:bd.mid, repair:rep, sqft:e&&e.sqft, _arvSrc:'zip-band'});
     try{toast('Pre-filled from the ZIP sale band ('+fmtK(bd.lo)+'–'+fmtK(bd.hi)+', '+bd.n+' qual. sales) + $45/sf walk-it repair — verify both before offering');}catch(e2){}
+  }else if(bd){
+    var rep2=(e&&e.sqft)?Math.round(e.sqft*45/1000)*1000:0;
+    runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:rep2, sqft:e&&e.sqft});
+    try{toast('ARV left blank on purpose — the ZIP band ('+fmtK(bd.mid)+') and the county value ('+fmtK(l.mkt)+') disagree by too much to seed one. Pull real comps for this block before you put a number in.');}catch(e2){}
   }else{
     // No band (thin zip) — open blank; county value anchors it.
     runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:0});
