@@ -1888,8 +1888,34 @@ function polkPaUrl(l){
   }catch(e){}
   return _LREC('pa');
 }
-// True when the active market's `mkt` is a modelled estimate rather than a county-roll value.
-function _valIsModelled(){try{return !!(MARKETS[window._market||'miamicw']||{}).valModelled;}catch(e){return false;}}
+// Is THIS lead's value a modelled estimate rather than a county-roll figure?
+// Once tools/bake_miami_fdor_values.py runs, Miami-Dade's file is MIXED — most leads carry the
+// real FDOR just value and only the parcels FDOR has no row for stay modelled — so a market-wide
+// flag is no longer sufficient. meta.valSrc says which regime the file is in:
+//   'fdor'        every value is real
+//   'model'       every value is modelled
+//   'fdor+model'  mixed — the per-lead `vm` flag decides (emitted only when modelled)
+// A file predating the value bake carries no valSrc at all; fall back to the market flag, which
+// is what marks Miami-Dade as wholly modelled today.
+function _valIsModelled(l){
+  try{
+    var vs=(_LMETA()||{}).valSrc;
+    if(vs==='fdor')return false;
+    if(vs==='model')return true;
+    if(vs==='fdor+model')return !!(l&&l.vm);
+    return !!(MARKETS[window._market||'miamicw']||{}).valModelled;
+  }catch(e){return false;}
+}
+// Market-level: does this market contain ANY modelled value? Drives copy that describes the
+// board as a whole (intros, banners) rather than one card.
+function _valMarketHasModelled(){
+  try{
+    var meta=_LMETA()||{}, vs=meta.valSrc;
+    if(vs==='fdor')return false;
+    if(vs==='model'||vs==='fdor+model')return true;
+    return !!(MARKETS[window._market||'miamicw']||{}).valModelled;
+  }catch(e){return false;}
+}
 // True when this market opens the parcel directly, so the button can say so.
 function _paIsDeep(l){
   try{
@@ -2065,8 +2091,8 @@ function polkDossierHtml(l){
     // card was taught that Miami's l.mkt is a modelled ZIP estimate, but this panel still printed
     // it as "Market / just value" under a header reading "County record" — attributing a model to
     // the county — and rendered "$0" for building and land because fmt$(0) is '$0', not a dash.
-    +'<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">'+(_valIsModelled()?'Property record':'County record')+'</div>'
-    +(_valIsModelled()
+    +'<div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);margin-bottom:6px;">'+(_valIsModelled(l)?'Property record':'County record')+'</div>'
+    +(_valIsModelled(l)
         ? row('Est. value <span style="color:var(--muted);font-weight:400;">(modelled)</span>','~'+fmt$(l.mkt))
         : row('Market / just value',fmt$(l.mkt)))
     +row('Assessed value',l.asr?fmt$(l.asr):'&mdash;')
@@ -2590,7 +2616,7 @@ function briefLeadCard(l,i){
     // When the value is modelled it IS band_mid(zip, sqft) — the very same number the sale-band
     // row below shows, with a range and a sale count attached. Printing both just says it twice,
     // so the standalone row only appears when there is no band row to carry it.
-    +(_valIsModelled()
+    +(_valIsModelled(l)
        ? (_bd?'':line('Est. value','~'+fmtK(l.mkt),'modelled from ZIP $/sf &times; size &mdash; the county publishes no value here'))
        : line('County value',fmtK(l.mkt),'market / just value on the county roll &mdash; NOT a resale estimate'))
     +((l.bld>0||ln>0)?line('Building / land',fmtK(l.bld)+' / '+fmtK(ln),'county-assessed split'):'')
@@ -2613,7 +2639,7 @@ function briefLeads(host){
   // modelled market (Miami-Dade) the card deliberately shows no county value at all — the intro
   // contradicted the cards beneath it. Describe what THIS market's cards actually render.
   _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds, and open code cases/liens where the county publishes them). There is <strong>no per-property comp ARV</strong> in this market: cards show '
-    +(_valIsModelled()
+    +(_valMarketHasModelled()
         ? 'an <strong>estimated value</strong> modelled from ZIP $/sf &times; size (the county publishes no value here)'
         : 'the <strong>county roll value</strong>')
     +' plus a <strong>ZIP-level sale band</strong> where one exists, never a resale estimate &mdash; walk it and comp it before offering. <span id="briefUpdated" style="color:var(--gold);"></span>');

@@ -227,6 +227,35 @@ def run():
     if os.path.exists(OUT_BANDS):
         m = re.search(r'window\.ZIP_BANDS\s*=\s*(\{.*?\});', open(OUT_BANDS, encoding='utf-8').read(), re.S)
         if m: bands = json.loads(m.group(1))
+
+    # Real FDOR just/land values, baked separately by tools/bake_miami_fdor_values.py.
+    # PaGISView publishes no value at all (verified 2026-08-01: ASSESSED_VAL_CUR null on 40/40
+    # sampled parcels, and no other value field exists on the layer), so without this cache every
+    # Miami value is a modelled ZIP estimate — measured +47% high on folio 3040020090330.
+    # Consumed exactly like the bands file above: read an artifact, never call FDOR at bake time.
+    # A MISSING cache is NOT fatal — everything falls back to band_mid, i.e. precisely today's
+    # behaviour — because a missing value file must never block a fresh lead refresh.
+    VALS = {}
+    _vp = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fdor_miami_values.json')
+    if os.path.exists(_vp):
+        try:
+            _raw = json.load(open(_vp, encoding='utf-8'))
+            _vmeta = _raw.pop('_meta', {}) or {}
+            VALS = _raw
+            print('   FDOR values: %d parcels, roll %s%s' % (
+                len(VALS), _vmeta.get('roll', '?'),
+                ' (PARTIAL)' if _vmeta.get('partial') else ''), flush=True)
+        except Exception as _e:
+            print('   FDOR values: cache unreadable (%s) — values will be MODELLED' % str(_e)[:60], flush=True)
+    else:
+        print('   FDOR values: no cache — values will be MODELLED '
+              '(run tools/bake_miami_fdor_values.py)', flush=True)
+
+    def nf(v):
+        """Folio normalisation — digits only, zero-padded to 13. Must match the value baker."""
+        d = ''.join(ch for ch in str(v or '') if ch.isdigit())
+        return d.zfill(13) if d else ''
+
     baked_zips = 0
     for z, agg in by_zip.items():
         ppsf = [p for p in agg['ppsf'] if 60 <= p <= 1200]
@@ -259,8 +288,15 @@ def run():
         if not addr or not fol: continue
         z = str(a.get('TRUE_SITE_ZIP_CODE') or '')[:5]
         sqft = int(num(a.get('BUILDING_HEATED_AREA')))
-        est = band_mid(z, sqft)
-        if not (60000 <= est <= 700000):        # flip band, priced off the ZIP band × sqft
+        # Prefer the county's REAL just value; fall back to the ZIP model only where FDOR has no
+        # row. This must happen HERE, above the gate: the value decides which parcels become leads
+        # at all and is the sort tiebreak below, so enriching after the bake would leave the board
+        # selected on the modelled number and merely displayed with the real one.
+        _rv = VALS.get(nf(fol))
+        _just = int(_rv[0]) if _rv else 0
+        est = _just or band_mid(z, sqft)
+        modelled = 0 if _just else 1
+        if not (60000 <= est <= 700000):        # flip band
             continue
         own = (a.get('TRUE_OWNER1') or '').strip()
         if a.get('TRUE_OWNER2'): own = (own + ' ' + a['TRUE_OWNER2'].strip()).strip()
@@ -299,8 +335,17 @@ def run():
         # X/Y here are state-plane, not lat/lng — leave lat/lng null (portal maps by address); keep for future.
         cands.append({'a': addr.title(), 'c': area, 'z': z,
             'o': own, 'm1': m1.title(), 'm3': mail3, 'mst': mst or 'FL', 'oos': 1 if oos else 0, 'abs': 1 if absentee else 0,
-            'tag': cls, 'sc': min(sc, 100), 'mkt': est, 'asr': 0, 'tax': 0,
-            'bld': 0, 'lnd': 0, 'lot': round(num(a.get('LOT_SIZE')) / 43560, 2),
+            # Schema matches scrape_fl_county.py exactly so every county board stays identical.
+            # FDOR has no building column — it is derived as JV - LND_VAL and clamped at 0, the
+            # same way scrape_fl_county.py does it. 'vm' is emitted ONLY when the value is
+            # modelled, so the portal can label per-lead rather than per-market (the file is
+            # mixed once FDOR misses any parcel) without costing 3,000 redundant keys.
+            'tag': cls, 'sc': min(sc, 100), 'mkt': est,
+            'asr': (int(_rv[2]) if _rv else 0), 'tax': (int(_rv[3]) if _rv else 0),
+            'bld': (max(0, int(_rv[0]) - int(_rv[1])) if _rv else 0),
+            'lnd': (int(_rv[1]) if _rv else 0),
+            **({'vm': 1} if modelled else {}),
+            'lot': round(num(a.get('LOT_SIZE')) / 43560, 2),
             'held': held, 'lsY': sy, 'lsP': sp or None, 'rt': None,
             'sqft': (sqft if sqft > 200 else None), 'yb': (yr if yr > 1800 else None),
             'bed': int(num(a.get('BEDROOM_COUNT'))) or None, 'bath': num(a.get('BATHROOM_COUNT')) or None,
@@ -357,8 +402,15 @@ def run():
     n_viol = sum(1 for c in cands if c.get('viol'))
     n_lien = sum(1 for c in cands if c.get('lien'))
     print('distress on board: %d code cases · %d building violations · %d liens' % (n_code, n_viol, n_lien), flush=True)
+    # Value provenance is auditable from the meta: how many leads carry a real county value vs a
+    # modelled one, and which roll year the real ones came from. valSrc drives the portal's label.
+    _nmodel = sum(1 for c in cands if c.get('vm'))
+    _nreal = len(cands) - _nmodel
     meta = {'county': 'Miami-Dade', 'count': len(cands), 'snapshot': str(NOW),
-            'roll': 'Miami-Dade PA (PaGISView)', 'markets': markets}
+            'roll': 'Miami-Dade PA (PaGISView)' + (' + FDOR just value' if _nreal else ''),
+            'valSrc': ('fdor' if _nmodel == 0 else ('model' if _nreal == 0 else 'fdor+model')),
+            'valReal': _nreal, 'valModel': _nmodel, 'markets': markets}
+    print('   values: %d real (FDOR) · %d modelled' % (_nreal, _nmodel), flush=True)
     js = ('// Miami-Dade COUNTY-WIDE motivated-seller leads — generated %s by scrape_miami_pa.py\n'
           '// from the Miami-Dade Property Appraiser PaGISView layer (the county\'s own host,\n'
           '// NOT the throttled FDOR statewide roll). Non-condo single-family, priced off ZIP\n'
