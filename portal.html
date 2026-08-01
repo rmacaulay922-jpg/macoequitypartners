@@ -1667,22 +1667,25 @@ var ACCESS_CODES={
   'MACO-01':{who:'Investor 01',kind:'investor'},'MACO-02':{who:'Investor 02',kind:'investor'},
   'MACO-03':{who:'Investor 03',kind:'investor'},'MACO-04':{who:'Investor 04',kind:'investor'},
   'MACO-05':{who:'Investor 05',kind:'investor'},
-  'DA-SUB-01':{who:'Subscriber 01',kind:'subscriber'},'DA-SUB-02':{who:'Subscriber 02',kind:'subscriber'},
-  'DA-SUB-03':{who:'Subscriber 03',kind:'subscriber'},'DA-SUB-04':{who:'Subscriber 04',kind:'subscriber'},
-  'DA-SUB-05':{who:'Subscriber 05',kind:'subscriber'},'DA-SUB-06':{who:'Subscriber 06',kind:'subscriber'},
-  'DA-SUB-07':{who:'Subscriber 07',kind:'subscriber'},'DA-SUB-08':{who:'Subscriber 08',kind:'subscriber'},
-  'DA-SUB-09':{who:'Subscriber 09',kind:'subscriber'},'DA-SUB-10':{who:'Subscriber 10',kind:'subscriber'},
-  'DA-TRIAL-01':{who:'Trial 01',kind:'trial'},'DA-TRIAL-02':{who:'Trial 02',kind:'trial'},
-  'DA-TRIAL-03':{who:'Trial 03',kind:'trial'},'DA-TRIAL-04':{who:'Trial 04',kind:'trial'},
-  'DA-TRIAL-05':{who:'Trial 05',kind:'trial'},'DA-TRIAL-06':{who:'Trial 06',kind:'trial'},
-  'DA-TRIAL-07':{who:'Trial 07',kind:'trial'},'DA-TRIAL-08':{who:'Trial 08',kind:'trial'},
-  'DA-TRIAL-09':{who:'Trial 09',kind:'trial'},'DA-TRIAL-10':{who:'Trial 10',kind:'trial'},
-  'DA-TRIAL-11':{who:'Trial 11',kind:'trial'},'DA-TRIAL-12':{who:'Trial 12',kind:'trial'},
-  'DA-TRIAL-13':{who:'Trial 13',kind:'trial'},'DA-TRIAL-14':{who:'Trial 14',kind:'trial'},
-  'DA-TRIAL-15':{who:'Trial 15',kind:'trial'},'DA-TRIAL-16':{who:'Trial 16',kind:'trial'},
-  'DA-TRIAL-17':{who:'Trial 17',kind:'trial'},'DA-TRIAL-18':{who:'Trial 18',kind:'trial'},
-  'DA-TRIAL-19':{who:'Trial 19',kind:'trial'},'DA-TRIAL-20':{who:'Trial 20',kind:'trial'}
+  // DA-SUB-* and DA-TRIAL-* are MINTED BELOW, not listed here — hand-written entries are why the
+  // subscriber pool sat at 10, which would have collided on customer 11 mid-campaign.
+  '__generated__':{who:'',kind:''}
 };
+// Mint the subscriber and trial pools. Keeping these in code rather than typing each one means
+// the pool cannot silently run out mid-campaign — the previous hand-written list stopped at
+// DA-SUB-10, so customer 11 would have been handed a code already issued to customer 1.
+// INVARIANT: welcome.html hands out DA-SUB-01..WL_SUB_POOL and must never exceed SUB_POOL here.
+(function(){
+  delete ACCESS_CODES['__generated__'];
+  function mint(prefix,label,kind,n){
+    for(var i=1;i<=n;i++){
+      var id=('0'+i).slice(-2);
+      ACCESS_CODES[prefix+id]={who:label+' '+id,kind:kind};
+    }
+  }
+  mint('DA-SUB-','Subscriber','subscriber',60);
+  mint('DA-TRIAL-','Trial','trial',99);
+})();
 var TRIAL_MS=7*24*3600*1000;
 // ── ENGAGEMENT BEACONS — logins & interest clicks email through the site's existing
 // FormSubmit pipeline (no accounts, no cookies, nothing stored server-side). Operator

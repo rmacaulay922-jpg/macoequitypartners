@@ -100,13 +100,27 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
 
       <div class="steps">
         <div class="step"><span class="n">01 —</span><span class="t"><b>Drop your email.</b> That's the whole form.</span></div>
-        <div class="step"><span class="n">02 —</span><span class="t"><b>Your access code arrives within one business day.</b> Every trial is set up by hand — you get a code from us, not a drip campaign.</span></div>
+        <div class="step"><span class="n">02 —</span><span class="t"><b>Your code appears on this page immediately.</b> No waiting on an email, no drip campaign — you're looking at tonight's board a minute from now.</span></div>
         <div class="step"><span class="n">03 —</span><span class="t"><b>Run it for 7 days.</b> If it earns a place in your process, pick a plan on <a href="pricing.html" style="color:#E8501F;text-decoration:underline">the pricing page</a>. If not, the code expires and you'll never hear from us again.</span></div>
       </div>
     </div>
 
     <div class="card">
       <div class="tag">NO CARD REQUIRED</div>
+
+      <!-- Revealed the moment the form posts, replacing "your code arrives within one business
+           day". A signup at 11pm on a Sunday used to wait until Monday, which is where trials
+           die. The code pool already existed in portal.html and was simply never handed out. -->
+      <div id="code-block" hidden>
+        <div style="font:800 17px 'Schibsted Grotesk',sans-serif">You're in — here's your code</div>
+        <div id="trialCode" style="font:700 26px/1.2 'IBM Plex Mono',monospace;letter-spacing:.14em;color:#131512;background:#FDFDFB;border:1.5px dashed #E8501F;border-radius:6px;padding:16px 18px;margin:14px 0 10px;text-align:center;user-select:all">&nbsp;</div>
+        <div style="font:400 12px/1.6 'IBM Plex Mono',monospace;color:#6B6F6A">Tap to select. Good for 7 days from today. We've got your email too, so it's recoverable.</div>
+        <a class="btn-primary" id="trialGo" href="portal.html" style="display:block;text-align:center;text-decoration:none;padding:13px;margin-top:16px;font:700 14px 'Schibsted Grotesk',sans-serif">Open the Deal Analyzer &rarr;</a>
+        <div style="font:400 12.5px/1.6 'Schibsted Grotesk',sans-serif;color:#4A4E49;margin-top:16px">
+          <b>First win in two minutes:</b> pick your county top-left, sort by <b>Sale band</b>, tick <b>Hide institutional</b>, and set <b>Mail risk</b> to Exclude. That leaves the owners who can actually say yes.
+        </div>
+      </div>
+
       <div id="form-block">
         <div style="font:800 17px 'Schibsted Grotesk',sans-serif">Start your trial</div>
         <form data-maco-form action="https://formsubmit.co/5e19f366f86955c08f1bb62e50b8361c" method="POST" id="trial-form">
@@ -170,6 +184,47 @@ input:focus, select:focus, textarea:focus { outline: 2px solid #E8501F; outline-
 /* Form delivery is centralised in site-config.js — see FORM_DELIVERY_EMAIL.
    The action attribute above is only the no-JS fallback. */
 try{if(window.MACO){document.querySelectorAll('form[data-maco-form]').forEach(function(f){f.action=MACO.formEndpoint;});}}catch(e){}
+
+/* Hand over a trial code the instant the form posts.
+
+   WHY: the page used to promise "your access code arrives within one business day". Someone who
+   found the site at 11pm on a Sunday had to stay interested until Monday, which is where trials
+   die. The pool (DA-TRIAL-01..99) already lived in portal.html and was simply never handed out.
+
+   WHICH CODE: derived from the email, so the same person always gets the same code back if they
+   resubmit, and different signups spread across the pool. Ryan still receives the submission, so
+   attribution and follow-up are unchanged — this removes the WAIT, not the human.
+
+   PAID PLANS SKIP THIS: someone who picked a paid plan on this form is asking to be invoiced,
+   not trialled; they keep the normal "we'll be in touch" confirmation.
+
+   HONEST LIMIT: the pool is finite and the portal is a static file, so codes are guessable by
+   anyone who reads its source. That is pre-existing to the client-side gate, not new here. What
+   it buys is that a real signup converts NOW instead of tomorrow. */
+(function () {
+  var form = document.getElementById('trial-form');
+  if (!form) return;
+  var POOL = 99;                       // must not exceed the DA-TRIAL-* pool minted in portal.html
+  form.addEventListener('maco:form-success', function (ev) {
+    try {
+      var v = (ev.detail && ev.detail.values) || {};
+      var want = (v.plan || v.want || '').toLowerCase();
+      if (want && want.indexOf('trial') < 0) return;      // paid-plan enquiry — leave as-is
+      var email = (v.email || '').trim().toLowerCase();
+      if (!email) return;
+      var h = 0;
+      for (var i = 0; i < email.length; i++) { h = ((h << 5) - h + email.charCodeAt(i)) | 0; }
+      var code = 'DA-TRIAL-' + ('0' + (Math.abs(h) % POOL + 1)).slice(-2);
+      document.getElementById('trialCode').textContent = code;
+      var fb = document.getElementById('form-block'); if (fb) fb.hidden = true;
+      var cb = document.getElementById('code-block'); if (cb) cb.hidden = false;
+      var sb = document.getElementById('sentBanner'); if (sb) sb.classList.remove('show');
+      try { localStorage.setItem('mep_who_code', code); } catch (e) {}
+      try { if (window.MACO && MACO.track) MACO.track('trial_code_issued'); } catch (e) {}
+      if (cb && cb.scrollIntoView) cb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (e) {}
+  });
+})();
 </script>
 <script>
 (function(){

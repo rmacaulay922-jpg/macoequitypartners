@@ -106,8 +106,10 @@
    portal.html's ACCESS_CODES before you get there — the claim notification below is the warning
    system for that. */
 (function () {
-  var SUB_CODES = ['DA-SUB-01','DA-SUB-02','DA-SUB-03','DA-SUB-04','DA-SUB-05',
-                   'DA-SUB-06','DA-SUB-07','DA-SUB-08','DA-SUB-09','DA-SUB-10'];
+  // INVARIANT: must not exceed the DA-SUB-* pool minted in portal.html (currently 60).
+  var SUB_POOL = 60;
+  var SUB_CODES = [];
+  for (var n = 1; n <= SUB_POOL; n++) { SUB_CODES.push('DA-SUB-' + ('0' + n).slice(-2)); }
   var qs = new URLSearchParams(location.search);
   var sid = qs.get('session_id') || '';
   var plan = qs.get('plan') || '';

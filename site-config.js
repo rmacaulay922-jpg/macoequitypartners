@@ -555,6 +555,15 @@ window.MACO = (function () {
   var AJAX_ENDPOINT = FORM_ENDPOINT.replace('formsubmit.co/', 'formsubmit.co/ajax/');
 
   function _formSuccess(form) {
+    // Let the page react to its own submission (trial.html reveals an access code here, so a
+    // signup is not left waiting on a hand-sent email). Fired BEFORE the reset below, because
+    // listeners generally want the submitted values. Kept generic — site-config should not know
+    // what any individual page does with it.
+    try {
+      var vals = {};
+      new FormData(form).forEach(function (v, k) { vals[k] = v; });
+      form.dispatchEvent(new CustomEvent('maco:form-success', { bubbles: true, detail: { values: vals } }));
+    } catch (e) {}
     var banner = document.getElementById('sentBanner');
     if (banner) {
       banner.classList.add('show');
