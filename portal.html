@@ -2548,6 +2548,25 @@ function renderLeadsMap(L){
 // mid, which on distressed stock runs high — 20% of Miami leads band above 1.4x the county's own
 // value. Grading a lead "A" on a number we would refuse to print in a letter would be worse than
 // not grading it, so where the two disagree this returns null and the card shows nothing.
+// ── INSURANCE DEFAULT ──
+// The underwriter used a flat $550/mo for every county, every vintage and every flood zone. A
+// vacant, unrenovated 1957 house in Miami-Dade does not get a standard HO-3 — it needs a
+// vacant/builder's-risk policy, and if the parcel sits in an SFHA the lender will force flood
+// cover on top. Holding a number that cannot be bought understates carry on exactly the deals
+// this board surfaces.
+//
+// These are ALLOWANCES with stated reasoning, not quotes — the point is to stop pretending a
+// 1950s Hialeah rehab and a 2015 Naples house carry the same premium. A real binder replaces it.
+function _insDefault(l){
+  var base=550, why=[];
+  var e=_fdorFor(l), yb=(e&&e.yb)||(l&&l.yb)||0;
+  var cty=((_LMETA()||{}).county||'').toUpperCase();
+  if(/MIAMI|BROWARD/.test(cty)){base*=1.15; why.push('SE-FL coastal county');}
+  if(yb&&yb<=1970){base*=1.45; why.push('pre-1970 build');}
+  else if(yb&&yb<=1992){base*=1.25; why.push('pre-1993 build');}
+  base*=1.25; why.push('vacant during rehab');   // builder's-risk, not owner-occupied HO-3
+  return {mo:Math.round(base/25)*25, why:why};
+}
 // ── REPAIR: WALK-IT BASE + INSURABILITY RESERVE ──
 // The leads boards used a flat $45/sf regardless of vintage. In South Florida that silently omits
 // the two items that decide whether the RETAIL buyer can insure and therefore close: a roof at or
@@ -2729,11 +2748,11 @@ function polkUnderwrite(pid){
   if(bd&&_bandSane){
     // Seed with the ZIP qualified-sale band midpoint + sqft-based repair walk-it default — clearly a starting range, not a comp ARV.
     var _rp=_leadRepair(l); var rep=_rp?_rp.total:0; // walk-it base + vintage insurability reserve
-    runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:bd.mid, repair:rep, sqft:e&&e.sqft, _arvSrc:'zip-band'});
+    runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:bd.mid, repair:rep, sqft:e&&e.sqft, _arvSrc:'zip-band', _ins:_insDefault(l)});
     try{toast('Pre-filled from the ZIP sale band ('+fmtK(bd.lo)+'–'+fmtK(bd.hi)+', '+bd.n+' qual. sales) + $45/sf walk-it repair — verify both before offering');}catch(e2){}
   }else if(bd){
     var _rp2=_leadRepair(l); var rep2=_rp2?_rp2.total:0;
-    runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:rep2, sqft:e&&e.sqft});
+    runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:rep2, sqft:e&&e.sqft, _ins:_insDefault(l)});
     try{toast('ARV left blank on purpose — the ZIP band ('+fmtK(bd.mid)+') and the county value ('+fmtK(l.mkt)+') disagree by too much to seed one. Pull real comps for this block before you put a number in.');}catch(e2){}
   }else{
     // No band (thin zip) — open blank; county value anchors it.
@@ -6419,6 +6438,12 @@ function runUnderwriter(d){
   // set, and the field defaulted to EMPTY. So the headline answer was hidden behind a step the
   // member had to know to take. targetProfit() already holds their configured figure.
   try{var _tp=document.getElementById('uw-target'); if(_tp&&!(+_tp.value>0))_tp.value=targetProfit();}catch(e){}
+  // Insurance seeded from the property rather than a flat $550 — see _insDefault. Only overrides
+  // the static default, never a figure the member has already typed for this session.
+  try{if(d._ins&&d._ins.mo){var _iEl=document.getElementById('uw-ins');
+    if(_iEl&&(!_iEl.dataset.touched)){_iEl.value=d._ins.mo;
+      _iEl.title='Allowance: '+d._ins.why.join(' + ')+'. Not a quote — replace with a real binder. Flood is separate and applies on top in an SFHA.';
+      _iEl.onchange=function(){this.dataset.touched='1';};}}}catch(e){}
   // payoffs are per-deal — always reset, and flag liened/violated properties
   setV('uw-lienpayoff',0); setV('uw-permitfix',0);
   try{var _vi=(typeof violInfo==='function')?violInfo(d.address):null;var _lnEl=document.getElementById('uw-lien-note');if(_lnEl)_lnEl.style.display=(_vi&&(_vi.lien||_vi.n))?'block':'none';}catch(e){}
