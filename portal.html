@@ -1897,7 +1897,7 @@ function applyHomestead(){
 // ── POLK COUNTY — snapshot lead list (non-homestead estate/trust/heirs SFH) ──
 // Data baked in polk-leads.js (window.POLK_LEADS / POLK_META) from the Polk PA map service.
 // Polk has NO open comp or code-violation feed, so these are targeting leads only (no ARV).
-var _polkFilter={market:'',tag:'',own:'',q:'',sort:'',inst:'',band:'',mail:''};
+var _polkFilter={market:'',tag:'',own:'',q:'',sort:'',inst:'',band:'',mail:'',hs:''};
 // Reset by blanking the EXISTING keys, never by substituting a partial literal. Two call sites
 // used to assign {market,tag,own,q} wholesale, which silently dropped sort/inst/band (and any
 // filter added later) from the object entirely. Undefined happens to be falsy so nothing broke,
@@ -1998,6 +1998,10 @@ function polkFiltered(){
     // Grouped with the other don't-waste-postage guard. 'only' builds the skip-trace worklist;
     // 'no' strips letters that are certain to come back. Flows into the grid, Export CSV and the
     // letter picker automatically, because all three already read polkFiltered().
+    // 39% of the Miami board is homesteaded, i.e. owner-occupied — the opposite of the board's
+    // premise. Excluding them is usually what you want before a mail run.
+    if(_polkFilter.hs==='no'&&l.hs)return false;
+    if(_polkFilter.hs==='only'&&!l.hs)return false;
     if(_polkFilter.mail==='only'&&!_mailRiskLead(l))return false;
     if(_polkFilter.mail==='no'&&_mailRiskLead(l))return false;
     if(_polkFilter.band&&!_bandFor(l))return false;                       // only leads with a real sale band
@@ -2039,7 +2043,9 @@ function buildPolk(){
     ban.innerHTML=(function(){try{return _aucPanel(county);}catch(e){return '';}})()
       +'<div style="background:var(--bg-card);border:1px solid var(--border);border-left:3px solid var(--bronze);border-radius:10px;padding:14px 18px;margin-bottom:16px;">'
       +'<div style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--bronze);font-weight:600;margin-bottom:6px;">'+county+' County &mdash; motivated-seller snapshot</div>'
-      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across '+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; '+(/^\d{4}-\d{2}-\d{2}$/.test(meta.snapshot||'')?('<strong>refreshed '+meta.snapshot+'</strong>'+(meta.roll?' ('+meta.roll+')':'')):('annual '+(meta.snapshot||'—')+' tax roll'))+'.</div>'
+      // The blanket "non-homestead" claim was false on 39% of the Miami board. Where we have
+      // verified exemption data, say the real number instead of repeating the premise.
+      +'<div style="font-size:13px;color:var(--ivory-soft);line-height:1.6;">'+(meta.count||L.length)+(meta.homesteaded?(' single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong>. <strong style="color:#e0655a;">'+meta.homesteaded.toLocaleString()+' ('+Math.round(100*meta.homesteaded/(meta.count||L.length))+'%) carry a homestead exemption</strong> — verified against FDOR '+(meta.hs_asof||'')+' — so somebody most likely lives there; filter them out before a mail run. Across '):' non-homestead single-family homes owned by an <strong>estate, trust, heirs, or investment entity</strong> across ')+((meta.markets||[]).join(', '))+', each enriched with the <strong>owner&rsquo;s mailing address</strong> (out-of-state / absentee flags) and <strong>sale history</strong> (hold length &amp; recent estate transfers). Source: '+county+' County Property Appraiser &middot; '+(/^\d{4}-\d{2}-\d{2}$/.test(meta.snapshot||'')?('<strong>refreshed '+meta.snapshot+'</strong>'+(meta.roll?' ('+meta.roll+')':'')):('annual '+(meta.snapshot||'—')+' tax roll'))+'.</div>'
       +(function(){
         var cov=0;try{cov=L.filter(function(x){return _fdorFor(x);}).length/Math.max(1,L.length);}catch(e){}
         var depth=cov>=0.5
@@ -2081,7 +2087,7 @@ function buildPolk(){
       +'<select class="filter-sel" onchange="_polkFilter.tag=this.value;renderPolk();"><option value="">All</option><option value="probate">Estate / probate</option><option value="le">Life estate</option><option value="trust">Trust-owned</option><option value="entity">LLC / entity</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Owner</span>'
       +'<select class="filter-sel" onchange="_polkFilter.own=this.value;renderPolk();"><option value="">Anywhere</option><option value="oos">Out-of-state</option><option value="abs">Absentee (FL)</option><option value="local">Local</option></select>'
-      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Mail risk</span>'
+      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Homestead</span>'+'<select class="filter-sel" title="FDOR homestead exemption. Homesteaded means owner-occupied — against the premise of this board." onchange="_polkFilter.hs=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude homesteaded</option><option value="only">Only homesteaded</option></select>'      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Mail risk</span>'
       +'<select class="filter-sel" title="Estates whose owner mailing address IS the property — the heirs are not there, so a letter is wasted postage by construction. Skip-trace them instead." onchange="_polkFilter.mail=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude (mailable only)</option><option value="only">Only (skip-trace list)</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Sort</span>'
       +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="profit">Best margin (est.)</option><option value="offer">Highest max offer</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
@@ -2105,13 +2111,19 @@ function buildPolk(){
 }
 function polkWhy(l){
   var s=[]; var t=polkTagStyle(l.tag)[1];
-  s.push(t+' owner');
+  // Aug 2026: never call a verified-homesteaded parcel "non-homestead". For tag 'other' the tag
+  // label IS "Non-homestead", so on a homesteaded lead it contradicted the Homestead row directly
+  // above it in the same panel. A homesteaded estate is still a real lead — the owner died and
+  // the heirs may sell — but the reason has to be the estate, not an absentee story that is false.
+  if(l.hs&&l.tag==='other')s.push('<strong style="color:#e0655a;">Homesteaded — owner likely lives here</strong>');
+  else s.push(t+' owner');
   if(l.oos)s.push('<strong style="color:#9d97ff;">Out-of-state owner</strong> — mails to '+(l.m3||l.mst));
   else if(l.abs)s.push('<strong style="color:#7fbde0;">Absentee</strong> — owner mails to '+(l.m3||'a different FL address'));
   // Jul 2026 audit: for tag 'other' the label above is already "Non-homestead", so this line
   // repeated it verbatim ("Non-homestead owner · Non-homestead (not owner-occupied)"). It only
   // adds information when the tag says something else (estate, trust, LLC).
-  if(l.tag&&l.tag!=='other')s.push('Non-homestead (not owner-occupied)');
+  if(l.tag&&l.tag!=='other'&&!l.hs)s.push('Non-homestead (not owner-occupied)');
+  else if(l.hs&&l.tag&&l.tag!=='other')s.push('<strong style="color:#e0655a;">Homestead exemption on file</strong> — somebody most likely lives here');
   if(l.held!=null&&l.held>=15)s.push('Long hold — owned '+l.held+' years (bought '+l.lsY+(l.lsP?' for '+fmt$(l.lsP):'')+')');
   else if(l.held!=null)s.push('Owned '+l.held+' years (since '+l.lsY+')');
   if(l.rt)s.push('<strong style="color:#e8854a;">Fresh non-sale transfer in '+l.rt+'</strong> — estate/trust likely being settled');
@@ -2159,7 +2171,11 @@ function polkDossierHtml(l){
       return row('Land value',(l.bld||_ln)?fmt$(_ln):'&mdash;');})()
     +row('Lot size',(l.lot||0)+' ac')
     +row('Use','Single-family (residential)')
-    +row('Homestead','No — non-homestead')
+    // Aug 2026: this printed "No — non-homestead" as FACT on every lead. Checked against FDOR's
+    // JV_HMSTD for all 3,000 Miami-Dade parcels: 1,168 of them (38.9%) carry a homestead
+    // exemption. Those are owner-occupied — the opposite of the board's premise — so saying "no"
+    // was simply false on two rows in five. Now reads the verified flag where we have one.
+    +row('Homestead',(l.hs?'<span style="color:#e0655a;">Yes — exemption on file</span>':'No — non-homestead'))
     +row('Parcel',(l.st||l.pid))
     +'</div>';
   var ol=polkOwnLoc(l);
@@ -2617,7 +2633,7 @@ function renderPolk(){
         +'<div><div style="font-weight:700;color:var(--ivory);font-size:15px;">'+l.a+'</div><div style="font-size:12px;color:var(--muted);">'+l.c+', FL '+(l.z||'')+' &middot; #'+(l.st||l.pid)+(function(){var e=_fdorFor(l);return e?((e.sqft?' &middot; '+e.sqft.toLocaleString()+' SF':'')+(e.yb?' &middot; built '+e.yb:'')):'';})()+'</div></div>'
         +'<span style="background:'+ts[0]+'22;color:'+ts[0]+';border:1px solid '+ts[0]+'55;border-radius:999px;padding:2px 9px;font-size:10px;font-weight:700;white-space:nowrap;">'+ts[1]+'</span></div>'
       +'<div style="font-size:12px;color:var(--ivory-soft);margin:8px 0 4px;">'+l.o+'</div>'
-      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);var _hl=_heldFor(l);if(_hl!=null&&_hl>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+_hl+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');var _xf=_xferFor(l);if(_xf&&_xf.nominal&&_xf.recent)b.push('<span title="FDOR records a '+(_xf.price===0?'$0':'$'+_xf.price)+' deed in '+_xf.yr+' (code '+_xf.q+', unqualified) — not a market sale. An estate or trust just moved this property and is deciding what to do with it." style="background:rgba(232,133,74,.22);color:#e8854a;border:1px solid rgba(232,133,74,.5);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Deed moved '+_xf.yr+'</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}var _fc=_flagChips(l);if(_fc)b.push(_fc);return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
+      +(function(){var ol=polkOwnLoc(l),b=[];b.push('<span style="background:'+ol.c+'22;color:'+ol.c+';border:1px solid '+ol.c+'55;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+ol.t+'</span>');var cc=_crimeChip(county,l.c);if(cc)b.push(cc);if(l.hs)b.push('<span title="FDOR records a homestead exemption on this parcel (JV_HMSTD>0), so somebody most likely LIVES here. The board premise is non-owner-occupied, so treat the motivation story with care and expect an occupant if you knock." style="background:rgba(224,101,90,.16);color:#e0655a;border:1px solid rgba(224,101,90,.45);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Homesteaded</span>');var _hl=_heldFor(l);if(_hl!=null&&_hl>=15)b.push('<span style="background:rgba(184,145,90,.16);color:var(--gold);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Held '+_hl+'y</span>');if(l.rt)b.push('<span style="background:rgba(232,133,74,.16);color:#e8854a;border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+l.rt+' transfer</span>');var _xf=_xferFor(l);if(_xf&&_xf.nominal&&_xf.recent)b.push('<span title="FDOR records a '+(_xf.price===0?'$0':'$'+_xf.price)+' deed in '+_xf.yr+' (code '+_xf.q+', unqualified) — not a market sale. An estate or trust just moved this property and is deciding what to do with it." style="background:rgba(232,133,74,.22);color:#e8854a;border:1px solid rgba(232,133,74,.5);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Deed moved '+_xf.yr+'</span>');if(_instOwner(l.o))b.push('<span title="Wall Street SFR portfolio — these owners do not answer blind mail; excluded from letter runs by default" style="background:rgba(140,140,150,.18);color:#9a9ea8;border:1px solid rgba(140,140,150,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Institutional</span>');if(_teardownLead(l))b.push('<span title="County values the building at ≤$100 — land value only. House-price math (bands, $/sf) is invalid here." style="background:rgba(201,122,106,.16);color:#c97a6a;border:1px solid rgba(201,122,106,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Land / teardown</span>');if(_mailRiskLead(l))b.push('<span title="Estate whose mailing address IS the property — letters often return to sender. Skip-trace the heirs instead." style="background:rgba(232,133,74,.14);color:#e8854a;border:1px solid rgba(232,133,74,.35);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Mail-return risk</span>');if(l.lsP&&l.lsY){var _bd=_bandFor(l);var _ec=_equityChip(l.lsP,l.lsY,(_bd&&_bd.mid)||l.mkt);if(_ec)b.push(_ec);}var _fc=_flagChips(l);if(_fc)b.push(_fc);return '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">'+b.join('')+'</div>';})()
       +(function(){
         var bd=_bandFor(l);
         var _e=_fdorFor(l);
