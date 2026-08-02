@@ -2589,11 +2589,27 @@ function _leadRepair(l){
   return {sqft:sf, yb:yb, base:Math.round(base), roof:Math.round(roof), glass:Math.round(glass),
           total:total, reserve:Math.round(roof+glass), why:why};
 }
+// ── ONE RECONCILIATION, USED EVERYWHERE ──
+// The 0.70-1.40x check was copy-pasted into three places that SUPPRESS things (the letter, the
+// underwriter's ARV seed, the money verdict) and into none of the six that DISPLAY the band. The
+// result was the exact harm the clamp exists to prevent: 821 Sharar Ave, county value $177,878,
+// still headlined "Est. Value $518K" in gold on the card — the loudest number on screen — while
+// quietly having no verdict. Suppressing the grade and showing the number is the worst of both:
+// the member loses the warning AND keeps the bad figure.
+// Returns {ok, ratio} so callers can both gate and explain.
+function _bandReconcile(l,bd){
+  try{
+    if(!bd||!bd.mid)return {ok:false,ratio:null,noBand:true};
+    if(!(l&&l.mkt>0)||l.vm)return {ok:true,ratio:null};   // no real county value to check against
+    var r=bd.mid/l.mkt;
+    return {ok:(r>=0.70&&r<=1.40),ratio:r};
+  }catch(e){return {ok:true,ratio:null};}
+}
 function _leadEcon(l){
   try{
     if(!l||_teardownLead(l))return null;
     var bd=_bandFor(l); if(!bd||!bd.mid)return null;
-    if(l.mkt>0&&!l.vm){var r=bd.mid/l.mkt; if(r>1.40||r<0.70)return null;}
+    if(!_bandReconcile(l,bd).ok)return null;
     var rp=_leadRepair(l);
     if(!rp||!rp.total)return null;                               // no size, no defensible repair number
     var repair=rp.total;
@@ -2637,9 +2653,13 @@ function _polkTableHtml(L,county){
       +td(l.z||'','color:var(--muted);')
       +td(bd?'<span style="color:var(--gold);font-weight:700;">'+fmtK(bd.mid)+'</span>':fmtK(l.mkt))
       +(function(){var ec=_leadEcon(l);
-         return td(ec&&ec.offer?'<strong style="color:var(--gold);">'+fmtK(ec.offer)+'</strong>':'&mdash;')
+         // Same distinction as the card: an em dash means "no data", "conflict" means our two
+         // sources disagree — a different and more actionable thing.
+         var _b=!ec?_bandFor(l):null, _r=_b?_bandReconcile(l,_b):null;
+         var none=(_r&&!_r.ok)?'<span title="ZIP band '+fmtK(_b.mid)+' vs county '+fmtK(l.mkt)+'" style="color:#c97a6a;font-size:11px;">conflict</span>':'&mdash;';
+         return td(ec&&ec.offer?'<strong style="color:var(--gold);">'+fmtK(ec.offer)+'</strong>':none)
               + td(ec&&ec.profit!=null?fmtK(ec.profit):'&mdash;','color:var(--muted);')
-              + td(ec&&ec.grade?'<span style="color:'+ec.grade.c+';font-weight:700;">'+ec.grade.g+'</span>':'&mdash;');})()
+              + td(ec&&ec.grade?'<span style="color:'+ec.grade.c+';font-weight:700;">'+ec.grade.g+'</span>':none);})()
       +td((e&&e.sqft)?e.sqft.toLocaleString():'&mdash;')
       +td((l.bed||l.bath)?((l.bed||'?')+'/'+(l.bath||'?')):'&mdash;')
       +td((e&&e.yb)||l.yb||'&mdash;')
@@ -2688,8 +2708,15 @@ function renderPolk(){
         var _sf=(_e&&_e.sqft)?_e.sqft.toLocaleString()+' SF':'&mdash;';
         var _yb=(_e&&_e.yb)?_e.yb:(l.yb||0);
         // 1 — VALUE. The band where we have one (with its range); the county figure otherwise.
-        var cell1=bd
+        // Headline the band ONLY when it reconciles with the county's own figure. Where the two
+        // disagree beyond 0.70-1.40x, lead with the county value and name the disagreement — the
+        // band is still shown, demoted, because "our sources conflict" is itself a strong signal
+        // and the member should see both numbers rather than the wrong one in gold.
+        var _rec=_bandReconcile(l,bd);
+        var cell1=(bd&&_rec.ok)
           ?'<div class="metric-cell" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF'+(bd.matched?' for homes of this size':'')+'. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Est. Value'+(bd.matched?' &middot; this size':' &middot; ZIP sales')+'</div><div class="metric-val" style="font-size:17px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' &middot; '+bd.n+' sales</div></div>'
+          :(bd&&!_rec.ok)
+          ?'<div class="metric-cell" title="The ZIP sale band works out to '+fmtK(bd.mid)+' for this square footage, but the county values the parcel at '+fmtK(l.mkt)+' — a '+_rec.ratio.toFixed(2)+'x gap. The band takes no account of condition, age or quality, so on rough stock it runs high. We lead with the county figure and withhold a buy grade until you comp the block."><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:17px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:#c97a6a;">ZIP band says '+fmtK(bd.mid)+' &middot; '+_rec.ratio.toFixed(1)+'× — conflict</div></div>'
           :'<div class="metric-cell"><div class="metric-lbl">'+(_valIsModelled(l)?'Est. Value':'County Value')+'</div><div class="metric-val" style="font-size:17px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(_valIsModelled(l)?'modelled':'market / just')+'</div></div>';
         // 2 — SIZE. sqft is the headline; beds/baths and vintage ride underneath.
         var cell2='<div class="metric-cell"><div class="metric-lbl">Size</div><div class="metric-val" style="font-size:17px;">'+_sf+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+[_bb,(_yb?'built '+_yb:''),(l.lot?l.lot+' ac':'')].filter(Boolean).join(' &middot; ')+'</div></div>';
@@ -2704,7 +2731,19 @@ function renderPolk(){
       // Shown only where _leadEcon can stand behind it (band reconciles with the county value and
       // we know the size) — 2,276 of 3,000 Miami leads. The rest deliberately show nothing.
       +(function(){
-        var ec=_leadEcon(l); if(!ec)return '';
+        var ec=_leadEcon(l);
+        // A blank where the verdict should be reads as "we know nothing about this house". When
+        // the real reason is that our two public sources disagree by more than 40%, that is the
+        // opposite message — and it is the single best prompt to go pull comps. On Collier this
+        // was 65% of the board rendering as empty space. Say it instead.
+        if(!ec){
+          var _b=_bandFor(l), _r=_bandReconcile(l,_b);
+          if(_b&&!_r.ok)return '<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:2px 0 4px;padding:7px 10px;background:rgba(201,122,106,.08);border:1px solid rgba(201,122,106,.3);border-radius:8px;">'
+            +'<span style="background:rgba(201,122,106,.18);color:#c97a6a;border:1px solid rgba(201,122,106,.5);font-weight:800;font-size:11px;padding:2px 8px;border-radius:6px;white-space:nowrap;">No grade</span>'
+            +'<span style="font-size:11.5px;color:var(--ivory-soft);">ZIP band '+fmtK(_b.mid)+' vs county '+fmtK(l.mkt)+' &mdash; <strong>'+_r.ratio.toFixed(1)+'× apart</strong>. Comp this block before you price it.</span>'
+          +'</div>';
+          return '';
+        }
         var g=ec.grade||{};
         var pct=(ec.profit!=null&&ec.arv)?Math.round(100*ec.profit/ec.arv):null;
         return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;padding:8px 10px;background:rgba(184,145,90,.07);border:1px solid rgba(184,145,90,.28);border-radius:8px;">'
@@ -5731,6 +5770,9 @@ function uwSaveToPipeline(maxOffer){
     var data=getPipeline();
     if(data[addr]){
       data[addr].arv=arv; data[addr].repair=repair; data[addr].purchase=Math.round(purchase||0);
+      // Same live-sync exposure as the insert path — without man.* the next buildPipeline reverts
+      // both the ARV and the purchase this function was called to persist.
+      data[addr].man=data[addr].man||{}; data[addr].man.purchase=1; data[addr].man.arv=1;
       (data[addr].log=data[addr].log||[]).push({d:_today(),t:'Underwritten — ARV '+fmtK(arv)+', repair '+fmtK(repair)+', max offer '+fmtK(maxOffer||purchase)});
       savePipeline(data);
       toast('Pipeline card updated — '+addr);
@@ -5750,6 +5792,14 @@ function addToPipeline(deal){
     // or a lead's gated _leadEcon). Falling back to a flat 65%-of-ARV rule of thumb otherwise.
     repair:deal.repair||deal.repair_low||0, purchase:(deal.purchase>0?Math.round(deal.purchase):Math.round((deal.arv||0)*0.65)),
     score:(deal._score!=null?deal._score:(deal.score||0)), stage:'lead', followup:'', log:[], notes:'', added:new Date().toISOString(),
+    // PROVENANCE, and it is load-bearing. buildPipeline's live-sync rewrites purchase to a flat
+    // 65% of ARV unless man.purchase is set — a flag only pcUpdate used to set. So honouring an
+    // explicit purchase above was pointless on its own: addToPipeline calls buildPipeline on the
+    // next line, which immediately reverted it. Measured on 9201 SW 93 AVE — the Underwriter's
+    // $718,000 max offer became $726,700 before the toast even fired, i.e. $8,700 ABOVE the
+    // member's own walk-away number, on the card they negotiate from. Marking a caller-computed
+    // figure as manual makes live-sync leave it alone, exactly as it already leaves a hand-edit.
+    man:(function(){var mn={};if(deal.purchase>0)mn.purchase=1;if(deal.arv>0&&deal.purchase>0)mn.arv=1;return mn;})(),
     owner:deal.owner||'', mail_city:deal.mail_city||'', owner_state:deal.owner_state||'' // carry owner/mailing so pipeline skip-trace & letters have it
   };
   savePipeline(data);
@@ -6440,10 +6490,14 @@ function runUnderwriter(d){
   try{var _tp=document.getElementById('uw-target'); if(_tp&&!(+_tp.value>0))_tp.value=targetProfit();}catch(e){}
   // Insurance seeded from the property rather than a flat $550 — see _insDefault. Only overrides
   // the static default, never a figure the member has already typed for this session.
+  // ALWAYS reseed. The first cut guarded on a `touched` flag so as not to clobber a typed figure —
+  // but the flag lives on the MODAL's input, which is reused for every property, so editing
+  // insurance once pinned that number to every deal opened afterwards. A 1952 Hialeah rehab's
+  // $2,000 would silently carry onto a 2022 build that should read $800. Insurance is per-property
+  // exactly like purchase/ARV/reno, all of which this function already resets on every open.
   try{if(d._ins&&d._ins.mo){var _iEl=document.getElementById('uw-ins');
-    if(_iEl&&(!_iEl.dataset.touched)){_iEl.value=d._ins.mo;
-      _iEl.title='Allowance: '+d._ins.why.join(' + ')+'. Not a quote — replace with a real binder. Flood is separate and applies on top in an SFHA.';
-      _iEl.onchange=function(){this.dataset.touched='1';};}}}catch(e){}
+    if(_iEl){_iEl.value=d._ins.mo;
+      _iEl.title='Allowance: '+d._ins.why.join(' + ')+'. Not a quote — replace with a real binder. Flood is separate and applies on top in an SFHA.';}}}catch(e){}
   // payoffs are per-deal — always reset, and flag liened/violated properties
   setV('uw-lienpayoff',0); setV('uw-permitfix',0);
   try{var _vi=(typeof violInfo==='function')?violInfo(d.address):null;var _lnEl=document.getElementById('uw-lien-note');if(_lnEl)_lnEl.style.display=(_vi&&(_vi.lien||_vi.n))?'block':'none';}catch(e){}
