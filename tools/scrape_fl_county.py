@@ -274,7 +274,21 @@ def run(key):
     cands.sort(key=lambda x:(-x['sc'],-x['mkt'])); cands=cands[:c.get('topn',600)]
     markets=sorted(set(x['c'] for x in cands))
     # snapshot = the refresh DATE (subscribers judge freshness by it); the tax-roll year rides separately.
-    meta={'county':c['label'],'count':len(cands),'snapshot':str(NOW),'roll':(asmt+' roll' if asmt else None),'markets':markets}
+    # STAMP THE VALUE PROVENANCE. Every lead this scraper emits carries FDOR's own just value, so
+    # valSrc is 'fdor' by construction. It was not being written, and that omission is load-bearing
+    # in the portal: _valModelledSplit() falls back to the hardcoded MARKETS.<key>.valModelled flag
+    # when meta.valSrc is absent, and that flag is still true for miamicw from the era when
+    # Miami-Dade came from PaGISView (which returns ASSESSED_VAL_CUR = null, so the value had to be
+    # modelled from ZIP $/sf x size). So the moment this scraper rewrites miami-leads.js, the portal
+    # goes back to labelling REAL county values "modelled" on every card and in the Brief — undoing
+    # the correction at the display layer with the data underneath perfectly fine.
+    # Also record the homestead position: this scraper filters JV_HMSTD out at query time, so a
+    # board it produces is non-homesteaded by construction and the portal can state that as checked
+    # fact rather than leaving it unverified.
+    meta={'county':c['label'],'count':len(cands),'snapshot':str(NOW),'roll':(asmt+' roll' if asmt else None),
+          'valSrc':'fdor','valReal':len(cands),'valModel':0,
+          'homesteaded':0,'hs_checked':len(cands),'hs_asof':str(NOW),
+          'markets':markets}
     js=('// %s County motivated-seller leads — generated %s by scrape_fl_county.py from the FDOR statewide roll.\n'%(c['label'],NOW)
       +'// Non-homestead single-family (DOR_UC 001), $60k-$650k, top %d by motivation score. Schema matches Polk.\n'%len(cands)
       +'window.%s_LEADS=%s;\n'%(c['var'],json.dumps(cands,separators=(',',':')))
