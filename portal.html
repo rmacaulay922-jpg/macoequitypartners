@@ -2000,7 +2000,29 @@ function _leadTiebreak(l){
   try{if(_instOwner(l.o))t-=.35;}catch(e){}            // Wall Street SFR never answers blind mail — sink it
   return Math.max(0,Math.min(.999,t));
 }
-function _leadRank(l){return (l.sc||0)+_leadTiebreak(l);}
+// THE BAKED SCORE REWARDS THE THING THE BOARD EXISTS TO AVOID (Aug 2026 audit).
+// scrape_miami_pa.py cannot see homestead status — PaGISView publishes no exemption field, which
+// is why the flag comes from a separate FDOR pass — so `sc` was computed blind to it. But the score
+// pays a bonus for long tenure and building age, and long tenure is exactly what owner-occupancy
+// predicts. Result: homesteaded Miami leads average 79.2 against 69.9 for the rest. The board's
+// whole premise is that these owners do not live there, and its ranking was quietly preferring the
+// ones who do — 2 of the top 5 cards were homesteaded.
+//
+// Applied at RANK rather than re-baking `sc`, because the flag arrives from a different source than
+// the score and the two are refreshed on different schedules. -12 cancels the long-hold and age
+// bonuses (9-14 and 5-8) that homestead status explains away.
+//
+// BE CLEAR ABOUT WHAT THIS ACTUALLY DOES, because it is stronger than "a small demotion": `sc` is
+// CAPPED AT 100 and 713 of the 3,000 Miami leads sit at that cap, with 1,115 at 90 or better. The
+// top of the board is one enormous tie that _leadTiebreak (max 0.999) settles. So any penalty of
+// 3 or more drops every homesteaded lead below the entire tie block, and since 543 non-homesteaded
+// leads are already at the cap, homesteaded leads leave the top 500 altogether — measured, not
+// assumed: 208 in the top 500 before, 0 after, and -3 gives the same answer as -12.
+//
+// That is the right outcome rather than an over-correction: with 543 max-score absentee leads in
+// hand you should mail those before any owner-occupant. It is not a hidden exclusion — the leads
+// stay on the board, stay in every other sort, and the Homestead filter selects them directly.
+function _leadRank(l){return (l.sc||0)-(l&&l.hs?12:0)+_leadTiebreak(l);}
 function polkFiltered(){
   var out=(_LSRC()||[]).filter(function(l){
     if(_polkFilter.market&&l.c!==_polkFilter.market)return false;
@@ -2107,7 +2129,7 @@ function buildPolk(){
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Homestead</span>'+'<select class="filter-sel" title="FDOR homestead exemption. Homesteaded means owner-occupied — against the premise of this board." onchange="_polkFilter.hs=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude homesteaded</option><option value="only">Only homesteaded</option></select>'      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Mail risk</span>'
       +'<select class="filter-sel" title="Estates whose owner mailing address IS the property — the heirs are not there, so a letter is wasted postage by construction. Skip-trace them instead." onchange="_polkFilter.mail=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude (mailable only)</option><option value="only">Only (skip-trace list)</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Sort</span>'
-      +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="buyable">Most takeable offer</option><option value="profit">Most headroom at a 65% buy</option><option value="offer">Highest max offer</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
+      +'<select class="filter-sel" title="Lead score ranks recorded distress first, then owner profile. Homesteaded (owner-occupied) parcels are pushed down this sort on purpose — the board&#39;s premise is absentee owners — so they will not appear near the top even though they are still on the board. Use the Homestead filter to see them." onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="buyable">Most takeable offer</option><option value="profit">Most headroom at a 65% buy</option><option value="offer">Highest max offer</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Hide Wall Street SFR portfolios (they never answer blind mail)"><input type="checkbox" onchange="_polkFilter.inst=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Hide institutional</label>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Only leads with a ZIP qualified-sale band (priceable range)"><input type="checkbox" onchange="_polkFilter.band=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Has sale band</label>'
       +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
@@ -2429,14 +2451,50 @@ function _codeBucket(t){
   return {k:'nuisance',label:'Nuisance case',c:'#9a9ea8',bg:'rgba(140,140,150,.16)',bd:'rgba(140,140,150,.42)',
           why:'Housekeeping-grade violation (trash, overgrowth, vehicle, storage). Weak distress signal on its own.'};
 }
+// TWO FIELDS IN THE MIAMI FLAGS BAKE ARE MIS-MAPPED AT SOURCE (Aug 2026 audit). Both are fixed in
+// tools/scrape_miami_pa.py, but the SHIPPED miami-flags.js still carries the bad values until the
+// next full scrape, so the portal has to refuse to display them rather than repeat them.
+//
+// 1. permit.type holds the OWNER'S NAME. Verified against Miami-Dade's own layer metadata:
+//    Open_Building_Violations.VIOL_NAME has the alias VIOLATOR_NAME. The scraper preferred it over
+//    CASE_TYPE, which is the actual descriptor ("Unsafe Structure", "Expired Permit", "All Other
+//    Code Violations"). 1,037 of 1,399 distinct "permit types" on the board are person or company
+//    names, rendered in the tooltip as "Unsafe/building violation: DANIEL A GARCIA".
+// 2. lien.kind holds a PARCEL CLASS, not a lien kind — "H-Household" / "C-Commercial" off
+//    data_judgement.PARCEL_TYPE. That layer is Miami-Dade's solid-waste/bulky judgment file
+//    (BULKY_NUMBER, FILING_FEES, MASTER_FEES), pulled with where 1=1 across all 27,188 rows going
+//    back to 1989. Of the 777 leads wearing a gold "Lien" chip, 701 have $0.00 attached and the 76
+//    that carry an amount run a median $330. A member reads "Lien" as an encumbrance clouding
+//    title. A satisfied $0 bulky-trash judgment from 1989 is not that.
+// Order matters here. The corporate/ownership test must run BEFORE the trade-word whitelist:
+// "ROYAL RESIDENCE BUILDERS LLC" contains BUILD and would otherwise be waved through as a permit
+// type. A permit type never says LLC, C/O, &W or JR — those only appear in an owner string.
+function _permitTypeShowable(t){
+  t=(''+(t||'')).trim(); if(!t)return false;
+  // JTRS / (LE) / REM / /H / /W are joint-tenancy and life-estate markers — deed vocabulary that
+  // cannot occur in a permit type. Word boundaries matter: plain RESIDENT below matched
+  // "PRESIDENTIAL INVESTMENT GROUP" and waved an owner name straight through.
+  if(/\b(LLC|L\.L\.C|INC|CORP|CO|LP|LLP|LTD|TRUST|TRS|JTRS|EST|ESTATE|ETAL|ET AL|REM|JR|SR|II|III|IV)\b|&\s*[WH]\b|\/\s*[HW]\b|C\/O|\(LE\)|,| \/ /i.test(t))return false;   // " / " with spaces joins two owners; "A/C" and "Window/Door" have none
+  if(/PERMIT|ROOF|ELECTRIC|PLUMB|MECHAN|BUILDING|FENCE|POOL|SHUTTER|WINDOW|DEMO|SOLAR|A\/C|STRUCTURE|VIOLATION|BOILER|SEAWALL|DOCK|SIGN|ZONING|CODE|GENERAL|\bRESIDENTIAL\b|\bCOMMERCIAL\b/i.test(t))return true;
+  return !/^[A-Z0-9][A-Z0-9\s.'&-]*$/.test(t);      // ALL-CAPS with no trade word = a name, not a type
+}
 function _flagChips(l){
   var f=_flagsFor(l); if(!f)return '';
   var b=[];
   if(f.code){var _cb=_codeBucket(f.code.type);
     b.push('<span title="'+_cb.why+' | County case type: '+(f.code.type||'').replace(/"/g,'')+'" style="background:'+_cb.bg+';color:'+_cb.c+';border:1px solid '+_cb.bd+';border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_cb.label+'</span>');}
   if(f.permit){var _ps=(f.permit.status||'').toLowerCase(),_isViol=(_ps.indexOf('violation')>=0||_ps.indexOf('unsafe')>=0),_lbl=_isViol?'Unsafe / violation':(_ps.indexOf('expir')>=0?'Expired permit':'Open permit'),_col=_isViol?'201,122,106':'232,133,74';
-    b.push('<span title="'+(f.permit.status||'Permit')+': '+(f.permit.type||'').replace(/"/g,'')+'" style="background:rgba('+_col+',.16);color:'+(_isViol?'#c97a6a':'#e8854a')+';border:1px solid rgba('+_col+',.42);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_lbl+'</span>');}
-  if(f.lien)  b.push('<span title="'+(f.lien.kind||'Lien')+(f.lien.amt?': $'+f.lien.amt.toLocaleString():'')+'" style="background:rgba(184,145,90,.18);color:var(--gold);border:1px solid rgba(184,145,90,.4);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">Lien'+(f.lien.amt?' $'+Math.round(f.lien.amt/1000)+'k':'')+'</span>');
+    var _pt=_permitTypeShowable(f.permit.type)?(': '+(''+f.permit.type).replace(/"/g,'')):' — the county case type is not in this snapshot (the source field carried the violator name); open the county record for the detail';
+    b.push('<span title="'+(f.permit.status||'Permit')+_pt+'" style="background:rgba('+_col+',.16);color:'+(_isViol?'#c97a6a':'#e8854a')+';border:1px solid rgba('+_col+',.42);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_lbl+'</span>');}
+  if(f.lien){
+    var _k=(''+(f.lien.kind||'')).trim(), _waste=/^[HC]\s*-/.test(_k), _amt=+f.lien.amt||0;
+    var _lbl2=_waste?('Waste judgment'+(_amt>0?' $'+_amt.toLocaleString():' · $0')):('Lien'+(_amt>0?' $'+_amt.toLocaleString():''));
+    var _t2=_waste
+      ? 'A county SOLID-WASTE judgment record, not a lien clouding title. That layer is historical — it spans 1989 to 2018, so nothing in it is current — and '+(_amt>0?'this one carries $'+_amt.toLocaleString()+'.':'this one shows $0.00 outstanding.')+' Weak distress signal — confirm on the Clerk’s official records before you treat it as leverage.'
+      : (_k||'Lien')+(_amt>0?': $'+_amt.toLocaleString():'');
+    var _c2=_waste?'#9a9ea8':'var(--gold)', _bg2=_waste?'rgba(140,140,150,.16)':'rgba(184,145,90,.18)', _bd2=_waste?'rgba(140,140,150,.42)':'rgba(184,145,90,.4)';
+    b.push('<span title="'+_t2.replace(/"/g,'&quot;')+'" style="background:'+_bg2+';color:'+_c2+';border:1px solid '+_bd2+';border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_lbl2+'</span>');
+  }
   return b.join('');
 }
 function _bandFor(l){

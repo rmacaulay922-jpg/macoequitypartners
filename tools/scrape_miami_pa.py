@@ -121,8 +121,12 @@ def nf(v):
     d = re.sub(r'\D', '', str(v or ''))
     return d.zfill(13)[-13:] if d else ''
 
-def pull_set(path, where, out_fields, key_field, detail, page=2000, cap=80000):
-    """Pull a distress layer keyed by folio -> detail dict. Small sets, reliable host."""
+def pull_set(path, where, out_fields, key_field, detail, page=2000, cap=80000, merge=None):
+    """Pull a distress layer keyed by folio -> detail dict. Small sets, reliable host.
+
+    merge(old, new) -> kept, for layers where a parcel legitimately has SEVERAL rows. Without it
+    the last row wins, which on the judgment layer meant a parcel with a real outstanding balance
+    could be silently overwritten by a later $0 row for the same folio."""
     out, offset = {}, 0
     while len(out) < cap:
         d = query_url(ORG + path + '/query', where, offset, out_fields, page)
@@ -131,7 +135,9 @@ def pull_set(path, where, out_fields, key_field, detail, page=2000, cap=80000):
         if not f: break
         for x in f:
             a = x['attributes']; k = nf(a.get(key_field))
-            if k: out[k] = detail(a)
+            if not k: continue
+            v = detail(a)
+            out[k] = merge(out[k], v) if (merge and k in out) else v
         if len(f) < page: break
         offset += page
         time.sleep(0.15)
@@ -164,16 +170,40 @@ def pull_distress():
                     lambda a: {'type': (a.get('PROBLEM_DESC') or a.get('STAT_DESC') or 'Code case').strip()[:60]})
     for k, v in code.items(): add(k, 'code', v)
     print('   open code cases: %d' % len(code), flush=True)
+    # VIOL_NAME IS THE VIOLATOR, NOT THE VIOLATION. Miami-Dade's own layer metadata gives
+    # VIOL_NAME the alias VIOLATOR_NAME; CASE_TYPE is the descriptor, and its values are clean
+    # ("All Other Code Violations", "Expired Permit", "Unsafe Structure", "Boilers"). Preferring
+    # VIOL_NAME put the OWNER'S NAME in the field the portal renders as the violation type —
+    # 1,037 of 1,399 distinct values on the shipped board are person or company names, showing up
+    # in the UI as "Unsafe/building violation: DANIEL A GARCIA".
     bviol = pull_set('/Open_Building_Violations/FeatureServer/0', "CLOSED_DATE IS NULL",
                      'FOLIO,VIOL_NAME,CASE_TYPE', 'FOLIO',
-                     lambda a: {'type': (a.get('VIOL_NAME') or a.get('CASE_TYPE') or 'Unsafe structure').strip()[:60]})
+                     lambda a: {'type': (a.get('CASE_TYPE') or 'Unsafe structure').strip()[:60]})
     for k, v in bviol.items(): add(k, 'viol', v)
     print('   open building violations: %d' % len(bviol), flush=True)
-    lien = pull_set('/data_judgement/FeatureServer/0', "1=1",
-                    'FOLIO_NUMBER,TOTAL_FEES,PARCEL_TYPE', 'FOLIO_NUMBER',
-                    lambda a: {'amt': int(num(a.get('TOTAL_FEES'))), 'kind': (a.get('PARCEL_TYPE') or 'Lien').strip()})
+    # data_judgement IS THE SOLID-WASTE / BULKY JUDGMENT FILE, not a title-lien register — its own
+    # fields are BULKY_NUMBER, FILING_FEES, MASTER_FEES, JUDGEMENT_FEES. Pulled with where 1=1 it
+    # returned all 27,188 rows back to 1989, and PARCEL_TYPE ("H-Household" / "C-Commercial") is a
+    # service class, not a lien kind. On the shipped board that produced 777 gold "Lien" chips of
+    # which 701 carried $0.00, each worth +40 to the lead score — the single largest distress boost
+    # in the model, awarded for a satisfied 1989 trash judgment.
+    # Now: only rows with money actually outstanding, labelled for what they are. Callers still get
+    # a real signal where one exists, without the word "lien" doing work it has not earned.
+    # AND IT IS A HISTORICAL FILE, NOT A LIVE FEED — checked live 2026-08-01, the filtered set is
+    # 1,494 rows spanning 1989 to 2018, so the newest record in it is already eight years old.
+    # Keep it as a weak corroborating signal; never present it as current distress.
+    # TOTAL_FEES is a STRING field, so it cannot be compared numerically server-side; the zero rows
+    # are excluded by their literal spellings and anything that slips through is dropped below.
+    # A folio can carry several judgments — keep the largest balance, not whichever paged in last.
+    lien = pull_set('/data_judgement/FeatureServer/0',
+                    "TOTAL_FEES IS NOT NULL AND TOTAL_FEES NOT IN ('0','0.0','0.00','.00','')",
+                    'FOLIO_NUMBER,TOTAL_FEES,PARCEL_TYPE,PARCEL_DATE', 'FOLIO_NUMBER',
+                    lambda a: {'amt': int(num(a.get('TOTAL_FEES'))), 'kind': 'Solid-waste judgment',
+                               'yr': (time.gmtime(a['PARCEL_DATE'] / 1000).tm_year if a.get('PARCEL_DATE') else None)},
+                    merge=lambda o, n: n if n['amt'] > o['amt'] else o)
+    lien = {k: v for k, v in lien.items() if v and v.get('amt', 0) > 0}
     for k, v in lien.items(): add(k, 'lien', v)
-    print('   liens/judgments: %d' % len(lien), flush=True)
+    print('   solid-waste judgments with a balance: %d' % len(lien), flush=True)
     print('   %d distinct parcels carry a distress flag' % len(flags), flush=True)
     return flags
 
@@ -319,7 +349,14 @@ def run():
         # ── primary: recorded distress on the property ──
         if dfl.get('code'): sc += 45     # open code-enforcement case
         if dfl.get('viol'): sc += 42     # open building / unsafe-structure violation
-        if dfl.get('lien'): sc += 40     # recorded lien / judgment
+        # A solid-waste judgment is NOT peer to an open unsafe-structure case, and scoring it at 40
+        # said it was. It is a small municipal balance — median $330 across the rows that carry one
+        # at all — so it earns a modest bump that scales with the money actually outstanding, not a
+        # near-top-of-board boost. (Before the TOTAL_FEES filter above, 701 of the 777 leads getting
+        # this +40 had $0.00 outstanding, several from judgments entered in 1989.)
+        if dfl.get('lien'):
+            _la = dfl['lien'].get('amt', 0)
+            sc += 22 if _la >= 2500 else (14 if _la >= 500 else 8)
         # ── secondary: motivated-owner profile ──
         sc += {'probate': 20, 'entity': 12, 'trust': 12, 'other': 0}[cls]
         if oos: sc += 16
