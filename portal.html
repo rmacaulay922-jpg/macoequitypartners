@@ -2449,7 +2449,33 @@ function _bandFor(l){
       if(sz){for(var k in sz){var p=k.split('-');
         if(e.sqft>=+p[0]&&e.sqft<+p[1]&&sz[k]&&sz[k].med){src=sz[k];matched=true;break;}}}
     }catch(_){}
-    return {lo:Math.round(src.p25*e.sqft),mid:Math.round(src.med*e.sqft),hi:Math.round(src.p75*e.sqft),
+    var _lo=Math.round(src.p25*e.sqft),_mid=Math.round(src.med*e.sqft),_hi=Math.round(src.p75*e.sqft);
+    // RECONCILE THE RANGE, NOT JUST ITS MIDPOINT (Aug 2026 audit).
+    // The 0.70-1.40x county gate was applied to bd.mid, but bd.mid is not what the letter prints
+    // - it prints lo-hi. Measured across the six boards: of 3,935 bands that PASSED the midpoint
+    // gate, 1,438 (37%) still topped out above 1.40x the county's own value, and 233 bottomed out
+    // below 0.70x. Worst live case: 1194 Hilltop Dr, county $455,721, quoted top $919,080 (2.02x).
+    // So the exact number the gate exists to suppress was going out in the mail anyway.
+    //
+    // WHY THE TOP RUNS HIGH IS STRUCTURAL, not a few outliers - the median top is 1.28-1.38x
+    // county across every market. lo/hi are a ZIP-wide $/sf p25-p75 multiplied by ONE house's
+    // square footage, and much of that $/sf spread is SIZE effect (small homes sell at a far
+    // higher $/sf) rather than price uncertainty for this home. The size-bucket branch above was
+    // written to fix exactly that but has never fired - no shipped ZIP band carries `sz` yet.
+    //
+    // Until it does, hold the printed range to the same standard as the midpoint. Clamping shrinks
+    // an affected range by a median 26% (p90 48%), which is also the narrowing this was asked for.
+    // Only where the county value is REAL: where it is modelled it IS the band, so there is
+    // nothing independent to reconcile against. lo<mid<=1.40*mkt whenever the midpoint gate
+    // passed, so the clamp can never invert the range or push it off the midpoint.
+    var _clamped=false;
+    if(l&&l.mkt>0&&!l.vm){
+      var _c1=Math.round(1.40*l.mkt), _c0=Math.round(0.70*l.mkt);
+      if(_hi>_c1){_hi=Math.max(_c1,_mid);_clamped=true;}
+      if(_lo<_c0){_lo=Math.min(_c0,_mid);_clamped=true;}
+    }
+    return {lo:_lo,mid:_mid,hi:_hi,rawLo:Math.round(src.p25*e.sqft),rawHi:Math.round(src.p75*e.sqft),
+            clamped:_clamped,
             n:src.n||b.n,ppsf:src.med,sqft:e.sqft,asOf:b.as_of||'',comps:b.comps||[],
             matched:matched,zipN:b.n};
   }catch(e){return null;}
@@ -2591,16 +2617,24 @@ function _insDefault(l){
 // that they are visible and roughly right rather than invisible and definitely wrong; a real GC
 // bid replaces them. Roof allowance assumes roof area ~1.25x living area at typical Miami re-roof
 // rates; glass assumes a partial impact package, not a whole-house replacement.
-function _leadRepair(l){
-  var e=_fdorFor(l); var sf=(e&&e.sqft)||0;
-  if(!sf)return null;
-  var yb=(e&&e.yb)||l.yb||0;
+// TAKES (sqft, yearBuilt) rather than a lead, because the deal board needs the identical model and
+// has no lead object. Aug 2026 audit: it was carrying its OWN flat 45*sqft with no vintage
+// allowance, so the same 1968 house scored one repair number on the Leads board and a materially
+// lower one on the Deal board — and the deal board's was the indefensible one, budgeting zero for
+// roof and glass on pre-Andrew stock. One model, two callers.
+function _repairModel(sf,yb){
+  sf=+sf||0; if(!sf)return null; yb=+yb||0;
   var base=sf*45, roof=0, glass=0, why=[];
   if(yb&&yb<=2001){ roof=sf*12; why.push('roof'); }              // aged out for insurance purposes
   if(yb&&yb<=1992){ glass=sf*18; why.push('impact glass'); }     // pre-Andrew code
   var total=Math.round((base+roof+glass)/1000)*1000;
   return {sqft:sf, yb:yb, base:Math.round(base), roof:Math.round(roof), glass:Math.round(glass),
-          total:total, reserve:Math.round(roof+glass), why:why};
+          total:total, reserve:Math.round(roof+glass), why:why,
+          ppsf:Math.round(total/sf)};
+}
+function _leadRepair(l){
+  var e=_fdorFor(l);
+  return _repairModel((e&&e.sqft)||0,(e&&e.yb)||(l&&l.yb)||0);
 }
 // ── ONE RECONCILIATION, USED EVERYWHERE ──
 // The 0.70-1.40x check was copy-pasted into three places that SUPPRESS things (the letter, the
@@ -2730,7 +2764,7 @@ function renderPolk(){
         // and the member should see both numbers rather than the wrong one in gold.
         var _rec=_bandReconcile(l,bd);
         var cell1=(bd&&_rec.ok)
-          ?'<div class="metric-cell" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF'+(bd.matched?' for homes of this size':'')+'. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering."><div class="metric-lbl">Est. Value'+(bd.matched?' &middot; this size':' &middot; ZIP sales')+'</div><div class="metric-val" style="font-size:17px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' &middot; '+bd.n+' sales</div></div>'
+          ?'<div class="metric-cell" title="ZIP '+(l.z||'')+' qualified arm’s-length sales (FDOR '+bd.asOf+'): $'+bd.ppsf+'/sf median × '+bd.sqft.toLocaleString()+' SF'+(bd.matched?' for homes of this size':'')+'. A neighborhood RANGE, not an appraisal or ARV — walk the property and comp it before offering.'+(bd.clamped?' RANGE NARROWED: the raw quartiles ('+fmtK(bd.rawLo)+'–'+fmtK(bd.rawHi)+') ran past 0.70–1.40× the county’s '+fmtK(l.mkt)+', so the ends are pulled back to what reconciles.':'')+'"><div class="metric-lbl">Est. Value'+(bd.matched?' &middot; this size':' &middot; ZIP sales')+'</div><div class="metric-val" style="font-size:17px;color:var(--gold);">'+fmtK(bd.mid)+'</div><div class="metric-sub" style="font-size:9px;">'+fmtK(bd.lo)+'–'+fmtK(bd.hi)+' &middot; '+(bd.clamped?'narrowed to county':bd.n+' sales')+'</div></div>'
           :(bd&&!_rec.ok)
           ?'<div class="metric-cell" title="The ZIP sale band works out to '+fmtK(bd.mid)+' for this square footage, but the county values the parcel at '+fmtK(l.mkt)+' — a '+_rec.ratio.toFixed(2)+'x gap. The band takes no account of condition, age or quality, so on rough stock it runs high. We lead with the county figure and withhold a buy grade until you comp the block."><div class="metric-lbl">County Value</div><div class="metric-val" style="font-size:17px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:#c97a6a;">ZIP band says '+fmtK(bd.mid)+' &middot; '+_rec.ratio.toFixed(1)+'× — conflict</div></div>'
           :'<div class="metric-cell"><div class="metric-lbl">'+(_valIsModelled(l)?'Est. Value':'County Value')+'</div><div class="metric-val" style="font-size:17px;">'+fmtK(l.mkt)+'</div><div class="metric-sub" style="font-size:9px;color:var(--muted);">'+(_valIsModelled(l)?'modelled':'market / just')+'</div></div>';
@@ -2769,7 +2803,7 @@ function renderPolk(){
           +((ec.rp&&ec.rp.reserve>0)
              ? '<span style="font-size:10.5px;color:#e8854a;" title="'+ec.rp.yb+' build. Base walk-it repair '+fmtK(ec.rp.base)+' at $45/sf, plus an allowance for the items that decide whether your RETAIL buyer can insure and therefore close: '+ec.rp.why.join(' + ')+'. An allowance, not a quote — replace it with a GC bid.">incl. '+fmtK(ec.rp.reserve)+' '+ec.rp.why.join(' + ')+'</span>'
              : '')
-          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;" title="ARV = ZIP sale band midpoint; repairs = $45/sf walk-it base plus a vintage insurability allowance; target profit from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.">est. &middot; walk it first</span>'
+          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;" title="ARV = ZIP sale band midpoint'+(ec.band&&ec.band.clamped?' (range narrowed to reconcile with the county roll)':'')+'; repairs = '+fmtK(ec.rp.total)+', a $45/sf walk-it base plus a vintage insurability allowance ('+(ec.rp.ppsf)+'/sf all-in); target profit from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.">est. &middot; walk it first</span>'
         +'</div>';
       })()
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
@@ -2799,12 +2833,14 @@ function polkUnderwrite(pid){
   // an offer near 2x the county value. A pre-filled number anchors the decision even when a toast
   // says "verify", so where the two sources cannot be reconciled we seed NOTHING and say why.
   var _bandSane=true;
-  if(bd&&l.mkt>0&&!l.vm){var _rr=bd.mid/l.mkt; if(_rr>1.40||_rr<0.70)_bandSane=false;}
+  if(bd&&!_bandReconcile(l,bd).ok)_bandSane=false;   // one reconciliation, not a fourth copy of it
   if(bd&&_bandSane){
     // Seed with the ZIP qualified-sale band midpoint + sqft-based repair walk-it default — clearly a starting range, not a comp ARV.
     var _rp=_leadRepair(l); var rep=_rp?_rp.total:0; // walk-it base + vintage insurability reserve
     runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:bd.mid, repair:rep, sqft:e&&e.sqft, _arvSrc:'zip-band', _ins:_insDefault(l)});
-    try{toast('Pre-filled from the ZIP sale band ('+fmtK(bd.lo)+'–'+fmtK(bd.hi)+', '+bd.n+' qual. sales) + $45/sf walk-it repair — verify both before offering');}catch(e2){}
+    // The toast said "$45/sf walk-it repair" while seeding up to $75/sf — the base rate quoted as
+    // if it were the whole figure, on the one screen where the member is about to make an offer.
+    try{toast('Pre-filled from the ZIP sale band ('+fmtK(bd.lo)+'–'+fmtK(bd.hi)+(bd.clamped?', narrowed to the county roll':', '+bd.n+' qual. sales')+')'+(_rp?' + '+fmtK(_rp.total)+' repair (~$'+_rp.ppsf+'/sf'+(_rp.why.length?' incl. '+_rp.why.join(' + '):'')+')':'')+' — verify both before offering');}catch(e2){}
   }else if(bd){
     var _rp2=_leadRepair(l); var rep2=_rp2?_rp2.total:0;
     runUnderwriter({address:l.a+', '+l.c+' FL '+(l.z||''), arv:0, repair:rep2, sqft:e&&e.sqft, _ins:_insDefault(l)});
@@ -3035,8 +3071,13 @@ function briefLeadCard(l,i){
        ? (_bd?'':line('Est. value','~'+fmtK(l.mkt),'modelled from ZIP $/sf &times; size &mdash; the county publishes no value here'))
        : line('County value',fmtK(l.mkt),'market / just value on the county roll &mdash; NOT a resale estimate'))
     +((l.bld>0||ln>0)?line('Building / land',fmtK(l.bld)+' / '+fmtK(ln),'county-assessed split'):'')
+    // When _bandFor pulled an end back to the county-reconciled limit, lo-hi is no longer the
+    // quartile interval — saying "N recorded sales" beside it would attribute a number we moved
+    // to the sales data. Show the raw quartiles alongside so nothing is hidden, just relabelled.
     +(_bd?line(_bd.matched?'Est. value &middot; homes this size':'Est. value &middot; ZIP sales',fmtK(_bd.mid),
-        fmtK(_bd.lo)+'&ndash;'+fmtK(_bd.hi)+' &middot; '+_bd.n+' recorded sales'+(_bd.matched?' of similar size':'')):'')
+        _bd.clamped
+          ? fmtK(_bd.lo)+'&ndash;'+fmtK(_bd.hi)+' &middot; narrowed to reconcile with the county roll (raw ZIP quartiles '+fmtK(_bd.rawLo)+'&ndash;'+fmtK(_bd.rawHi)+' over '+_bd.n+' sales)'
+          : fmtK(_bd.lo)+'&ndash;'+fmtK(_bd.hi)+' &middot; '+_bd.n+' recorded sales'+(_bd.matched?' of similar size':'')):'')
     +(why?'<div style="font-size:11px;color:var(--muted);margin:9px 0 3px;line-height:1.6;"><strong style="color:var(--ivory-soft);">Why it&rsquo;s a lead:</strong> '+why+'</div>':'')
     +'<div style="font-size:11px;color:#e8a14a;margin:6px 0 3px;line-height:1.6;">'+(_bd?'ZIP-level sale band, not a per-property comp &mdash; walk it and comp it before offering.':'No sold comps in this market yet &mdash; verify true value &amp; condition before offering.')+'</div>'
     +'<div style="display:grid;gap:7px;margin-top:11px;">'
@@ -3587,7 +3628,7 @@ function buyGrade(d){
   else res={g:'A',t:'Strong',c:'#4a9a6b',bg:'rgba(74,154,107,.18)',why:'Fat spread (~'+Math.round(margin)+'% of ARV, '+fmtK(profit)+')'+motTag+'.'};
   if(d._countySourced&&d._repairAssumed){
     if(res.g==='A')res={g:'B',t:'Solid',c:'#E8501F',bg:'rgba(232,80,31,.18)',why:res.why};
-    res.why+=' Repair is a flat $45/sqft assumption &mdash; walk the property before trusting this grade.';
+    res.why+=' Repair is an assumption'+(d._repairPpsf?' (~$'+d._repairPpsf+'/sqft'+(d._repairWhy&&d._repairWhy.length?', incl. '+d._repairWhy.join(' + ')+' allowance':'')+')':'')+' &mdash; walk the property before trusting this grade.';
   }else if(d._condUnverified||d._repairAssumed){
     res.why+=' Condition is modeled, not inspected &mdash; walk it before offering.';
   }
@@ -3774,7 +3815,7 @@ function buildDeals(){
       '</div>'+
       '<div class="metrics-row">'+
         '<div class="metric-cell"><div class="metric-lbl">Comp ARV '+ARV_TIP+'</div><div class="metric-val">'+fmtK(d.arv)+'</div><div class="metric-sub">'+_arvSubHtml(d)+'</div></div>'+
-        '<div class="metric-cell"><div class="metric-lbl">Repair Est '+TIP('Renovation budget = condition tier &times; 2026 Miami $/sqft (cosmetic $25 &rarr; full gut $110). Modeled from records, never inspected \u2014 always walk the property.')+'</div><div class="metric-val" style="font-size:16px;">'+fmtK(d.repair)+'</div><div class="metric-sub">'+(d.rehab_condition?(d.rehab_condition+(d._condUnverified?' &middot; unverified &mdash; walk it':'')):(d._repairAssumed?(d._countySourced?'assumed $45/sqft &mdash; walk it':'assumed (age-based)'):'&mdash;'))+'</div></div>'+
+        '<div class="metric-cell"><div class="metric-lbl">Repair Est '+TIP('Renovation budget = condition tier &times; 2026 Miami $/sqft (cosmetic $25 &rarr; full gut $110). Modeled from records, never inspected \u2014 always walk the property.')+'</div><div class="metric-val" style="font-size:16px;">'+fmtK(d.repair)+'</div><div class="metric-sub">'+(d.rehab_condition?(d.rehab_condition+(d._condUnverified?' &middot; unverified &mdash; walk it':'')):(d._repairAssumed?(d._countySourced?('assumed ~$'+(d._repairPpsf||45)+'/sqft &mdash; walk it'):'assumed (age-based)'):'&mdash;'))+'</div></div>'+
         (rs
           ? '<div class="metric-cell"><div class="metric-lbl">Status</div><div class="metric-val" style="font-size:13px;color:#e8854a;">Recently Sold</div><div class="metric-sub">'+(d.last_sale_price?fmt$(d.last_sale_price):'owner-occ')+'</div></div>'
           : (!_arvVerified(d)
@@ -4472,7 +4513,12 @@ function enrichCountyLeads(){
       var got=liveArvFor(_dealZips(d),d.sqft,d.beds,(_compExcl()[_normAddr(d.address)])||null,d._lat,d._lon,d.year_built,f);
       if(got){
         d.arv=got.arv;d.comp_ppsf=got.ppsf;d._arvSrc=got.src;d._arvN=got.n;d._arvPpsf=got.ppsf;d._arvConf=got.conf;d._arvLo=got.lo;d._arvHi=got.hi;d._arvProx=got.prox;
-        d.repair=Math.round(45*d.sqft/500)*500; // walk-it assumption: $45/sqft moderate-light rehab
+        // Same repair model the Leads board uses — $45/sf walk-it base plus the vintage
+        // insurability allowance. Was a bare 45*sqft here, which on the pre-1993 stock that is
+        // most of this board budgeted $0 for the roof and glass a retail buyer must insure.
+        var _rm=_repairModel(d.sqft,d.year_built);
+        d.repair=_rm?_rm.total:Math.round(45*d.sqft/500)*500;
+        d._repairPpsf=_rm?_rm.ppsf:45; d._repairWhy=_rm?_rm.why:[];
         d._repairAssumed=true;d.rehab_condition='';d._needsComp=false;
         var c=computeScore(d);d._score=c.score;d._why=c.why;
         changed=true;
@@ -4882,14 +4928,31 @@ function _valueLineFor(p){
       // square footage, in this ZIP, over the last two years. That is a materially tighter and
       // better-centred range than the ZIP-wide spread, and it is what the sentence claims to be.
       // Without a bucket we fall back to the ZIP-wide band and say "in your area" instead.
-      // Aug 2026 audit — TWO defects in the mailed sentence, both corrected here:
+      // NOTE (Aug 2026): no shipped ZIP band carries `sz` yet, so the matched branch has never
+      // actually run in production — every letter to date has taken the fallback wording. It is
+      // kept, not deleted, because bake_zip_bands.py now emits the buckets and the next good bake
+      // turns it on. Both branches are written to be true on their own terms.
+      // Aug 2026 audit — THREE defects in the mailed sentence, all corrected here:
       // (1) lo/hi are the 25th and 75th percentiles, i.e. the MIDDLE HALF of sales. Saying homes
       //     "have sold between" lo and hi states an interquartile band as the full span, when by
       //     construction about half the cited sales fall outside it. Now says "the middle half".
       // (2) the fallback branch dropped the size qualifier, but the arithmetic never did — lo/hi
       //     are always a ZIP $/sf percentile multiplied by THIS house's square footage. Calling
       //     that "recorded sales in your area" misdescribes a size-scaled figure as a raw one.
+      // (3) _bandFor now pulls a range top or bottom back to the county-reconciled limit. Where
+      //     it did (bd.clamped), lo-hi is NO LONGER the quartile interval, so the "middle half of
+      //     sales" phrasing would be a false description of a number we deliberately moved. That
+      //     branch says what it actually is: sales scale wider than the county's own figure
+      //     supports, so we quote the conservative overlap. Never dresses a clamp as a comp.
+      //     It deliberately does NOT print the county's dollar figure. The first draft did, and
+      //     read "the county's own $636,573 value ... my starting range is $625,680 to $891,202"
+      //     — naming the county number beside a top 40% above it advertises the gap instead of
+      //     closing it, which is the opposite of what the clamp is for. Name the method, not the
+      //     number. Wording covers both directions: 1,438 bands had the top pulled down, 233 had
+      //     the bottom pulled up, and no band had both, but "held against" is true either way.
       // Wording is deliberately plain: this is read by a homeowner, not an analyst.
+      if(bd&&bd.clamped)return 'Scaled to a home of this size, recorded sales in your ZIP cover a wide spread, so rather than quote the widest numbers I have held this range against the county’s own assessment of your property: roughly '+fmt$(bd.lo)+' to '+fmt$(bd.hi)+'.'
+        +' That is a starting range from public records, not an appraisal or an offer — I would need to see the property before naming a firm number, but I wanted to be straightforward about where I start.';
       if(bd)return (bd.matched
         ? 'Looking at homes of about this size in your ZIP, the middle half of what sold over the last two years went for between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+' ('+bd.n+' recorded sales in that size range).'
         : 'Scaled to a home of this size, the middle half of recorded sales in your ZIP over the last two years works out to between '+fmt$(bd.lo)+' and '+fmt$(bd.hi)+'.')
