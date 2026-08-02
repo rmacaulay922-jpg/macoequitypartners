@@ -2912,9 +2912,40 @@ function renderPolk(){
   if(cnt)cnt.textContent=L.length.toLocaleString()+' lead'+(L.length===1?'':'s')+(L.length!==(_LSRC()||[]).length?' of '+((_LSRC()||[]).length).toLocaleString():'');
   if(!L.length){g.innerHTML='<div style="color:var(--muted);padding:20px;">No '+county+' leads match these filters.</div>';return;}
   try{_wireLeadsMap();renderLeadsMap(L);}catch(e){}
-  if(POLK_VIEW==='table'){g.innerHTML=_marketOverview(county,_LMETA())+_polkTableHtml(L,county);return;}
+  // ── WHICH LEADS THE MONEY SORTS CANNOT SEE, AND WHERE THEY ARE ──
+  // A lead with no reconcilable band gets no verdict and no max offer, so a money sort drops it to
+  // the bottom. That was silent, and it is NOT evenly spread: on Miami-Dade 76% of leads reach the
+  // money sorts overall, but by submarket it runs 96% in Westchester and 43% in Wynwood/Little
+  // Haiti, 55% in Miami Gardens, 60% in Opa-locka and Little Haiti. Every one of those exclusions
+  // is a band-vs-roll CONFLICT, not a missing band.
+  //
+  // That pattern is worth saying out loud rather than hiding, and not only for fairness: a cluster
+  // of conflicts means recent sales are running far ahead of the county roll, which is the
+  // signature of a fast-appreciating submarket — often the best flip territory on the board. Left
+  // unsaid, a member sorting by money would conclude those neighbourhoods hold nothing, when what
+  // they actually hold is the widest gap between assessed and market value.
+  var _muteNote='';
+  try{
+    if(/^(buyable|profit|offer)$/.test(_polkFilter.sort||'')){
+      var _mute=L.filter(function(l){return !_leadEcon(l);});
+      if(_mute.length){
+        var _byA={},_tot={};
+        _mute.forEach(function(l){var a=l.c||'?';_byA[a]=(_byA[a]||0)+1;});
+        L.forEach(function(l){var a=l.c||'?';_tot[a]=(_tot[a]||0)+1;});
+        var _top=Object.keys(_byA).filter(function(a){return _tot[a]>=10;})
+          .sort(function(x,y){return (_byA[y]/_tot[y])-(_byA[x]/_tot[x]);}).slice(0,3)
+          .map(function(a){return _escHtml(a)+' '+Math.round(100*_byA[a]/_tot[a])+'%';});
+        _muteNote='<div style="grid-column:1/-1;background:rgba(232,161,74,.08);border:1px solid rgba(232,161,74,.3);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:11.5px;color:var(--ivory-soft);line-height:1.6;">'
+          +'<strong style="color:#e8a14a;">'+_mute.length.toLocaleString()+' of '+L.length.toLocaleString()+' leads have no verdict and sit at the bottom of this sort</strong> &mdash; the ZIP sale band and the county roll disagree by more than 0.70&ndash;1.40&times; there, so we will not stand behind a number for them.'
+          +(_top.length?' Most concentrated in '+_top.join(', ')+'.':'')
+          +' A cluster like that usually means recent sales are running ahead of the roll &mdash; a fast-appreciating pocket, not an empty one. Worth comping by hand rather than skipping.'
+        +'</div>';
+      }
+    }
+  }catch(e){}
+  if(POLK_VIEW==='table'){g.innerHTML=_marketOverview(county,_LMETA())+_muteNote+_polkTableHtml(L,county);return;}
   var pip=(typeof getPipeline==='function')?getPipeline():{};
-  var _ov=_marketOverview(county,_LMETA());
+  var _ov=_marketOverview(county,_LMETA())+_muteNote;
   g.innerHTML=_ov+L.slice(0,400).map(function(l){
     // pid is digits-only, so single-quoting is safe — JSON.stringify's double quotes would
     // terminate the double-quoted onclick attribute and silently break the buttons.
