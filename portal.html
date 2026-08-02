@@ -1947,13 +1947,26 @@ function _valIsModelled(l){
 }
 // Market-level: does this market contain ANY modelled value? Drives copy that describes the
 // board as a whole (intros, banners) rather than one card.
-function _valMarketHasModelled(){
+// A BOOLEAN CANNOT DESCRIBE A MIXED MARKET, AND MIAMI IS NOW 2,999 REAL TO 1 MODELLED.
+// This returned true for valSrc 'fdor+model' regardless of the split, so after today's FDOR value
+// bake a SINGLE unmatched parcel was still making the Brief tell every member that Miami-Dade cards
+// "show an estimated value modelled from ZIP $/sf x size (the county publishes no value here)" —
+// describing the whole board by its one exception, and describing it as the opposite of the truth.
+// The per-lead check (_valIsModelled) was always right; only the market-level summary was not.
+function _valModelledSplit(){
   try{
-    var meta=_LMETA()||{}, vs=meta.valSrc;
-    if(vs==='fdor')return false;
-    if(vs==='model'||vs==='fdor+model')return true;
-    return !!(MARKETS[window._market||'miamicw']||{}).valModelled;
-  }catch(e){return false;}
+    var meta=_LMETA()||{}, vs=meta.valSrc, L=_LSRC()||[], n=L.length;
+    if(vs==='fdor')return {model:0,total:n};
+    if(vs==='model')return {model:n,total:n};
+    if(vs==='fdor+model')return {model:(meta.valModel!=null?meta.valModel:L.filter(function(l){return l&&l.vm;}).length),total:n};
+    return {model:((MARKETS[window._market||'miamicw']||{}).valModelled?n:0),total:n};
+  }catch(e){return {model:0,total:0};}
+}
+// True only where modelled values are the RULE rather than a rounding error. Used for prose that
+// characterises the market; anything per-property must use _valIsModelled(lead) instead.
+function _valMarketHasModelled(){
+  var s=_valModelledSplit();
+  return s.total>0 && s.model/s.total>0.05;
 }
 // True when this market opens the parcel directly, so the button can say so.
 function _paIsDeep(l){
@@ -3253,15 +3266,21 @@ function briefLeads(host){
   // modelled market (Miami-Dade) the card deliberately shows no county value at all — the intro
   // contradicted the cards beneath it. Describe what THIS market's cards actually render.
   _briefIntro('Motivated-seller leads in <strong>'+_escHtml(label)+'</strong> &mdash; ranked from county records (estate/probate, out-of-state or absentee owners, long holds, and open code cases/liens where the county publishes them). There is <strong>no per-property comp ARV</strong> in this market: cards show '
-    +(_valMarketHasModelled()
-        ? 'an <strong>estimated value</strong> modelled from ZIP $/sf &times; size (the county publishes no value here)'
-        : 'the <strong>county roll value</strong>')
-    +' plus a <strong>ZIP-level sale band</strong> where one exists, never a resale estimate &mdash; walk it and comp it before offering. <span id="briefUpdated" style="color:var(--gold);"></span>');
-  var list=_briefSortLeads(src.filter(function(l){return !_briefState.area||l.c===_briefState.area;}));
+    +(function(){var s=_valModelledSplit();
+        if(_valMarketHasModelled())return 'an <strong>estimated value</strong> modelled from ZIP $/sf &times; size (the county publishes no value here)';
+        return 'the <strong>county roll value</strong>'+(s.model>0?' (all but '+s.model+' of '+s.total.toLocaleString()+', which the county roll has no row for and which say so on the card)':'');})()
+    +' plus a <strong>ZIP-level sale band</strong> where one exists, never a resale estimate &mdash; walk it and comp it before offering. Owner-occupied (homesteaded) parcels are left out of this view; the Leads tab has them behind the Homestead filter. <span id="briefUpdated" style="color:var(--gold);"></span>');
+  // briefMiami has always dropped owner-occupants ("owner not living there") — this one did not,
+  // on the market where 1,168 of 3,000 leads are homesteaded. The Brief is the "your best six"
+  // surface; a person living in their own home does not belong on it. _leadRank now demotes them
+  // so in practice they had stopped surfacing, but relying on a sort weight to enforce a rule the
+  // sibling Brief enforces outright is how they come back the next time the weights change.
+  var _elig=src.filter(function(l){return !l.hs;});          // the pool this view actually draws from
+  var list=_briefSortLeads(_elig.filter(function(l){return !_briefState.area||l.c===_briefState.area;}));
   var picks=list.slice(0,6); window._briefLeadList=picks;
-  if(!picks.length){_briefEmpty(host,'No leads match this area filter. Choose &ldquo;All areas&rdquo; to see the full '+_escHtml(label)+' list.');_briefCount(src.length,0);return;}
+  if(!picks.length){_briefEmpty(host,'No leads match this area filter. Choose &ldquo;All areas&rdquo; to see the full '+_escHtml(label)+' list.');_briefCount(_elig.length,0);return;}
   host.innerHTML=picks.map(briefLeadCard).join('');
-  _briefCount(src.length,picks.length);
+  _briefCount(_elig.length,picks.length);
 }
 function initApp(){
   var now=new Date();
