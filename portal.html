@@ -197,13 +197,27 @@ nav.tabs button.active{color:var(--bronze);border-bottom-color:var(--bronze);fon
 .arv-tip{position:relative;display:inline-flex;align-items:center}
 .tip-icon{display:inline-block;width:14px;height:14px;background:var(--gold);color:var(--black);border-radius:50%;font-size:9px;font-weight:700;text-align:center;line-height:14px;cursor:help;margin-left:4px;flex-shrink:0}
 .tip-box{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;font-size:12px;line-height:1.5;padding:8px 12px;border-radius:6px;width:260px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.4)}
-.arv-tip:hover .tip-box{display:block}
+/* Only open on hover where hovering is a real thing. On touch, :hover fires on tap and then STAYS
+   applied, so a box could latch open with no way to dismiss it — the .open toggle below is the
+   touch path and should be the only one. */
+@media (hover:hover){.arv-tip:hover .tip-box{display:block}}
 .arv-tip.open .tip-box{display:block}
+/* A 260px box anchored at left:50% of its icon runs off any narrow screen when the icon sits on
+   the right of a row — measured on a 375px viewport, the money-row tip overflowed by ~79px and
+   the text was cut mid-word ("Repairs = $69K (~$45/sf all-i"). Every caveat in the product is
+   delivered through this box, so on a phone the explanations were unreadable rather than merely
+   ugly. Below 640px it stops chasing the icon and becomes a centred sheet. */
+@media (max-width:640px){
+  .tip-box{position:fixed;left:12px;right:12px;width:auto;top:50%;bottom:auto;transform:translateY(-50%);
+           max-height:70vh;overflow-y:auto;font-size:13px;line-height:1.55;padding:14px 16px;
+           box-shadow:0 8px 40px rgba(0,0,0,.6);border:1px solid rgba(184,145,90,.35)}
+}
 
 /* DEAL CARDS */
 .deal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:20px}
 .deal-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;overflow:hidden;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:box-shadow .2s,transform .2s}
-.deal-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.12);transform:translateY(-2px)}
+.deal-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.12)}
+@media (hover:hover){.deal-card:hover{transform:translateY(-2px)}}   /* see the note at the other lift rule */
 .card-border{position:absolute;left:0;top:0;bottom:0;width:4px}
 .card-header{padding:16px 16px 12px 20px;border-bottom:1px solid var(--border);position:relative}
 .card-rank{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -624,8 +638,15 @@ html{scroll-behavior:smooth}
 @keyframes mepIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 /* smooth card hover lift (no pointer tracking) + expand transitions */
 .deal-card,.stat-card,.comp-card,.viol-card{transition:transform .25s cubic-bezier(.22,.61,.36,1),box-shadow .25s ease,border-color .25s ease}
-.deal-card:hover,.comp-card:hover,.viol-card:hover{transform:translateY(-3px)}
-.stat-card:hover{transform:translateY(-3px)}
+/* Touch has no hover, but a tap still LATCHES :hover until you tap elsewhere — so on a phone this
+   lift stuck on whichever card you last touched, and worse, a transformed element becomes the
+   containing block for position:fixed descendants. That silently broke the tap-open tooltips
+   inside these cards: the tip box resolved its viewport insets against the CARD and rendered half
+   off-screen. Gate the decoration to devices that can actually hover. */
+@media (hover:hover){
+  .deal-card:hover,.comp-card:hover,.viol-card:hover{transform:translateY(-3px)}
+  .stat-card:hover{transform:translateY(-3px)}
+}
 /* tasteful tab underline sweep + active state */
 nav.tabs button{position:relative;transition:color .2s ease}
 nav.tabs button::after{content:'';position:absolute;left:1.1rem;right:1.1rem;bottom:-1px;height:2px;background:linear-gradient(90deg,#E8501F,#E8501F);transform:scaleX(0);transform-origin:left center;transition:transform .38s cubic-bezier(.22,.61,.36,1);pointer-events:none;border-radius:2px}
@@ -2972,9 +2993,22 @@ function renderPolk(){
              : '<span style="font-size:12.5px;color:#e8a14a;" title="On these repair and holding assumptions there is no purchase price that clears your target profit — not even $0. That is a statement about the assumptions, not a valuation of the house. Put your own repair number into the Underwriter.">No price clears your target on these assumptions</span>')
           +(ec.profit!=null?'<span style="font-size:11.5px;color:var(--muted);" title="Profit priced AT the buy-under figure to its left — that is the point of the number: it is the price at which this hits your Rate Center target. What the deal does at a conventional 65%-of-ARV buy instead is '+fmtK(ec.headroom)+'; sort by &quot;Most headroom at a 65% buy&quot; to rank on that.">&rarr; ~'+fmtK(ec.profit)+' profit at that price'+(pct!=null?' ('+pct+'% of value)':'')+'</span>':'')
           +((ec.rp&&ec.rp.reserve>0)
-             ? '<span style="font-size:10.5px;color:#e8854a;" title="'+ec.rp.yb+' build. Base walk-it repair '+fmtK(ec.rp.base)+' at $45/sf, plus an allowance for the items that decide whether your RETAIL buyer can insure and therefore close: '+ec.rp.why.join(' + ')+'. An allowance, not a quote — replace it with a GC bid.">incl. '+fmtK(ec.rp.reserve)+' '+ec.rp.why.join(' + ')+'</span>'
+             ? '<span style="font-size:10.5px;color:#e8854a;">incl. '+fmtK(ec.rp.reserve)+' '+ec.rp.why.join(' + ')+'</span>'
              : '')
-          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;" title="ARV = ZIP sale band midpoint'+(ec.band&&ec.band.clamped?' (range narrowed to reconcile with the county roll)':'')+'; repairs = '+fmtK(ec.rp.total)+', a $45/sf walk-it base plus a vintage insurability allowance ('+(ec.rp.ppsf)+'/sf all-in); target profit from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.">est. &middot; walk it first</span>'
+          // EVERY CAVEAT ON THIS ROW USED TO LIVE IN A title= ATTRIBUTE, WHICH DOES NOT EXIST ON A
+          // PHONE. title only fires on hover, so on touch the member saw "Deep discount · 52% of
+          // county", "incl. $24K roof + impact glass" and a buy-at price with no way to reach a
+          // word of the reasoning — including everything added in this audit. TIP() is the
+          // portal's own tap-to-open tooltip and was already wired for touch; the whole basis for
+          // the row now goes through one "i" rather than three invisible hover targets.
+          +'<span style="font-size:10px;color:var(--muted);margin-left:auto;display:inline-flex;align-items:center;gap:4px;">est. &middot; walk it first'
+            +TIP((_ow?'<strong>Verdict withheld.</strong> Our screening repair constant comes to '+fmtK(ec.repair)+' here, '+_ow+'% of the estimated finished value — a South Florida cost basis meeting a lower-priced market, not a read on this house. At that weight the verdict would be identical on every lead in this county. Put your own repair number into the Underwriter.'
+                  :(_v?'<strong>'+_v.t+' &mdash; '+_v.pct+'% of county value.</strong> '+_v.why:''))
+              +'<br><br><strong>How these numbers are built.</strong> Value = the ZIP sale band midpoint'+(ec.band&&ec.band.clamped?', with the range narrowed to reconcile with the county roll':'')
+              +'. Repairs = '+fmtK(ec.rp.total)+' (~$'+ec.rp.ppsf+'/sf all-in): a $45/sf walk-it base'
+              +(ec.rp.reserve>0?' plus a '+fmtK(ec.rp.reserve)+' allowance for '+ec.rp.why.join(' + ')+' — the items that decide whether your RETAIL buyer can insure and therefore close. That is an allowance, not a quote; replace it with a GC bid.':'.')
+              +' Target profit comes from your Rate Center. Every figure is a screening estimate — walk it and comp it before offering.')
+          +'</span>'
         +'</div>';
       })()
       +'<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:8px;">'
