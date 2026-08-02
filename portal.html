@@ -2028,9 +2028,14 @@ function polkFiltered(){
   // Money sorts. Leads with no defensible economics (band disagrees with the county value, or no
   // size) sort LAST rather than as zero, so an ungradeable lead never outranks a real one.
   else if(s==='profit')out.sort(function(a,b){var x=_leadEcon(a),y=_leadEcon(b);
-    return ((y&&y.profit!=null)?y.profit:-1e12)-((x&&x.profit!=null)?x.profit:-1e12);});
+    return ((y&&y.headroom!=null)?y.headroom:-1e12)-((x&&x.headroom!=null)?x.headroom:-1e12);});
   else if(s==='offer')out.sort(function(a,b){var x=_leadEcon(a),y=_leadEcon(b);
     return ((y&&y.offer)||-1e12)-((x&&x.offer)||-1e12);});
+  // Sorting by raw profit or raw offer ranks the EXPENSIVE houses, not the takeable ones — a
+  // $900k Collier lead needing 38% of county value outranks a $300k Hialeah lead you could get at
+  // 80%. This sorts by how close the required buy is to the owner's own anchor, i.e. by which
+  // letters are most likely to turn into a signed contract.
+  else if(s==='buyable')out.sort(function(a,b){return _leadBuyability(b)-_leadBuyability(a);});
   else out.sort(function(a,b){return _leadRank(b)-_leadRank(a);}); // default: score, ties broken by signal strength
   return out;
 }
@@ -2102,7 +2107,7 @@ function buildPolk(){
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Homestead</span>'+'<select class="filter-sel" title="FDOR homestead exemption. Homesteaded means owner-occupied — against the premise of this board." onchange="_polkFilter.hs=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude homesteaded</option><option value="only">Only homesteaded</option></select>'      +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Mail risk</span>'
       +'<select class="filter-sel" title="Estates whose owner mailing address IS the property — the heirs are not there, so a letter is wasted postage by construction. Skip-trace them instead." onchange="_polkFilter.mail=this.value;renderPolk();"><option value="">All</option><option value="no">Exclude (mailable only)</option><option value="only">Only (skip-trace list)</option></select>'
       +'<span style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);">Sort</span>'
-      +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="profit">Best margin (est.)</option><option value="offer">Highest max offer</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
+      +'<select class="filter-sel" onchange="_polkFilter.sort=this.value;renderPolk();"><option value="">Lead score</option><option value="buyable">Most takeable offer</option><option value="profit">Most headroom at a 65% buy</option><option value="offer">Highest max offer</option><option value="mkt">County value</option><option value="band">Sale band</option><option value="held">Years held</option><option value="sqft">Sqft</option></select>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Hide Wall Street SFR portfolios (they never answer blind mail)"><input type="checkbox" onchange="_polkFilter.inst=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Hide institutional</label>'
       +'<label style="display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;" title="Only leads with a ZIP qualified-sale band (priceable range)"><input type="checkbox" onchange="_polkFilter.band=this.checked?\'1\':\'\';renderPolk();" style="width:14px;height:14px;">Has sale band</label>'
       +'<input class="filter-sel" placeholder="Search address, owner, mailing" oninput="_polkFilter.q=this.value;renderPolk();" style="min-width:210px;">'
@@ -2622,15 +2627,42 @@ function _insDefault(l){
 // allowance, so the same 1968 house scored one repair number on the Leads board and a materially
 // lower one on the Deal board — and the deal board's was the indefensible one, budgeting zero for
 // roof and glass on pre-Andrew stock. One model, two callers.
-function _repairModel(sf,yb){
+// IMPACT GLASS IS A COASTAL COST, AND WAS BEING CHARGED INLAND (Aug 2026 audit).
+// The allowance exists because a retail buyer of a pre-Andrew home on the coast cannot get
+// affordable wind coverage — and therefore cannot close — without impact protection. That is a
+// FUNCTION OF THE WIND ZONE, not of the build year. Miami-Dade and Broward are the Florida
+// Building Code's High Velocity Hurricane Zone; Lee and Collier sit in the coastal wind-borne
+// debris region. Polk and Lake are inland Central Florida, well outside it, where impact glass is
+// neither a code trigger nor an insurability gate. Charging it there added ~$18/sf to every
+// pre-1993 lead for a problem those houses do not have.
+var _GLASS_COUNTIES=/MIAMI|DADE|BROWARD|LEE|COLLIER|PALM BEACH|MONROE|MARTIN|ST\.? LUCIE|INDIAN RIVER|BREVARD|CHARLOTTE|SARASOTA|MANATEE|PINELLAS|HILLSBOROUGH|DUVAL|VOLUSIA|ESCAMBIA|BAY|OKALOOSA/;
+function _repairCounty(){
+  try{ if((window._market||'')==='miami')return 'MIAMI-DADE';
+       return ((_LMETA()||{}).county||'').toUpperCase(); }catch(e){return '';}
+}
+function _repairModel(sf,yb,county){
   sf=+sf||0; if(!sf)return null; yb=+yb||0;
+  county=(county==null?_repairCounty():(''+county)).toUpperCase();
+  var coastal=_GLASS_COUNTIES.test(county);
   var base=sf*45, roof=0, glass=0, why=[];
+  // Roof stays statewide: Florida carriers balk at a roof past ~15-20 years anywhere in the state,
+  // so an aged roof blocks the retail buyer's policy in Lakeland exactly as it does in Hialeah.
   if(yb&&yb<=2001){ roof=sf*12; why.push('roof'); }              // aged out for insurance purposes
-  if(yb&&yb<=1992){ glass=sf*18; why.push('impact glass'); }     // pre-Andrew code
+  if(yb&&yb<=1992&&coastal){ glass=sf*18; why.push('impact glass'); }   // pre-Andrew code, coastal only
   var total=Math.round((base+roof+glass)/1000)*1000;
   return {sqft:sf, yb:yb, base:Math.round(base), roof:Math.round(roof), glass:Math.round(glass),
-          total:total, reserve:Math.round(roof+glass), why:why,
+          total:total, reserve:Math.round(roof+glass), why:why, coastal:coastal, county:county,
           ppsf:Math.round(total/sf)};
+}
+// A screening rehab constant that lands anywhere near the finished value of the house has stopped
+// being a screening estimate. $45/sf base plus allowances is a South Florida cost basis; against
+// Lee's $138/sf and Polk's $142/sf ARVs it runs to 54% and 51% of ARV respectively, which is not a
+// renovation budget anyone would actually spend and which forces a Pass verdict on every lead in
+// those markets regardless of the property. We do NOT quietly scale the number — inventing regional
+// labour rates would be a guess dressed as data. We say so on the card and send the member to the
+// Underwriter with their own figure, which is the only honest answer available from this data.
+function _repairOverweight(repair,arv){
+  return (repair>0&&arv>0&&repair/arv>0.40)?Math.round(100*repair/arv):0;
 }
 function _leadRepair(l){
   var e=_fdorFor(l);
@@ -2665,10 +2697,59 @@ function _leadEcon(l){
     // offer and the Underwriter one click away quotes another for the same house.
     var _ins=(typeof _insDefault==='function')?(_insDefault(l)||{}).mo:0;
     var offer=maxOfferFor(bd.mid,repair,null,_ins);
-    var profit=getProfit(bd.mid,repair,_ins);
-    return {arv:bd.mid,repair:repair,rp:rp,offer:offer,profit:profit,grade:buyGrade(d),band:bd};
+    // PROFIT MUST BE PRICED AT THE OFFER WE JUST QUOTED (Aug 2026 audit).
+    // getProfit() prices at a 65%-of-ARV purchase. maxOfferFor() solves for the price that hits
+    // the Rate Center target, which is a median 47% of ARV. Printing one beside the other put
+    // "Buy at or under $92K -> ~$-31K profit" on the card: buy here, and lose this. 2,062 of the
+    // 2,276 gradeable Miami leads showed a NEGATIVE profit next to a positive buy price, off by a
+    // median $76,410. Same defect as the letter grade — two numbers from the same object priced
+    // at two different purchases and set side by side as though they agreed.
+    // offer===null means maxOfferFor found no price that clears the target — not even $0. Pricing
+    // a profit then would silently fall back to the 65%-of-ARV default and print a big negative
+    // number beside an em dash ("Buy at or under — → ~$-122K profit"). There is no price, so there
+    // is no profit to quote. All 25 live cases are Lee, where the repair constant is 61% of ARV.
+    var profit=(offer!=null)?estNetProfit(bd.mid,repair,offer,_ins):null;
+    // Headroom keeps the OLD basis on purpose: what the deal does at a conventional 65%-of-ARV
+    // buy. At the max offer every lead hits the same target by construction, so profit-at-offer
+    // cannot rank anything — this is what the margin sort has actually been ranking all along.
+    var headroom=getProfit(bd.mid,repair,_ins);
+    return {arv:bd.mid,repair:repair,rp:rp,offer:offer,profit:profit,headroom:headroom,
+            grade:buyGrade(d),band:bd};
   }catch(e){return null;}
 }
+// ── WHAT THE LETTER GRADE WAS ACTUALLY MEASURING (Aug 2026 audit) ──
+// buyGrade scores a deal at a HARDCODED 65%-of-ARV purchase. That is a reasonable question on the
+// Deal board, where a purchase price is on the table. On a cold mail board it is the wrong question
+// entirely: the same card's own maxOfferFor says the correct buy here is a median 47% of ARV. Grade
+// a lead at a price you would never pay and the answer is Pass every time — 3,855 of 3,936 leads
+// graded D, and the pill read "D · Pass" sitting directly beside "Buy at or under $388K → ~$96K
+// profit" on the same row. Two numbers from the same object, flatly contradicting each other.
+//
+// The decision a member actually faces on a mail lead is not "is this a good deal at 65%" — it is
+// "the price this needs is X; will an owner take X?" So grade THAT: the required buy as a share of
+// the county's own value, which is the number the owner themselves is anchored to. Across the six
+// boards it spreads 102 / 1,001 / 1,457 / 920 instead of collapsing to one bucket.
+// buyGrade is left untouched for the Deal board, where its 65% premise belongs.
+function _leadVerdict(l,ec){
+  try{
+    ec=ec||_leadEcon(l); if(!ec||!ec.offer)return null;
+    if(_repairOverweight(ec.repair,ec.arv))return null;      // card shows the withheld chip instead
+    if(!(l&&l.mkt>0)||l.vm)return null;                      // no independent value to measure against
+    var r=ec.offer/l.mkt;
+    var t=(r>=0.75)?{k:'strong',t:'Strong',c:'#4a9a6b',bg:'rgba(74,154,107,.18)',bd:'rgba(74,154,107,.5)'}
+         :(r>=0.60)?{k:'workable',t:'Workable',c:'#E8501F',bg:'rgba(232,80,31,.18)',bd:'rgba(232,80,31,.5)'}
+         :(r>=0.45)?{k:'deep',t:'Deep discount',c:'#e8a14a',bg:'rgba(232,161,74,.15)',bd:'rgba(232,161,74,.45)'}
+         :{k:'longshot',t:'Long shot',c:'#e0664a',bg:'rgba(224,102,74,.15)',bd:'rgba(224,102,74,.45)'};
+    t.ratio=r; t.pct=Math.round(100*r);
+    t.why='To hit your target profit you need this at '+fmtK(ec.offer)+' — '+t.pct+'% of the county’s '+fmtK(l.mkt)+' value. '
+      +(t.k==='strong'?'That is close enough to the county number that a motivated owner can say yes without feeling robbed.'
+       :t.k==='workable'?'A real discount, but within range of what a tired owner takes for speed and certainty.'
+       :t.k==='deep'?'Needs genuine motivation — probate, code case, long-distance landlord. Lead with the problem, not the price.'
+       :'You would need roughly half the county’s number. Mail it, but expect this one to work only if the owner has a reason to walk away cheap.');
+    return t;
+  }catch(e){return null;}
+}
+function _leadBuyability(l){var v=_leadVerdict(l);return v?v.ratio:-1;}
 // Cards vs table. Both read the SAME polkFiltered() result, so the two views can never disagree
 // about which leads are in play — only about how they are drawn.
 var POLK_VIEW='cards';
@@ -2687,7 +2768,9 @@ function setPolkView(v){
 // other (value, size, hold, owner) plus the signals, which cards can only show one at a time.
 function _polkTableHtml(L,county){
   var pip=(typeof getPipeline==='function')?getPipeline():{};
-  var head=['Address','City','ZIP','Est. value','Max offer','Est. profit','Grade','SF','Bd/Ba','Built','Held','Owner type','Signals','']
+  // 'Est. profit' and 'Grade' were priced at a 65%-of-ARV buy while 'Max offer' beside them was
+  // the target-profit price — the table repeated the card's contradiction in column form.
+  var head=['Address','City','ZIP','Est. value','Max offer','Profit at offer','Verdict','SF','Bd/Ba','Built','Held','Owner type','Signals','']
     .map(function(h){return '<th style="text-align:left;padding:7px 9px;position:sticky;top:0;background:var(--bg-card);border-bottom:2px solid var(--rule-strong);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--bronze);white-space:nowrap;">'+h+'</th>';}).join('');
   var body=L.slice(0,400).map(function(l){
     var bd=_bandFor(l), e=_fdorFor(l), ts=polkTagStyleFor(l), pj="'"+l.pid+"'";
@@ -2709,7 +2792,12 @@ function _polkTableHtml(L,county){
          var none=(_r&&!_r.ok)?'<span title="ZIP band '+fmtK(_b.mid)+' vs county '+fmtK(l.mkt)+'" style="color:#c97a6a;font-size:11px;">conflict</span>':'&mdash;';
          return td(ec&&ec.offer?'<strong style="color:var(--gold);">'+fmtK(ec.offer)+'</strong>':none)
               + td(ec&&ec.profit!=null?fmtK(ec.profit):'&mdash;','color:var(--muted);')
-              + td(ec&&ec.grade?'<span style="color:'+ec.grade.c+';font-weight:700;">'+ec.grade.g+'</span>':none);})()
+              + (function(){
+                   var _ow=ec?_repairOverweight(ec.repair,ec.arv):0;
+                   if(_ow)return td('<span title="Screening repair constant is '+_ow+'% of estimated value here — not a read on this house." style="color:#e8a14a;font-size:11px;">withheld</span>');
+                   var v=ec?_leadVerdict(l,ec):null;
+                   return td(v?'<span title="'+v.why.replace(/"/g,'&quot;')+'" style="color:'+v.c+';font-weight:700;">'+v.t+'</span>'
+                              :(ec&&ec.grade?'<span style="color:'+ec.grade.c+';font-weight:700;">'+ec.grade.g+'</span>':none));})();})()
       +td((e&&e.sqft)?e.sqft.toLocaleString():'&mdash;')
       +td((l.bed||l.bath)?((l.bed||'?')+'/'+(l.bath||'?')):'&mdash;')
       +td((e&&e.yb)||l.yb||'&mdash;')
@@ -2796,10 +2884,22 @@ function renderPolk(){
         }
         var g=ec.grade||{};
         var pct=(ec.profit!=null&&ec.arv)?Math.round(100*ec.profit/ec.arv):null;
+        // WHERE THE REPAIR CONSTANT IS THIS BIG RELATIVE TO ARV, THE GRADE IS ABOUT THE CONSTANT,
+        // NOT THE PROPERTY. Suppress the letter grade rather than stamp "Pass" on every lead in the
+        // market — a verdict that never varies carries no information and reads as a judgement of
+        // the house. The buy-at number still shows; it is derived the same way either way.
+        var _ow=_repairOverweight(ec.repair,ec.arv);
+        var _v=_leadVerdict(l,ec);
         return '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 4px;padding:8px 10px;background:rgba(184,145,90,.07);border:1px solid rgba(184,145,90,.28);border-radius:8px;">'
-          +'<span style="background:'+(g.bg||'rgba(138,132,120,.14)')+';color:'+(g.c||'var(--muted)')+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+(g.g||'?')+' &middot; '+(g.t||'')+'</span>'
-          +'<span style="font-size:12.5px;color:var(--ivory-soft);">Buy at or under <strong style="color:var(--gold);font-size:14px;">'+(ec.offer?fmtK(ec.offer):'&mdash;')+'</strong></span>'
-          +(ec.profit!=null?'<span style="font-size:11.5px;color:var(--muted);">&rarr; ~'+fmtK(ec.profit)+' profit'+(pct!=null?' ('+pct+'% of value)':'')+'</span>':'')
+          +(_ow
+             ? '<span title="Our screening rehab constant ($45/sf plus a vintage insurability allowance) comes to '+fmtK(ec.repair)+' here — '+_ow+'% of the estimated finished value. That is a South Florida cost basis meeting a lower-priced market, not a read on this house, and at that weight the verdict would be the same on every lead in this county whatever its condition. Open the Underwriter and put your own repair number in." style="background:rgba(232,161,74,.16);color:#e8a14a;border:1px solid rgba(232,161,74,.45);font-weight:800;font-size:11px;padding:3px 9px;border-radius:6px;white-space:nowrap;">Repair est. '+_ow+'% of value &mdash; verdict withheld</span>'
+             : _v
+             ? '<span title="'+_v.why.replace(/"/g,'&quot;')+'" style="background:'+_v.bg+';color:'+_v.c+';border:1px solid '+_v.bd+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+_v.t+' &middot; '+_v.pct+'% of county</span>'
+             : '<span style="background:'+(g.bg||'rgba(138,132,120,.14)')+';color:'+(g.c||'var(--muted)')+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+(g.g||'?')+' &middot; '+(g.t||'')+'</span>')
+          +(ec.offer
+             ? '<span style="font-size:12.5px;color:var(--ivory-soft);">Buy at or under <strong style="color:var(--gold);font-size:14px;">'+fmtK(ec.offer)+'</strong></span>'
+             : '<span style="font-size:12.5px;color:#e8a14a;" title="On these repair and holding assumptions there is no purchase price that clears your target profit — not even $0. That is a statement about the assumptions, not a valuation of the house. Put your own repair number into the Underwriter.">No price clears your target on these assumptions</span>')
+          +(ec.profit!=null?'<span style="font-size:11.5px;color:var(--muted);" title="Profit priced AT the buy-under figure to its left — that is the point of the number: it is the price at which this hits your Rate Center target. What the deal does at a conventional 65%-of-ARV buy instead is '+fmtK(ec.headroom)+'; sort by &quot;Most headroom at a 65% buy&quot; to rank on that.">&rarr; ~'+fmtK(ec.profit)+' profit at that price'+(pct!=null?' ('+pct+'% of value)':'')+'</span>':'')
           +((ec.rp&&ec.rp.reserve>0)
              ? '<span style="font-size:10.5px;color:#e8854a;" title="'+ec.rp.yb+' build. Base walk-it repair '+fmtK(ec.rp.base)+' at $45/sf, plus an allowance for the items that decide whether your RETAIL buyer can insure and therefore close: '+ec.rp.why.join(' + ')+'. An allowance, not a quote — replace it with a GC bid.">incl. '+fmtK(ec.rp.reserve)+' '+ec.rp.why.join(' + ')+'</span>'
              : '')
