@@ -2048,10 +2048,17 @@ function _leadTiebreak(l){
 //
 // BE CLEAR ABOUT WHAT THIS ACTUALLY DOES, because it is stronger than "a small demotion": `sc` is
 // CAPPED AT 100 and 713 of the 3,000 Miami leads sit at that cap, with 1,115 at 90 or better. The
-// top of the board is one enormous tie that _leadTiebreak (max 0.999) settles. So any penalty of
-// 3 or more drops every homesteaded lead below the entire tie block, and since 543 non-homesteaded
-// leads are already at the cap, homesteaded leads leave the top 500 altogether — measured, not
-// assumed: 208 in the top 500 before, 0 after, and -3 gives the same answer as -12.
+// top of the board is one enormous tie that _leadTiebreak (max 0.999) settles, and 427 of the
+// leads at the cap are non-homesteaded — more than enough to fill the visible top on their own.
+// Re-measured Aug 2026 after an audit caught two wrong numbers in this note: it previously said
+// 543 at the cap (the real figure is 427) and claimed "-3 gives the same answer as -12", which is
+// true only of the top 100. Across the top 500 the penalty size does matter:
+//     penalty     0     -3     -5     -8    -12
+//     top 100    40      0      0      0      0
+//     top 500   216     56     41      0      0
+// So -12 is not interchangeable with a token penalty; it is the level at which homesteaded leads
+// leave the visible top of the board entirely. That is the intended behaviour with 427 max-score
+// absentee leads in hand, but it is a real exclusion from the default view and is stated as such.
 //
 // That is the right outcome rather than an over-correction: with 543 max-score absentee leads in
 // hand you should mail those before any owner-occupant. It is not a hidden exclusion — the leads
@@ -2492,7 +2499,7 @@ function _codeBucket(t){
 // 1. permit.type holds the OWNER'S NAME. Verified against Miami-Dade's own layer metadata:
 //    Open_Building_Violations.VIOL_NAME has the alias VIOLATOR_NAME. The scraper preferred it over
 //    CASE_TYPE, which is the actual descriptor ("Unsafe Structure", "Expired Permit", "All Other
-//    Code Violations"). 1,037 of 1,399 distinct "permit types" on the board are person or company
+//    Code Violations"). ALL 1,399 distinct "permit types" on the board are person or company
 //    names, rendered in the tooltip as "Unsafe/building violation: DANIEL A GARCIA".
 // 2. lien.kind holds a PARCEL CLASS, not a lien kind — "H-Household" / "C-Commercial" off
 //    data_judgement.PARCEL_TYPE. That layer is Miami-Dade's solid-waste/bulky judgment file
@@ -2521,7 +2528,13 @@ function _flagChips(l){
     var _pt=_permitTypeShowable(f.permit.type)?(': '+(''+f.permit.type).replace(/"/g,'')):' — the county case type is not in this snapshot (the source field carried the violator name); open the county record for the detail';
     b.push('<span title="'+(f.permit.status||'Permit')+_pt+'" style="background:rgba('+_col+',.16);color:'+(_isViol?'#c97a6a':'#e8854a')+';border:1px solid rgba('+_col+',.42);border-radius:5px;padding:1px 7px;font-size:9.5px;font-weight:700;">'+_lbl+'</span>');}
   if(f.lien){
-    var _k=(''+(f.lien.kind||'')).trim(), _waste=/^[HC]\s*-/.test(_k), _amt=+f.lien.amt||0;
+    // Match BOTH spellings on purpose. /^[HC]\s*-/ catches the mis-mapped PARCEL_TYPE values
+    // ("H-Household" / "C-Commercial") still sitting in the shipped miami-flags.js, and the
+    // explicit label catches what scrape_miami_pa.py writes from the next bake onward. Fixing the
+    // scraper without widening this test would have silently reverted the chip to a gold "Lien"
+    // the first time the bake ran — the two halves of the same fix landing in different files and
+    // quietly cancelling each other out.
+    var _k=(''+(f.lien.kind||'')).trim(), _waste=/^[HC]\s*-/.test(_k)||/solid[- ]?waste|bulky/i.test(_k), _amt=+f.lien.amt||0;
     var _lbl2=_waste?('Waste judgment'+(_amt>0?' $'+_amt.toLocaleString():' · $0')):('Lien'+(_amt>0?' $'+_amt.toLocaleString():''));
     var _t2=_waste
       ? 'A county SOLID-WASTE judgment record, not a lien clouding title. That layer is historical — it spans 1989 to 2018, so nothing in it is current — and '+(_amt>0?'this one carries $'+_amt.toLocaleString()+'.':'this one shows $0.00 outstanding.')+' Weak distress signal — confirm on the Clerk’s official records before you treat it as leverage.'
@@ -2563,13 +2576,32 @@ function _bandFor(l){
     // Until it does, hold the printed range to the same standard as the midpoint. Clamping shrinks
     // an affected range by a median 26% (p90 48%), which is also the narrowing this was asked for.
     // Only where the county value is REAL: where it is modelled it IS the band, so there is
-    // nothing independent to reconcile against. lo<mid<=1.40*mkt whenever the midpoint gate
-    // passed, so the clamp can never invert the range or push it off the midpoint.
+    // nothing independent to reconcile against.
+    //
+    // AND ONLY WHERE THE MIDPOINT ITSELF RECONCILES. The first version of this clamp reasoned
+    // "lo<mid<=1.40*mkt whenever the midpoint gate passed" and then never checked that the gate
+    // HAD passed — _bandFor does not call _bandReconcile. On a lead whose midpoint is already
+    // outside 0.70-1.40x, Math.max(_c1,_mid) short-circuits to _mid, so the clamp could not reach
+    // the reconciliation limit and instead collapsed one end of the range onto the point estimate:
+    // 619 104Th Ave N, Naples — county $549,009, band mid $965,120 (1.76x) — printed a "range" of
+    // $742,144–$965,120 whose top IS the headline. 1,628 leads board-wide ended that way (top
+    // collapsed 1,464, bottom 164; miamicw 722, broward 87, lee 236, collier 371, polk 212).
+    //
+    // Worse than the degenerate range, it still set clamped=true, and clamped=true is what makes
+    // the Brief print "narrowed to reconcile with the county roll" — asserting the safety check
+    // passed on precisely the leads where it failed. Where the midpoint does not reconcile there
+    // is nothing honest to clamp toward, so leave the raw quartiles and let the reconciliation
+    // gate downstream do its job of withholding the number entirely.
+    // With the gate applied, _c1>=_mid>=_c0 holds by construction, so the Math.max/Math.min that
+    // hid the bug are no longer needed — dropping them keeps the invariant visible.
     var _clamped=false;
     if(l&&l.mkt>0&&!l.vm){
-      var _c1=Math.round(1.40*l.mkt), _c0=Math.round(0.70*l.mkt);
-      if(_hi>_c1){_hi=Math.max(_c1,_mid);_clamped=true;}
-      if(_lo<_c0){_lo=Math.min(_c0,_mid);_clamped=true;}
+      var _mr=_mid/l.mkt;
+      if(_mr>=0.70&&_mr<=1.40){
+        var _c1=Math.round(1.40*l.mkt), _c0=Math.round(0.70*l.mkt);
+        if(_hi>_c1){_hi=_c1;_clamped=true;}
+        if(_lo<_c0){_lo=_c0;_clamped=true;}
+      }
     }
     return {lo:_lo,mid:_mid,hi:_hi,rawLo:Math.round(src.p25*e.sqft),rawHi:Math.round(src.p75*e.sqft),
             clamped:_clamped,
@@ -2664,7 +2696,10 @@ function renderLeadsMap(L){
   _lmapLayer=LF.layerGroup().addTo(_lmap);
   var bounds=[];
   pts.slice(0,600).forEach(function(l){
-    var bd=_bandFor(l), ts=polkTagStyle(l.tag);
+    // polkTagStyleFor, not polkTagStyle — the map was the sixth call site and got missed when the
+    // other five were rerouted, so 837 verified-homesteaded Miami parcels were still pinned and
+    // popped up as "Non-homestead", contradicting the card for the same property.
+    var bd=_bandFor(l), ts=polkTagStyleFor(l);
     var m=LF.circleMarker([l.lat,l.lng],{radius:5,color:ts[0],weight:1.5,fillColor:ts[0],fillOpacity:.55});
     m.bindPopup('<div style="font:600 13px sans-serif;">'+_escHtml(l.a)+'</div>'
       +'<div style="font:400 12px sans-serif;color:#555;">'+_escHtml(l.c||'')+' '+(l.z||'')+'</div>'
@@ -2748,7 +2783,10 @@ function _repairModel(sf,yb,county){
 }
 // A screening rehab constant that lands anywhere near the finished value of the house has stopped
 // being a screening estimate. $45/sf base plus allowances is a South Florida cost basis; against
-// Lee's $138/sf and Polk's $142/sf ARVs it runs to 54% and 51% of ARV respectively, which is not a
+// Lee's $138/sf ARVs it runs to a median 54% of ARV (Polk, inland and so no longer carrying the
+// impact-glass allowance, sits at 35% with a worst case of 44% — an earlier draft of this note
+// said 51%, which was Polk's p75 measured BEFORE the allowance was gated to coastal counties, and
+// quoting a pre-fix p75 as a post-fix median overstated it), which is not a
 // renovation budget anyone would actually spend and which forces a Pass verdict on every lead in
 // those markets regardless of the property. We do NOT quietly scale the number — inventing regional
 // labour rates would be a guess dressed as data. We say so on the card and send the member to the
@@ -2799,7 +2837,8 @@ function _leadEcon(l){
     // offer===null means maxOfferFor found no price that clears the target — not even $0. Pricing
     // a profit then would silently fall back to the 65%-of-ARV default and print a big negative
     // number beside an em dash ("Buy at or under — → ~$-122K profit"). There is no price, so there
-    // is no profit to quote. All 25 live cases are Lee, where the repair constant is 61% of ARV.
+    // is no profit to quote. 25 live cases: 23 in Lee and 2 in Polk, all where the repair constant
+    // has run past 40% of ARV (Lee reaches 61%).
     var profit=(offer!=null)?estNetProfit(bd.mid,repair,offer,_ins):null;
     // Headroom keeps the OLD basis on purpose: what the deal does at a conventional 65%-of-ARV
     // buy. At the max offer every lead hits the same target by construction, so profit-at-offer
@@ -2889,7 +2928,13 @@ function _polkTableHtml(L,county){
                    if(_ow)return td('<span title="Screening repair constant is '+_ow+'% of estimated value here — not a read on this house." style="color:#e8a14a;font-size:11px;">withheld</span>');
                    var v=ec?_leadVerdict(l,ec):null;
                    return td(v?'<span title="'+v.why.replace(/"/g,'&quot;')+'" style="color:'+v.c+';font-weight:700;">'+v.t+'</span>'
-                              :(ec&&ec.grade?'<span style="color:'+ec.grade.c+';font-weight:700;">'+ec.grade.g+'</span>':none));})();})()
+                              // NO FALLBACK TO THE LETTER GRADE. It is scored at a hardcoded
+                              // 65%-of-ARV buy with flat $550/mo insurance — the basis this
+                              // audit removed from the card precisely because it contradicts
+                              // the max offer printed beside it. Leaving it as the null-path
+                              // fallback kept that contradiction alive on the rows where
+                              // _leadVerdict declines to speak. If we have no verdict, say so.
+                              :'<span title="No independent county value to measure the required offer against, so this lead is not ranked." style="color:var(--muted);font-size:11px;">no verdict</span>');})();})()
       +td((e&&e.sqft)?e.sqft.toLocaleString():'&mdash;')
       +td((l.bed||l.bath)?((l.bed||'?')+'/'+(l.bath||'?')):'&mdash;')
       +td((e&&e.yb)||l.yb||'&mdash;')
@@ -2924,21 +2969,47 @@ function renderPolk(){
   // signature of a fast-appreciating submarket — often the best flip territory on the board. Left
   // unsaid, a member sorting by money would conclude those neighbourhoods hold nothing, when what
   // they actually hold is the widest gap between assessed and market value.
+  // COUNT THE POPULATION THIS SORT ACTUALLY DEMOTES, AND NAME THE REAL REASONS.
+  // The first version counted !_leadEcon(l) for all three money sorts, which is only the key that
+  // 'profit' and 'offer' use. 'buyable' ranks on _leadBuyability -> _leadVerdict, which ALSO
+  // returns null when the repair constant is overweight or the county value is modelled — a
+  // strictly larger set. On Lee it said 305 while 582 were actually at the bottom.
+  // It also asserted a single cause. Three different things land a lead here and they are not
+  // interchangeable: the band and the roll genuinely conflict; there is no ZIP band at all (every
+  // one of Lake's 120 leads, which the old wording blamed on a disagreement that cannot exist
+  // without a band); or the screening repair constant is too large to grade against. Say which.
   var _muteNote='';
   try{
-    if(/^(buyable|profit|offer)$/.test(_polkFilter.sort||'')){
-      var _mute=L.filter(function(l){return !_leadEcon(l);});
+    var _sort=_polkFilter.sort||'';
+    if(/^(buyable|profit|offer)$/.test(_sort)){
+      var _isMuted=(_sort==='buyable')
+        ? function(l){return !_leadVerdict(l);}
+        : function(l){return !_leadEcon(l);};
+      var _mute=L.filter(_isMuted);
       if(_mute.length){
-        var _byA={},_tot={};
-        _mute.forEach(function(l){var a=l.c||'?';_byA[a]=(_byA[a]||0)+1;});
-        L.forEach(function(l){var a=l.c||'?';_tot[a]=(_tot[a]||0)+1;});
-        var _top=Object.keys(_byA).filter(function(a){return _tot[a]>=10;})
+        var _byA={},_tot={},_why={noBand:0,conflict:0,overweight:0,noCounty:0,noSize:0};
+        _mute.forEach(function(l){
+          var a=l.c||'?';_byA[a]=(_byA[a]||0)+1;
+          var bd=_bandFor(l);
+          if(!bd||!bd.mid){ _why[(_fdorFor(l)||{}).sqft?'noBand':'noSize']++; return; }
+          if(!_bandReconcile(l,bd).ok){ _why.conflict++; return; }
+          var ec=_leadEcon(l);
+          if(ec&&_repairOverweight(ec.repair,ec.arv)){ _why.overweight++; return; }
+          _why.noCounty++;
+        });
+        var _top=Object.keys(_byA).filter(function(a){return _tot[a]>=0&&(_tot[a]=L.filter(function(x){return (x.c||'?')===a;}).length)>=10;})
           .sort(function(x,y){return (_byA[y]/_tot[y])-(_byA[x]/_tot[x]);}).slice(0,3)
           .map(function(a){return _escHtml(a)+' '+Math.round(100*_byA[a]/_tot[a])+'%';});
+        var _parts=[];
+        if(_why.conflict)  _parts.push('<strong>'+_why.conflict.toLocaleString()+'</strong> where the ZIP sale band and the county roll disagree by more than 0.70&ndash;1.40&times;');
+        if(_why.noBand)    _parts.push('<strong>'+_why.noBand.toLocaleString()+'</strong> with no ZIP sale band at all');
+        if(_why.noSize)    _parts.push('<strong>'+_why.noSize.toLocaleString()+'</strong> with no recorded living area');
+        if(_why.overweight)_parts.push('<strong>'+_why.overweight.toLocaleString()+'</strong> where our screening repair figure is too large a share of value to grade against');
+        if(_why.noCounty)  _parts.push('<strong>'+_why.noCounty.toLocaleString()+'</strong> with no independent county value to measure the offer against');
         _muteNote='<div style="grid-column:1/-1;background:rgba(232,161,74,.08);border:1px solid rgba(232,161,74,.3);border-radius:8px;padding:9px 12px;margin-bottom:10px;font-size:11.5px;color:var(--ivory-soft);line-height:1.6;">'
-          +'<strong style="color:#e8a14a;">'+_mute.length.toLocaleString()+' of '+L.length.toLocaleString()+' leads have no verdict and sit at the bottom of this sort</strong> &mdash; the ZIP sale band and the county roll disagree by more than 0.70&ndash;1.40&times; there, so we will not stand behind a number for them.'
+          +'<strong style="color:#e8a14a;">'+_mute.length.toLocaleString()+' of '+L.length.toLocaleString()+' leads have no verdict and sit at the bottom of this sort</strong> &mdash; '+_parts.join('; ')+'.'
           +(_top.length?' Most concentrated in '+_top.join(', ')+'.':'')
-          +' A cluster like that usually means recent sales are running ahead of the roll &mdash; a fast-appreciating pocket, not an empty one. Worth comping by hand rather than skipping.'
+          +(_why.conflict?' A conflict cluster usually means recent sales are running ahead of the roll &mdash; a fast-appreciating pocket, not an empty one. Worth comping by hand rather than skipping.':'')
         +'</div>';
       }
     }
@@ -3018,7 +3089,9 @@ function renderPolk(){
              ? '<span title="Our screening rehab constant ($45/sf plus a vintage insurability allowance) comes to '+fmtK(ec.repair)+' here — '+_ow+'% of the estimated finished value. That is a South Florida cost basis meeting a lower-priced market, not a read on this house, and at that weight the verdict would be the same on every lead in this county whatever its condition. Open the Underwriter and put your own repair number in." style="background:rgba(232,161,74,.16);color:#e8a14a;border:1px solid rgba(232,161,74,.45);font-weight:800;font-size:11px;padding:3px 9px;border-radius:6px;white-space:nowrap;">Repair est. '+_ow+'% of value &mdash; verdict withheld</span>'
              : _v
              ? '<span title="'+_v.why.replace(/"/g,'&quot;')+'" style="background:'+_v.bg+';color:'+_v.c+';border:1px solid '+_v.bd+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+_v.t+' &middot; '+_v.pct+'% of county</span>'
-             : '<span style="background:'+(g.bg||'rgba(138,132,120,.14)')+';color:'+(g.c||'var(--muted)')+';font-weight:800;font-size:12px;padding:3px 9px;border-radius:6px;white-space:nowrap;">'+(g.g||'?')+' &middot; '+(g.t||'')+'</span>')
+             // Same reason as the table's verdict column: never fall back to the 65%-of-ARV
+             // letter grade, which is the contradiction this audit removed from the card.
+             : '<span title="No independent county value to measure the required offer against, so this lead carries no verdict." style="background:rgba(140,140,150,.16);color:#9a9ea8;border:1px solid rgba(140,140,150,.42);font-weight:800;font-size:11px;padding:3px 9px;border-radius:6px;white-space:nowrap;">No verdict</span>')
           +(ec.offer
              ? '<span style="font-size:12.5px;color:var(--ivory-soft);">Buy at or under <strong style="color:var(--gold);font-size:14px;">'+fmtK(ec.offer)+'</strong></span>'
              : '<span style="font-size:12.5px;color:#e8a14a;" title="On these repair and holding assumptions there is no purchase price that clears your target profit — not even $0. That is a statement about the assumptions, not a valuation of the house. Put your own repair number into the Underwriter.">No price clears your target on these assumptions</span>')
@@ -3104,8 +3177,15 @@ function polkToPipeline(pid,btn){
   if(btn){btn.textContent='✓ In Pipeline';btn.disabled=true;}
 }
 function exportPolkCsv(){
-  var L=polkFiltered(), meta=_LMETA(), rows=[['Address','City','Zip','Owner','Owner Mailing','Owner Location','Type','County Value','Taxable','Building Value','Lot Acres','Sqft (FDOR)','Year Built (FDOR)','ZIP Sale Band Low','ZIP Sale Band High','Band Sales (n)','Last Sale Year','Last Sale Price','Years Held','Parcel']];
-  L.forEach(function(l){var e=_fdorFor(l),bd=_bandFor(l);rows.push([l.a,l.c,l.z,l.o,_polkMail(l),polkOwnLoc(l).t,polkTagStyleFor(l)[1],l.mkt,l.tax,l.bld,l.lot,(e&&e.sqft)||'',(e&&e.yb)||'',(bd?bd.lo:''),(bd?bd.hi:''),(bd?bd.n:''),(l.lsY||''),(l.lsP||''),(_heldFor(l)!=null?_heldFor(l):''),(l.st||l.pid)]);});
+  var L=polkFiltered(), meta=_LMETA(), rows=[['Address','City','Zip','Owner','Owner Mailing','Owner Location','Type','County Value','Taxable','Building Value','Lot Acres','Sqft (FDOR)','Year Built (FDOR)',
+    // Once _bandFor started clamping, "ZIP Sale Band Low/High" stopped being true of the exported
+    // numbers on every clamped row — they are the ZIP quartiles held against the county roll. A
+    // spreadsheet outlives the tooltip that explained it, so export BOTH: the figure the portal
+    // shows, and the untouched quartiles, each under a heading that says which it is.
+    'Range Low (reconciled)','Range High (reconciled)','Range Narrowed vs County',
+    'ZIP Sale Band Low (raw p25)','ZIP Sale Band High (raw p75)','Band Sales (n)',
+    'Last Sale Year','Last Sale Price','Years Held','Parcel']];
+  L.forEach(function(l){var e=_fdorFor(l),bd=_bandFor(l);rows.push([l.a,l.c,l.z,l.o,_polkMail(l),polkOwnLoc(l).t,polkTagStyleFor(l)[1],l.mkt,l.tax,l.bld,l.lot,(e&&e.sqft)||'',(e&&e.yb)||'',(bd?bd.lo:''),(bd?bd.hi:''),(bd?(bd.clamped?'yes':'no'):''),(bd?bd.rawLo:''),(bd?bd.rawHi:''),(bd?bd.n:''),(l.lsY||''),(l.lsP||''),(_heldFor(l)!=null?_heldFor(l):''),(l.st||l.pid)]);});
   var csv=rows.map(function(r){return r.map(function(c){return '"'+(''+c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=((meta.county||'county').toLowerCase())+'-leads-'+(meta.snapshot||'')+'.csv';document.body.appendChild(a);a.click();a.remove();
 }
@@ -4758,7 +4838,13 @@ function enrichCountyLeads(){
         // Same repair model the Leads board uses — $45/sf walk-it base plus the vintage
         // insurability allowance. Was a bare 45*sqft here, which on the pre-1993 stock that is
         // most of this board budgeted $0 for the roof and glass a retail buyer must insure.
-        var _rm=_repairModel(d.sqft,d.year_built);
+        // PASS THE COUNTY EXPLICITLY. Omitting it falls through to _repairCounty(), which reads
+        // window._market — the county of whatever LEADS BOARD the member last had open, not the
+        // county this property is in. These deals are all Miami-Dade (the Deal board is a
+        // Miami-Dade product), so with Polk or Lake selected the impact-glass allowance silently
+        // vanished from every Miami deal and the same house priced differently depending on which
+        // tab you were on last.
+        var _rm=_repairModel(d.sqft,d.year_built,'MIAMI-DADE');
         d.repair=_rm?_rm.total:Math.round(45*d.sqft/500)*500;
         d._repairPpsf=_rm?_rm.ppsf:45; d._repairWhy=_rm?_rm.why:[];
         d._repairAssumed=true;d.rehab_condition='';d._needsComp=false;
