@@ -8,7 +8,7 @@ window.MACO_COVERAGE={
   "snapshot": "2026-07-20",
   "freshness": "dated",
   "asOf": "2026-07-20",
-  "roll": "Miami-Dade PA (PaGISView)"
+  "roll": "Miami-Dade PA (PaGISView) + FDOR 2025 just value"
  },
  "broward": {
   "label": "Broward",
@@ -35,10 +35,10 @@ window.MACO_COVERAGE={
   "county": "Collier",
   "leads": 600,
   "submarkets": 7,
-  "snapshot": "2025 roll",
-  "freshness": "annual",
-  "asOf": "2025 roll",
-  "roll": ""
+  "snapshot": "2026-08-04",
+  "freshness": "dated",
+  "asOf": "2026-08-04",
+  "roll": "2025 roll"
  },
  "polk": {
   "label": "Polk",
