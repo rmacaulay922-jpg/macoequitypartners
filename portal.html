@@ -5208,13 +5208,72 @@ function saveLetterTpl(){
   var b=document.getElementById('letterTplBox');
   if(b){try{localStorage.setItem(LETTER_KEY,b.value);}catch(e){}toast('Letter template saved');document.getElementById('printModal').classList.remove('open');}
 }
+// A PERSON WITH A LIVING TRUST IS STILL A PERSON (Aug 2026).
+// _isEntityOwner matches TRS/TRUST/EST, which is right for deciding whether to look someone up on
+// SunBiz — but wrong for a salutation. "MAEGUERITA J QUIRE TRS" and "GINA CARRIO TRS GINA CARRIO
+// REV LIVING TR" are individuals holding their own home in a revocable trust, and every one of them
+// was being greeted "Dear Property Owner". On a 25-letter run that was 5 letters throwing away the
+// single cheapest lift in direct mail. A real company name (LLC/INC/CORP/PROPERTIES/INVESTMENTS)
+// still gets the neutral greeting, because there is no one person to address.
+var _CORP_OWNER=/\b(LLC|L\.L\.C|INC|CORP|CORPORATION|COMPANY|CO|LP|LLP|LTD|PROPERTIES|INVESTMENTS?|HOLDINGS|VENTURES|GROUP|ENTERPRISES|MANAGEMENT|ASSOCIATES|PARTNERS|REALTY|CHURCH|BANK|ASSOC)\b/i;
+function _trustPersonName(owner){
+  // Strip trust/estate vocabulary and see whether a plain personal name is left underneath.
+  var s=(''+(owner||'')).replace(/\(.*?\)/g,' ')
+    .replace(/\b(TRS|TR|TRUSTEE|TRUST|REV|REVOCABLE|LIVING|FAMILY|THE|LE|REM|EST|ESTATE|OF|JR|SR|II|III|IV|ETAL|ET AL)\b/gi,' ')
+    .replace(/&\s*[WH]\b/gi,' ').replace(/[^A-Za-z\s'-]/g,' ').replace(/\s+/g,' ').trim();
+  if(!s)return '';
+  var parts=s.split(' ').filter(function(p){return p.length>1;});
+  if(!parts.length||parts.length>5)return '';
+  return parts[0];
+}
 function _firstName(owner){
+  var o=''+(owner||'');
   // "UNKNOWN HEIRS OF JOHN SMITH" reads as junk mail — address the family respectfully instead.
-  var hm=(owner||'').match(/UNKNOWN HEIRS(?:\s+OF)?\s+(.+)/i);
+  var hm=o.match(/UNKNOWN HEIRS(?:\s+OF)?\s+(.+)/i);
   if(hm){var nm=hm[1].trim().toLowerCase().replace(/\b\w/g,function(c){return c.toUpperCase();});return 'Heirs of '+nm;}
-  if(_isEntityOwner(owner))return 'Property Owner';
-  var f=((owner||'').trim().split(/\s+/)[0])||'Neighbor';
-  return f.charAt(0)+f.slice(1).toLowerCase();
+  // County rolls are ALL CAPS, so every name has to be re-cased. A naive
+  // first-letter-up/rest-down turns MCCOY into "Mccoy" and O'BRIEN into "O'brien" — printed on a
+  // letter to a stranger that reads as a mail-merge machine, which is exactly what the greeting is
+  // meant not to. Handle Mc/Mac, O', hyphenated and apostrophe names.
+  var cap=function(f){
+    if(!f)return '';
+    // Order matters: lowercase FIRST, then apply every capitalisation rule. The first draft
+    // capitalised the hyphen/Mc parts and then ran a .toLowerCase() over the tail that undid them
+    // ("Anne-marie"), and tested /^mc/ against a string it had already capitalised to "Mccoy".
+    var w=f.toLowerCase();
+    w=w.charAt(0).toUpperCase()+w.slice(1);                       // Mccoy
+    if(/^Mc[a-z]/.test(w))       w='Mc'+w.charAt(2).toUpperCase()+w.slice(3);      // McCoy
+    else if(/^Mac[a-z]{3,}/.test(w)) w='Mac'+w.charAt(3).toUpperCase()+w.slice(4); // MacArthur
+    w=w.replace(/([-'’])([a-z])/g,function(m,p,c){return p+c.toUpperCase();});     // Anne-Marie, O'Brien
+    return w;
+  };
+  // An estate with a LIVING co-owner after "&" — write to the person who can actually answer.
+  var est=o.match(/\(?\bEST(?:ATE)?\b\.?\s*(?:OF)?\)?/i);
+  if(est&&o.indexOf('&')>=0){
+    var co=o.split('&').pop().trim();
+    if(co&&!_CORP_OWNER.test(co)){var c1=_trustPersonName(co);if(c1)return cap(c1);}
+  }
+  if(_CORP_OWNER.test(o))return 'Property Owner';        // a real company: no one person to greet
+  // AN ESTATE WITH NO LIVING CO-OWNER NAMES THE DECEASED. "HERBERT MCCOY EST OF" resolved to
+  // "Dear Herbert" — writing to a dead man by his first name, to whoever is handling his affairs.
+  // Probate mail is read by grieving relatives; address the family, which is both correct and the
+  // convention. Only reached when the "& living co-owner" branch above found nobody to write to.
+  if(est){
+    var fam=_trustPersonName(o.split('&')[0]);
+    var toks=(o.split('&')[0]||'').replace(/\(.*?\)/g,' ')
+      .replace(/\b(EST|ESTATE|OF|THE|TRS|TR|TRUST|JR|SR|II|III|IV)\b/gi,' ')
+      .replace(/[^A-Za-z\s'-]/g,' ').split(/\s+/).filter(function(p){return p.length>1;});
+    var last=toks.length?toks[toks.length-1]:'';
+    if(last)return cap(last)+' Family';
+    return 'Property Owner';
+  }
+  if(_isEntityOwner(o)){                                  // trust wrapper around a living person
+    var t=_trustPersonName(o);
+    if(t)return cap(t);
+    return 'Property Owner';
+  }
+  var f=(o.trim().split(/\s+/)[0])||'Neighbor';
+  return cap(f);
 }
 // ── HONESTY-TIERED VALUE LINE — each letter says only what the data supports. ──
 // Miami ARV-verified + scoped repair → a real number (the Max Offer the product computes).
