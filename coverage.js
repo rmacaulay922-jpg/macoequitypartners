@@ -25,9 +25,9 @@ window.MACO_COVERAGE={
   "county": "Lee",
   "leads": 600,
   "submarkets": 15,
-  "snapshot": "2026-07-28",
+  "snapshot": "2026-09-06",
   "freshness": "dated",
-  "asOf": "2026-07-28",
+  "asOf": "2026-09-06",
   "roll": "2025 roll"
  },
  "collier": {
