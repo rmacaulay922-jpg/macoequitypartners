@@ -55,9 +55,9 @@ window.MACO_COVERAGE={
   "county": "Lake",
   "leads": 120,
   "submarkets": 1,
-  "snapshot": "2026-08-04",
+  "snapshot": "2026-09-12",
   "freshness": "dated",
-  "asOf": "2026-08-04",
+  "asOf": "2026-09-12",
   "roll": ""
  }
 };
