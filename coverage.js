@@ -35,10 +35,10 @@ window.MACO_COVERAGE={
   "county": "Collier",
   "leads": 600,
   "submarkets": 7,
-  "snapshot": "2026-08-04",
+  "snapshot": "2026-10-04",
   "freshness": "dated",
-  "asOf": "2026-08-04",
-  "roll": "2025 roll"
+  "asOf": "2026-10-04",
+  "roll": "2026 roll"
  },
  "polk": {
   "label": "Polk",
