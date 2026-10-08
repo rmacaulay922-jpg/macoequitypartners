@@ -15,10 +15,10 @@ window.MACO_COVERAGE={
   "county": "Broward",
   "leads": 600,
   "submarkets": 16,
-  "snapshot": "2026-09-09",
+  "snapshot": "2026-10-08",
   "freshness": "dated",
-  "asOf": "2026-09-09",
-  "roll": "2025 roll"
+  "asOf": "2026-10-08",
+  "roll": "2026 roll"
  },
  "lee": {
   "label": "Lee",
